@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "error": "#ba1a1a",
+              "surface": "#fbf9f5",
+              "on-error-container": "#93000a",
+              "surface-container": "#efeeea",
+              "primary-fixed": "#bceecf",
+              "on-error": "#ffffff",
+              "surface-dim": "#dbdad6",
+              "outline-variant": "#c0c9c1",
+              "on-tertiary-container": "#4f3e00",
+              "secondary": "#456643",
+              "surface-container-highest": "#e4e2de",
+              "tertiary-fixed": "#ffe088",
+              "secondary-container": "#c6edbf",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#a1d1b4",
+              "on-surface": "#1b1c1a",
+              "surface-variant": "#e4e2de",
+              "error-container": "#ffdad6",
+              "tertiary": "#735c00",
+              "surface-container-high": "#eae8e4",
+              "on-secondary-fixed": "#022106",
+              "on-primary-fixed-variant": "#224f39",
+              "inverse-primary": "#a1d1b4",
+              "on-background": "#1b1c1a",
+              "on-primary-container": "#9fcfb2",
+              "outline": "#717973",
+              "inverse-surface": "#30312e",
+              "tertiary-fixed-dim": "#e9c349",
+              "surface-tint": "#3a674f",
+              "inverse-on-surface": "#f2f0ed",
+              "secondary-fixed-dim": "#abd0a5",
+              "surface-bright": "#fbf9f5",
+              "on-secondary": "#ffffff",
+              "primary": "#14422d",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#f5f3ef",
+              "on-secondary-container": "#4b6d48",
+              "on-surface-variant": "#414943",
+              "on-primary-fixed": "#002112",
+              "on-tertiary-fixed": "#241a00",
+              "secondary-fixed": "#c6edbf",
+              "tertiary-container": "#cca830",
+              "on-secondary-fixed-variant": "#2e4e2d",
+              "primary-container": "#2d5a43",
+              "on-tertiary-fixed-variant": "#574500",
+              "background": "#fbf9f5"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-[#fbf9f5] flex justify-between items-center w-full px-6 py-4 max-w-none sticky top-0 z-40 tonal-shift">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#14422d] hover:bg-[#efeeea] p-2 rounded-full transition-colors duration-300">menu</button>
+<h1 class="font-manrope text-xl font-bold tracking-tight text-[#14422d]">The Sanctuary</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#14422d] hover:bg-[#efeeea] p-2 rounded-full transition-colors duration-300">search</button>
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center border-2 border-surface overflow-hidden">
+<img alt="User profile avatar" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkwcsS7PZiau8M3sqpjKCgN_VYWAiMLGIvhH2EnRsMXcddoFSBUUq0M6AF8-FN-nb9FRvwqJZmGBVSeuL-njOJ2kFtMCxS3itK5xdtoAJj8hAv36_4Y0G068xkMMVBdZIqCR7p3orvHkjdHIRqbjLgdMK1RgryD-IXyV5q_4RU8wpu_xEIkEz9Gua7In8swG5Iy3r9dFlWx4enA9kRJjJtrOI2eAZd45SrSCMtpNR3qBrBZE7V_w5bfaQhXXi_BarqwB_UJBQVEic"/>
+</div>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-6 pt-8">
+<!-- Editorial Header -->
+<section class="mb-12">
+<h2 class="font-headline text-4xl font-extrabold text-primary mb-2 tracking-tight">Library</h2>
+<p class="font-body text-on-surface-variant text-lg">Continue your journey through the Divine word.</p>
+</section>
+<!-- Tabs Navigation -->
+<nav class="flex gap-2 mb-10 bg-surface-container-low p-1.5 rounded-full w-fit">
+<button class="px-8 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-sm transition-all duration-300 shadow-sm">Surah</button>
+<button class="px-8 py-2.5 rounded-full text-on-surface-variant font-medium text-sm hover:bg-surface-container transition-all duration-300">Juz</button>
+</nav>
+<!-- Content Grid (Bento Style Variation) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Surah Card 1: Al-Fatiha -->
+<div class="group relative bg-surface-container-lowest rounded-[2rem] p-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5 border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center font-label font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-400">01</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-primary">Al-Fatiha</h3>
+<p class="font-label text-xs text-on-surface-variant tracking-widest uppercase">7 AYAHS • MECCAN</p>
+</div>
+</div>
+<span class="text-3xl font-serif text-primary opacity-20 group-hover:opacity-100 transition-opacity duration-500">الفاتحة</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="font-label text-xs font-semibold text-primary">Memorized</span>
+<span class="font-label text-xs font-bold text-primary">100%</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-700 w-full"></div>
+</div>
+</div>
+</div>
+<!-- Surah Card 2: Al-Baqarah -->
+<div class="group relative bg-surface-container-lowest rounded-[2rem] p-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5 border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center font-label font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-400">02</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-primary">Al-Baqarah</h3>
+<p class="font-label text-xs text-on-surface-variant tracking-widest uppercase">286 AYAHS • MEDINAN</p>
+</div>
+</div>
+<span class="text-3xl font-serif text-primary opacity-20 group-hover:opacity-100 transition-opacity duration-500">البقرة</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="font-label text-xs font-semibold text-primary">Memorized</span>
+<span class="font-label text-xs font-bold text-primary">45%</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full transition-all duration-700 w-[45%]"></div>
+</div>
+</div>
+</div>
+<!-- Surah Card 3: Ali 'Imran -->
+<div class="group relative bg-surface-container-lowest rounded-[2rem] p-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5 border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center font-label font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-400">03</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-primary">Ali 'Imran</h3>
+<p class="font-label text-xs text-on-surface-variant tracking-widest uppercase">200 AYAHS • MEDINAN</p>
+</div>
+</div>
+<span class="text-3xl font-serif text-primary opacity-20 group-hover:opacity-100 transition-opacity duration-500">آل عمران</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="font-label text-xs font-semibold text-primary">Memorized</span>
+<span class="font-label text-xs font-bold text-primary">12%</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full transition-all duration-700 w-[12%]"></div>
+</div>
+</div>
+</div>
+<!-- Surah Card 4: An-Nisa -->
+<div class="group relative bg-surface-container-lowest rounded-[2rem] p-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5 border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center font-label font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-400">04</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-primary">An-Nisa</h3>
+<p class="font-label text-xs text-on-surface-variant tracking-widest uppercase">176 AYAHS • MEDINAN</p>
+</div>
+</div>
+<span class="text-3xl font-serif text-primary opacity-20 group-hover:opacity-100 transition-opacity duration-500">النساء</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="font-label text-xs font-semibold text-primary">Memorized</span>
+<span class="font-label text-xs font-bold text-primary">0%</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-700 w-0"></div>
+</div>
+</div>
+</div>
+<!-- Surah Card 5: Al-Ma'idah -->
+<div class="group relative bg-surface-container-lowest rounded-[2rem] p-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5 border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center font-label font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-400">05</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-primary">Al-Ma'idah</h3>
+<p class="font-label text-xs text-on-surface-variant tracking-widest uppercase">120 AYAHS • MEDINAN</p>
+</div>
+</div>
+<span class="text-3xl font-serif text-primary opacity-20 group-hover:opacity-100 transition-opacity duration-500">المائدة</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="font-label text-xs font-semibold text-primary">Memorized</span>
+<span class="font-label text-xs font-bold text-primary">0%</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-700 w-0"></div>
+</div>
+</div>
+</div>
+<!-- Surah Card 6: Al-An'am -->
+<div class="group relative bg-surface-container-lowest rounded-[2rem] p-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5 border border-transparent hover:border-outline-variant/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center font-label font-bold text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-400">06</div>
+<div>
+<h3 class="font-headline text-xl font-bold text-primary">Al-An'am</h3>
+<p class="font-label text-xs text-on-surface-variant tracking-widest uppercase">165 AYAHS • MECCAN</p>
+</div>
+</div>
+<span class="text-3xl font-serif text-primary opacity-20 group-hover:opacity-100 transition-opacity duration-500">الأنعام</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="font-label text-xs font-semibold text-primary">Memorized</span>
+<span class="font-label text-xs font-bold text-primary">0%</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-700 w-0"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#f5f3ef]/80 backdrop-blur-xl shadow-[0_-4px_24px_rgba(27,28,26,0.04)] rounded-t-[2rem]">
+<div class="flex flex-col items-center justify-center text-[#1b1c1a]/50 px-4 py-2 hover:text-[#14422d] transition-colors duration-300">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-plus-jakarta text-[10px] uppercase tracking-wider">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#14422d] text-[#ffffff] rounded-full px-6 py-2 transition-transform duration-500 ease-out scale-110">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-plus-jakarta text-[10px] uppercase tracking-wider font-semibold">Library</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#1b1c1a]/50 px-4 py-2 hover:text-[#14422d] transition-colors duration-300">
+<span class="material-symbols-outlined mb-1">mic</span>
+<span class="font-plus-jakarta text-[10px] uppercase tracking-wider">Recite</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#1b1c1a]/50 px-4 py-2 hover:text-[#14422d] transition-colors duration-300">
+<span class="material-symbols-outlined mb-1">insights</span>
+<span class="font-plus-jakarta text-[10px] uppercase tracking-wider">Insights</span>
+</div>
+</nav>
+<!-- Floating Action Button (Optional Contextual) -->
+<button class="fixed right-6 bottom-32 w-14 h-14 bg-tertiary-fixed text-on-tertiary-fixed rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 z-40">
+<span class="material-symbols-outlined text-3xl">play_arrow</span>
+</button>
+</body></html>

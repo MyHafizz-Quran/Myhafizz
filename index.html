@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+
+    <!-- Viewport mobile strict -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- PWA / App-like -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyHafizz" />
+    <meta name="application-name" content="MyHafizz" />
+    <meta name="theme-color" content="#064e3b" />
+    <meta name="msapplication-TileColor" content="#064e3b" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="MyHafizz — Mémorisez le Saint Coran verset par verset avec audio multi-récitateurs, suivi de progression et partenaires d'étude. Application gratuite de Hifz créée par Farouck Sylla." />
+    <meta name="keywords" content="MyHafizz, Coran, mémorisation, Hifz, Hifdh, quran memorization, sourate, verset, audio Coran, quiz Coran, apprentissage Coran, islam, musulman, récitation, tajwid, Farouck Sylla" />
+    <meta name="author" content="Farouck Sylla" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://myhafizz.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://myhafizz.com/" />
+    <meta property="og:title" content="MyHafizz — Mémorisation du Saint Coran" />
+    <meta property="og:description" content="Mémorisez le Saint Coran verset par verset avec audio multi-récitateurs, suivi de progression et partenaires d'étude. Application gratuite de Hifz." />
+    <meta property="og:image" content="https://myhafizz.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="MyHafizz — Mémorisation du Saint Coran" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="MyHafizz" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MyHafizz — Mémorisation du Saint Coran" />
+    <meta name="twitter:description" content="Mémorisez le Saint Coran verset par verset avec audio multi-récitateurs, suivi de progression et partenaires d'étude." />
+    <meta name="twitter:image" content="https://myhafizz.com/og-image.png" />
+    <meta name="twitter:image:alt" content="MyHafizz — Mémorisation du Saint Coran" />
+
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Apple touch icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" />
+<<<<<<< HEAD
+    
+    <!-- Stitch UI Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+=======
+>>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
+
+    <title>MyHafizz — Mémorisation du Saint Coran</title>
+
+    <!-- Structured Data JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "MyHafizz",
+      "alternateName": "MyHafizz - Mémorisation du Coran",
+      "url": "https://myhafizz.com",
+      "description": "Application web de mémorisation du Saint Coran — suivi du Hifdh verset par verset, écoute audio, quiz, défis communautaires.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "author": {
+        "@type": "Person",
+        "name": "Farouck Sylla"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "inLanguage": ["fr", "ar"],
+      "keywords": "Coran, mémorisation, Hifz, quran, islam"
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Sanctuary - Memorization Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error": "#ba1a1a",
+                        "surface": "#fbf9f5",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#efeeea",
+                        "primary-fixed": "#bceecf",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#dbdad6",
+                        "outline-variant": "#c0c9c1",
+                        "on-tertiary-container": "#4f3e00",
+                        "secondary": "#456643",
+                        "surface-container-highest": "#e4e2de",
+                        "tertiary-fixed": "#ffe088",
+                        "secondary-container": "#c6edbf",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#a1d1b4",
+                        "on-surface": "#1b1c1a",
+                        "surface-variant": "#e4e2de",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#735c00",
+                        "surface-container-high": "#eae8e4",
+                        "on-secondary-fixed": "#022106",
+                        "on-primary-fixed-variant": "#224f39",
+                        "inverse-primary": "#a1d1b4",
+                        "on-background": "#1b1c1a",
+                        "on-primary-container": "#9fcfb2",
+                        "outline": "#717973",
+                        "inverse-surface": "#30312e",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-tint": "#3a674f",
+                        "inverse-on-surface": "#f2f0ed",
+                        "secondary-fixed-dim": "#abd0a5",
+                        "surface-bright": "#fbf9f5",
+                        "on-secondary": "#ffffff",
+                        "primary": "#14422d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f5f3ef",
+                        "on-secondary-container": "#4b6d48",
+                        "on-surface-variant": "#414943",
+                        "on-primary-fixed": "#002112",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-fixed": "#c6edbf",
+                        "tertiary-container": "#cca830",
+                        "on-secondary-fixed-variant": "#2e4e2d",
+                        "primary-container": "#2d5a43",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "background": "#fbf9f5"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .arabic-text {
+            font-family: "Amiri", serif;
+            line-height: 2.5;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#fbf9f5] dark:bg-[#1b1c1a] flex justify-between items-center w-full px-6 py-4 max-w-none sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-[#efeeea] dark:hover:bg-[#2d2e2c] transition-colors duration-300 active:scale-95 opacity-80 transition-all duration-400 ease-in-out">
+<span class="material-symbols-outlined text-[#14422d] dark:text-[#c6edbf]">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-manrope headline-lg text-[#14422d] dark:text-[#fbf9f5] text-xl font-bold tracking-tight">Surah Ar-Rahman</h1>
+<span class="font-label text-xs text-on-surface-variant">Ayah 13 of 78</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-[#efeeea] dark:hover:bg-[#2d2e2c] transition-colors duration-300 active:scale-95 opacity-80 transition-all duration-400 ease-in-out">
+<span class="material-symbols-outlined text-[#14422d] dark:text-[#c6edbf]">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="User profile avatar displaying a smiling man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByvFGPXj6xxZW8lombZ4rnFhvKqNWKFjhlpEMxCyWHraGh58K1WzzPUXZ2FNksq64oqjb3JI1CLdw7ZUnj7ZQxTaVrk2Q5O-MF69Czm0aCSqTSXjrY0V812tbUfLnXAN1A8YkWevEWCX8xboxWOI-1wyq0FOzyqX-8nAfYc9cxI3RJdytZcLrd-4eqzNPButYwsupGoEV053K1loEZFM9nnrKjBD-Bf7sZETj5ogufy2Q2rDlagRirNahpXwpirOZwyS344nUWhFQ"/>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col px-6 py-8 max-w-4xl mx-auto w-full">
+<!-- Progress Header -->
+<div class="mb-12">
+<div class="flex justify-between items-end mb-3">
+<span class="font-label text-sm font-semibold text-primary">Daily Goal: 5 Ayahs</span>
+<span class="font-label text-sm text-on-surface-variant">3/5 Completed</span>
+</div>
+<div class="h-3 w-full bg-secondary-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 60%"></div>
+</div>
+</div>
+<!-- The Focus Plate (Memorization Container) -->
+<div class="relative flex-grow flex flex-col items-center justify-center space-y-12">
+<!-- Asymmetric Decorative Element -->
+<div class="absolute -top-12 -left-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-12 -right-12 w-48 h-48 bg-tertiary/5 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Verse Display -->
+<div class="w-full text-center space-y-10 z-10">
+<!-- Arabic Verse -->
+<div class="relative group">
+<p class="arabic-text text-5xl md:text-6xl text-on-surface leading-loose text-right md:text-center px-4" dir="rtl">
+                        فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ
+                    </p>
+<!-- Floating Highlight Overlay for focus -->
+<div class="absolute -inset-4 bg-primary/5 rounded-3xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+</div>
+<!-- Translation (Revealable Section) -->
+<div class="max-w-xl mx-auto">
+<div class="transition-all duration-500 ease-in-out">
+<p class="font-headline text-lg md:text-xl text-on-surface-variant leading-relaxed font-medium">
+                            "So which of the favors of your Lord would you deny?"
+                        </p>
+</div>
+</div>
+</div>
+<!-- Focus Controls -->
+<div class="flex flex-col items-center gap-8 w-full z-10">
+<!-- Reveal/Hide Action -->
+<button class="group flex items-center gap-3 bg-surface-container-lowest border border-outline-variant/20 px-8 py-4 rounded-full shadow-sm hover:shadow-md transition-all duration-300">
+<span class="material-symbols-outlined text-primary">visibility_off</span>
+<span class="font-label font-bold text-primary tracking-wide">HIDE TEXT</span>
+</button>
+<!-- Audio Playback Floating Bar -->
+<div class="glass-panel w-full max-w-md rounded-[2.5rem] p-4 flex items-center justify-between shadow-lg shadow-on-surface/5">
+<button class="p-3 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">repeat_one</span>
+</button>
+<div class="flex items-center gap-4">
+<button class="p-3 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">skip_previous</span>
+</button>
+<button class="w-16 h-16 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="p-3 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">skip_next</span>
+</button>
+</div>
+<button class="p-3 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">all_inclusive</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Next Step Grid -->
+<div class="grid grid-cols-2 gap-4 mt-16 mb-24">
+<button class="flex flex-col items-start p-6 rounded-3xl bg-surface-container-low hover:bg-surface-container-high transition-colors text-left group">
+<span class="material-symbols-outlined text-secondary mb-3">auto_graph</span>
+<span class="font-label text-sm text-on-surface-variant">Review</span>
+<span class="font-headline font-bold text-on-surface">Previous Verse</span>
+</button>
+<button class="flex flex-col items-start p-6 rounded-3xl bg-primary-fixed hover:bg-primary-fixed-dim transition-colors text-left group">
+<span class="material-symbols-outlined text-primary mb-3">check_circle</span>
+<span class="font-label text-sm text-on-primary-fixed-variant">Mastered</span>
+<span class="font-headline font-bold text-on-primary-fixed">Next Ayah</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#f5f3ef]/80 dark:bg-[#1b1c1a]/80 backdrop-blur-xl shadow-[0_-4px_24px_rgba(27,28,26,0.04)] rounded-t-[2rem]">
+<a class="flex flex-col items-center justify-center text-[#1b1c1a]/50 dark:text-[#fbf9f5]/50 px-4 py-2 hover:text-[#14422d] dark:hover:text-[#c6edbf]" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-plus-jakarta label-md tracking-wide text-xs mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1b1c1a]/50 dark:text-[#fbf9f5]/50 px-4 py-2 hover:text-[#14422d] dark:hover:text-[#c6edbf]" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-plus-jakarta label-md tracking-wide text-xs mt-1">Library</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#14422d] dark:bg-[#c6edbf] text-[#ffffff] dark:text-[#14422d] rounded-full px-6 py-2 transition-transform duration-500 ease-out scale-110" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
+<span class="font-plus-jakarta label-md tracking-wide text-xs mt-1">Recite</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1b1c1a]/50 dark:text-[#fbf9f5]/50 px-4 py-2 hover:text-[#14422d] dark:hover:text-[#c6edbf]" href="#">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-plus-jakarta label-md tracking-wide text-xs mt-1">Insights</span>
+</a>
+</nav>
+<!-- Navigation Drawer (Hidden by default, structure for implementation) -->
+<aside class="fixed inset-y-0 left-0 z-[60] w-80 p-6 bg-[#fbf9f5] dark:bg-[#1b1c1a] rounded-r-3xl h-full shadow-2xl shadow-[#1b1c1a]/5 -translate-x-full transition-transform duration-400 ease-in-out">
+<div class="flex items-center gap-4 mb-8">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Abdullah's user profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNb-muV_ri9gNfu6mRM-b0uJ4jseT5GMsSiJ9cyGNSZ18k2bf_V4iNa4Y9orMCQXT9GPgIl0Q0_CwzuYYXRcEELJcSOOm5l2wUu4hxO1ThXFqleSpiKe54HzGDmdlYNluM2NURmBFfZ44hOG3Cirq2tI7igfXLR9Vl4lXyYxjT0LIzg58SbIE80O3HflFxOCo1I-IwwOVq2gz60WMTj9dUcf4Q9m_uFhdPx8zDe_CB046yHuigEy9CqELq4eAKE9IPJLAcdQ3CJ0k"/>
+</div>
+<div>
+<h3 class="font-manrope body-lg font-bold text-[#14422d]">Abdullah</h3>
+<p class="text-xs text-on-surface-variant">3 Juz Memorized</p>
+</div>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-4 p-4 text-[#1b1c1a]/70 dark:text-[#fbf9f5]/70 hover:translate-x-2 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">auto_graph</span>
+<span class="font-manrope body-lg">My Progress</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-[#1b1c1a]/70 dark:text-[#fbf9f5]/70 hover:translate-x-2 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-manrope body-lg">Bookmarks</span>
+</a>
+<a class="flex items-center gap-4 p-4 bg-[#efeeea] dark:bg-[#2d2e2c] text-[#14422d] dark:text-[#c6edbf] font-bold rounded-xl transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-manrope body-lg">Settings</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-[#1b1c1a]/70 dark:text-[#fbf9f5]/70 hover:translate-x-2 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-manrope body-lg">Qibla</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-[#1b1c1a]/70 dark:text-[#fbf9f5]/70 hover:translate-x-2 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-manrope body-lg">Support</span>
+</a>
+</nav>
+</aside>
+</body></html>

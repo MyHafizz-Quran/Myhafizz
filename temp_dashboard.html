@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Sanctuary - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error": "#ba1a1a",
+                        "surface": "#fbf9f5",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#efeeea",
+                        "primary-fixed": "#bceecf",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#dbdad6",
+                        "outline-variant": "#c0c9c1",
+                        "on-tertiary-container": "#4f3e00",
+                        "secondary": "#456643",
+                        "surface-container-highest": "#e4e2de",
+                        "tertiary-fixed": "#ffe088",
+                        "secondary-container": "#c6edbf",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#a1d1b4",
+                        "on-surface": "#1b1c1a",
+                        "surface-variant": "#e4e2de",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#735c00",
+                        "surface-container-high": "#eae8e4",
+                        "on-secondary-fixed": "#022106",
+                        "on-primary-fixed-variant": "#224f39",
+                        "inverse-primary": "#a1d1b4",
+                        "on-background": "#1b1c1a",
+                        "on-primary-container": "#9fcfb2",
+                        "outline": "#717973",
+                        "inverse-surface": "#30312e",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-tint": "#3a674f",
+                        "inverse-on-surface": "#f2f0ed",
+                        "secondary-fixed-dim": "#abd0a5",
+                        "surface-bright": "#fbf9f5",
+                        "on-secondary": "#ffffff",
+                        "primary": "#14422d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f5f3ef",
+                        "on-secondary-container": "#4b6d48",
+                        "on-surface-variant": "#414943",
+                        "on-primary-fixed": "#002112",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-fixed": "#c6edbf",
+                        "tertiary-container": "#cca830",
+                        "on-secondary-fixed-variant": "#2e4e2d",
+                        "primary-container": "#2d5a43",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "background": "#fbf9f5"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#fbf9f5] flex justify-between items-center w-full px-6 py-4 max-w-none docked full-width top-0 z-40">
+<div class="flex items-center gap-4">
+<button class="text-[#14422d] hover:bg-[#efeeea] transition-colors duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-manrope text-xl font-bold tracking-tight text-[#14422d]">The Sanctuary</h1>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border-2 border-primary-fixed">
+<img alt="User profile avatar" data-alt="Close up of a person smiling softly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0OlVX16HOZO7cz1QpaA6cGJ3DdcxJXwlCO8T2Qzk3OGJ60pryW85noKjEHBUEVV80myq46QLSn_GX1YT68SnRZp4RkUQq_oGd2KaXtxbZM1aQXyGzFonCTev5AzmGRPR-O6TbPsp9VmF7S9WHSuhW2CMbytjmEjuS6Ra2YaAw9cah0qFunGgpq2YjSsTrv8T34ycA670lpM6SV3tzQuj8Rmc7neVazVbSYTK3Qqxs92ghYbsjm-2W_LerTBKacJbuTVlRX8CjYKI"/>
+</div>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-6 pt-8 space-y-12">
+<!-- Welcome & Streak Hero -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+<div class="md:col-span-8 space-y-2">
+<p class="font-label text-on-surface-variant tracking-wider uppercase text-xs">As-salaam alaykum, Abdullah</p>
+<h2 class="font-headline text-4xl md:text-5xl font-extrabold text-primary leading-tight">Your spiritual journey <br/>is blossoming.</h2>
+</div>
+<div class="md:col-span-4 bg-tertiary-fixed/30 p-6 rounded-3xl flex items-center justify-between border border-tertiary-fixed/20 shadow-sm">
+<div class="space-y-1">
+<p class="font-label text-on-tertiary-fixed-variant text-sm font-semibold">Current Streak</p>
+<p class="font-headline text-3xl font-black text-on-tertiary-fixed">12 Days</p>
+</div>
+<div class="bg-tertiary-fixed text-on-tertiary-fixed p-3 rounded-2xl">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+</div>
+</section>
+<!-- Bento Layout for Stats and Actions -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Daily Verse Card (Large) -->
+<div class="md:col-span-2 relative group overflow-hidden rounded-3xl bg-primary-container p-8 text-on-primary-container shadow-sm border border-primary/10">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-9xl">auto_awesome</span>
+</div>
+<div class="relative z-10 space-y-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label text-sm font-medium text-secondary-container tracking-widest uppercase">Daily Reflection</span>
+</div>
+<blockquote class="font-headline text-2xl italic leading-relaxed text-surface">
+                        "So verily, with every difficulty, there is relief."
+                    </blockquote>
+<div class="flex items-center justify-between pt-4 border-t border-surface/10">
+<p class="font-label text-sm text-secondary-container">Surah Ash-Sharh • Ayah 5</p>
+<button class="bg-surface text-primary px-5 py-2 rounded-full font-label text-sm font-bold hover:scale-105 transition-transform duration-300">
+                            Listen Now
+                        </button>
+</div>
+</div>
+</div>
+<!-- Overall Progress Card -->
+<div class="bg-surface-container-low rounded-3xl p-8 flex flex-col justify-between border border-outline-variant/10 shadow-sm">
+<div class="space-y-4">
+<p class="font-label text-sm font-semibold text-on-surface-variant tracking-wide">Overall Progress</p>
+<div class="relative flex items-center justify-center py-4">
+<svg class="w-32 h-32 transform -rotate-90">
+<circle class="text-surface-container-highest" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.4" stroke-dashoffset="255" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="font-headline text-2xl font-black text-primary">30%</span>
+</div>
+</div>
+</div>
+<div class="space-y-1">
+<p class="font-body text-sm font-medium text-on-surface">3 Juz Memorized</p>
+<p class="font-label text-xs text-on-surface-variant">Next goal: Surah Al-Baqarah</p>
+</div>
+</div>
+<!-- Continue Memorizing (Action Card) -->
+<div class="md:col-span-3 bg-white rounded-3xl p-8 border border-surface-container-highest shadow-xl shadow-on-surface/5 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-400 hover:shadow-2xl hover:shadow-primary/5">
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 bg-secondary-container flex items-center justify-center rounded-2xl text-primary">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+</div>
+<div class="space-y-1">
+<h3 class="font-headline text-xl font-bold text-primary">Continue Memorizing</h3>
+<p class="font-body text-on-surface-variant">Surah Ar-Rahman • Ayah 13-18</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:block text-right pr-4">
+<p class="font-label text-xs font-bold text-primary/60 uppercase tracking-tighter">Current Session</p>
+<p class="font-body text-sm font-semibold">12 minutes elapsed</p>
+</div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-label font-bold text-lg hover:shadow-lg hover:bg-primary-container transition-all duration-300">
+<span>Resume Session</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Recent Activity / Focus Area -->
+<section class="space-y-6">
+<h3 class="font-headline text-2xl font-bold text-primary">Recent Milestones</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Milestone Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 hover:bg-surface-container-low transition-colors duration-300">
+<div class="text-tertiary mb-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<p class="font-body font-bold text-on-surface">Perfect Recitation</p>
+<p class="font-label text-xs text-on-surface-variant mt-1">Surah Al-Mulk • 2 hours ago</p>
+</div>
+<!-- Milestone Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 hover:bg-surface-container-low transition-colors duration-300">
+<div class="text-secondary mb-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<p class="font-body font-bold text-on-surface">Daily Goal Met</p>
+<p class="font-label text-xs text-on-surface-variant mt-1">Memorized 5 Ayahs • Yesterday</p>
+</div>
+<!-- Milestone Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 hover:bg-surface-container-low transition-colors duration-300">
+<div class="text-primary mb-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<p class="font-body font-bold text-on-surface">Juz 3 Completed</p>
+<p class="font-label text-xs text-on-surface-variant mt-1">3 days ago</p>
+</div>
+<!-- Milestone Card 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 hover:bg-surface-container-low transition-colors duration-300">
+<div class="text-on-surface-variant mb-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<p class="font-body font-bold text-on-surface">Group Review</p>
+<p class="font-label text-xs text-on-surface-variant mt-1">Joined Circles • 1 week ago</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#f5f3ef]/80 backdrop-blur-xl shadow-[0_-4px_24px_rgba(27,28,26,0.04)] rounded-t-[2rem]">
+<a class="flex flex-col items-center justify-center bg-[#14422d] text-[#ffffff] rounded-full px-6 py-2 transition-transform duration-500 ease-out scale-110" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-plus-jakarta text-[10px] tracking-wide mt-0.5">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1b1c1a]/50 px-4 py-2 hover:text-[#14422d] transition-colors duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-plus-jakarta text-[10px] tracking-wide mt-0.5">Library</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1b1c1a]/50 px-4 py-2 hover:text-[#14422d] transition-colors duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+<span class="font-plus-jakarta text-[10px] tracking-wide mt-0.5">Recite</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1b1c1a]/50 px-4 py-2 hover:text-[#14422d] transition-colors duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-plus-jakarta text-[10px] tracking-wide mt-0.5">Insights</span>
+</a>
+</nav>
+<!-- Contextual FAB (Dashboard only) -->
+<button class="fixed bottom-24 right-6 bg-tertiary-container text-on-tertiary-container w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-300 z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>

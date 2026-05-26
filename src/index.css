@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ─── Palette "Lumière Sacrée" ─── */
+    --background: 40 20% 98%;
+    --foreground: 220 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    /* Primaire : vert islamique profond */
+    --primary: 160 60% 22%;
+    --primary-foreground: 40 30% 96%;
+
+    /* Secondaire : or calligraphie */
+    --secondary: 38 70% 50%;
+    --secondary-foreground: 220 20% 12%;
+
+    --muted: 40 15% 94%;
+    --muted-foreground: 220 10% 50%;
+    --accent: 160 40% 94%;
+    --accent-foreground: 160 60% 22%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 40 15% 90%;
+    --input: 40 15% 88%;
+    --ring: 160 60% 22%;
+    --radius: 1rem;
+
+    --chart-1: 160 60% 35%;
+    --chart-2: 38 70% 50%;
+    --chart-3: 215 65% 50%;
+    --chart-4: 350 65% 55%;
+    --chart-5: 30 85% 55%;
+
+    --sidebar-background: 40 20% 98%;
+    --sidebar-foreground: 220 20% 12%;
+    --sidebar-primary: 160 60% 22%;
+    --sidebar-primary-foreground: 40 30% 96%;
+    --sidebar-accent: 160 40% 94%;
+    --sidebar-accent-foreground: 160 60% 22%;
+    --sidebar-border: 40 15% 90%;
+    --sidebar-ring: 160 60% 22%;
+
+    /* ─── Couleurs sémantiques Hafiz ─── */
+    --hafiz-emerald: 160 60% 35%;
+    --hafiz-gold: 38 80% 52%;
+    --hafiz-sapphire: 215 65% 50%;
+    --hafiz-rose: 350 65% 55%;
+    --hafiz-amber: 30 85% 55%;
+    --hafiz-surface: 40 20% 97%;
+
+    /* Safe area pour les encoches / barre de navigation iOS & Android */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+
+    /* Hauteur de la bottom nav */
+    --bottom-nav-height: 68px;
+
+    /* Hauteur du header global fixe */
+    --header-height: 56px;
+    --top-offset: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+
+    /* ─── Z-index hierarchy for mobile layout ─── */
+    --z-content: 1;
+    --z-sticky-content: 10;
+    --z-page-header: 40;
+    --z-bottom-nav: 50;
+    --z-dropdown: 60;
+    --z-modal: 100;
+    --z-top-header: 1000;
+    --z-toast: 9999;
+  }
+
+  .dark {
+    --background: 220 20% 7%;
+    --foreground: 40 20% 92%;
+    --card: 220 18% 10%;
+    --card-foreground: 40 20% 92%;
+    --popover: 220 18% 10%;
+    --popover-foreground: 40 20% 92%;
+
+    --primary: 160 50% 45%;
+    --primary-foreground: 220 20% 7%;
+    --secondary: 38 65% 55%;
+    --secondary-foreground: 220 20% 7%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 160 30% 15%;
+    --accent-foreground: 160 50% 60%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 20%;
+    --ring: 160 50% 45%;
+
+    --chart-1: 160 50% 45%;
+    --chart-2: 38 65% 55%;
+    --chart-3: 215 65% 55%;
+    --chart-4: 350 65% 60%;
+    --chart-5: 30 85% 60%;
+
+    --sidebar-background: 220 18% 10%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-primary: 160 50% 45%;
+    --sidebar-primary-foreground: 220 20% 7%;
+    --sidebar-accent: 160 30% 15%;
+    --sidebar-accent-foreground: 160 50% 60%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 160 50% 45%;
+
+    --hafiz-surface: 220 18% 12%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  html {
+    --sat: env(safe-area-inset-top, 0px);
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+
+  #root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 767px) {
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+  }
+
+  .sticky.top-0 {
+    top: var(--top-offset);
+  }
+}
+
+@layer components {
+  /* ─── Glass Card ─── */
+  .glass-card {
+    @apply bg-white/70 dark:bg-white/5 backdrop-blur-xl
+           border border-white/30 dark:border-white/10
+           rounded-2xl shadow-lg shadow-black/[0.04] dark:shadow-black/20;
+  }
+
+  /* ─── Hafiz Gradient Backgrounds ─── */
+  .hafiz-gradient-hero {
+    background: linear-gradient(135deg, #0a3d2c 0%, #134e38 50%, #0d2e22 100%);
+  }
+
+  .hafiz-gradient-gold {
+    @apply bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500;
+  }
+
+  /* ─── Animated Glow ─── */
+  .glow-emerald {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.18),
+                0 0 80px rgba(16, 185, 129, 0.06);
+  }
+
+  /* ─── Arabic font ─── */
+  .font-arabic {
+    font-family: 'Amiri', 'Traditional Arabic', 'Arabic Typesetting', serif;
+  }
+}
+
+/* Utilitaires safe-area */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pt-header {
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+  }
+  .pb-nav {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+  .h-bottom-nav {
+    height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+<<<<<<< HEAD
+  
+  /* ─── Stitch UI Utility Classes ─── */
+  .glass-effect {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+=======
+>>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
+}
