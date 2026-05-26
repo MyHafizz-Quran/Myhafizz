@@ -4,11 +4,7 @@ import { MemorizationProgress } from "@/api/entities";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-<<<<<<< HEAD
 import { BookOpen, Star, Target, ArrowRight, Sparkles, ChevronRight, HelpCircle, ChevronDown, Volume2, Eye, CheckCircle2, Smartphone, X } from "lucide-react";
-=======
-import { BookOpen, Star, Target, ArrowRight, Sparkles, TrendingUp, ChevronRight, HelpCircle, ChevronDown, Volume2, Eye, CheckCircle2, Smartphone, X } from "lucide-react";
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
 import ProgressRing from "@/components/ProgressRing";
 import { SURAHS, TOTAL_VERSES } from "@/components/quranData";
 
@@ -336,11 +332,7 @@ export default function Dashboard() {
 
   const recentlyReviewed = [...progressList]
     .filter(p => p.last_reviewed && p.status !== "not_started")
-<<<<<<< HEAD
     .sort((a, b) => new Date(b.last_reviewed).getTime() - new Date(a.last_reviewed).getTime())
-=======
-    .sort((a, b) => new Date(b.last_reviewed) - new Date(a.last_reviewed))
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
     .slice(0, 5);
 
   const stats = [
@@ -364,7 +356,6 @@ export default function Dashboard() {
   const encouragement = encouragements[new Date().getDay() % encouragements.length];
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-surface text-on-surface pb-32 font-body">
       <main className="max-w-5xl mx-auto px-6 space-y-12">
 
@@ -495,240 +486,6 @@ export default function Dashboard() {
         </section>
 
       </main>
-=======
-    <div className="min-h-screen bg-background">
-
-      {/* ─── HERO ─── */}
-      <div className="relative overflow-hidden hafiz-gradient-hero">
-        {/* Islamic geometric pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.035]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M30 0l8.66 15H21.34L30 0zm0 60l8.66-15H21.34L30 60zM0 30l15-8.66v17.32L0 30zm60 0L45 21.34v17.32L60 30zM30 22.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }} />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute -bottom-20 left-1/4 w-80 h-80 bg-amber-400/5 rounded-full" />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-28 relative">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-
-            {user && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="font-arabic text-emerald-300 text-sm mb-3 font-medium"
-              >
-                السلام عليكم،{" "}
-                <span className="text-white font-bold">{user.user_metadata?.full_name?.split(" ")[0] || user.email}</span> 👋
-              </motion.p>
-            )}
-
-            <div className="inline-flex items-center gap-2 bg-white/8 backdrop-blur-sm border border-white/15 rounded-full px-4 py-1.5 mb-5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-glow-pulse" />
-              <span className="text-amber-200/90 text-xs font-medium tracking-widest uppercase">حفظ القرآن الكريم</span>
-            </div>
-
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-              <div className="max-w-lg">
-                <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-4 tracking-tight">
-                  Mémorisation<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400">
-                    du Saint Coran
-                  </span>
-                </h1>
-                <p className="text-emerald-300/80 text-base leading-relaxed mb-4">
-                  Progressez verset par verset, sourate par sourate, avec un suivi précis de votre hifdh.
-                </p>
-                {user && (
-                  <p className="text-emerald-200/80 text-sm leading-relaxed italic">
-                    {encouragement}
-                  </p>
-                )}
-              </div>
-
-              {/* Right side: ProgressRing */}
-              <div className="flex-shrink-0 flex flex-col items-center gap-4">
-                {/* Progress ring card */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.25, duration: 0.5 }}
-                  className="flex flex-col items-center gap-3 glass-card p-7 lg:p-8 glow-emerald"
-                >
-                  <ProgressRing progress={overallPercent} size={140} strokeWidth={10} color="#fbbf24" />
-                  <div className="text-center">
-                    <p className="text-white font-black text-xl">
-                      {totalMemorized}
-                      <span className="text-emerald-300 font-normal text-sm ml-1">/ {TOTAL_VERSES}</span>
-                    </p>
-                    <p className="text-emerald-400/80 text-xs mt-0.5">versets mémorisés</p>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* ─── MAIN ─── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-        <div>
-
-          {/* ─── Stats — overlap hero ─── */}
-          <div className="-mt-12 relative z-10 mb-6">
-              <div className="grid grid-cols-3 gap-3">
-                {stats.map(({ icon: Icon, label, value, color }, i) => (
-                  <motion.div
-                    key={label}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.07 }}
-                    className="glass-card p-4"
-                  >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${
-                      color === "emerald" ? "bg-emerald-500/10 dark:bg-emerald-500/20" :
-                      color === "amber" ? "bg-amber-500/10 dark:bg-amber-500/20" :
-                      "bg-sky-500/10 dark:bg-sky-500/20"
-                    }`}>
-                      <Icon className={`w-4 h-4 ${
-                        color === "emerald" ? "text-emerald-600 dark:text-emerald-400" :
-                        color === "amber" ? "text-amber-600 dark:text-amber-400" :
-                        "text-sky-600 dark:text-sky-400"
-                      }`} />
-                    </div>
-                    <p className="text-3xl font-black text-foreground leading-none mb-1">{value}</p>
-                    <p className="text-xs text-muted-foreground leading-tight">{label}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Getting Started — visible for new users only */}
-            {totalMemorized === 0 && <GettingStartedSection />}
-
-            {/* Install App Banner — visible for all users */}
-            <InstallAppBanner />
-
-            {/* Global progress */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="glass-card p-5 mb-6"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary dark:text-emerald-400" />
-                  <span className="font-semibold text-foreground text-sm">Progression globale</span>
-                </div>
-                <span className="text-primary dark:text-emerald-400 font-black text-sm">{overallPercent.toFixed(2)}%</span>
-              </div>
-              <div className="relative w-full bg-muted rounded-full h-3 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${overallPercent}%` }}
-                  transition={{ delay: 0.5, duration: 1.2, ease: "easeOut" }}
-                  className="h-3 rounded-full bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600"
-                />
-                {milestones.map(m => (
-                  <div
-                    key={m}
-                    className="absolute top-0 bottom-0 w-0.5 bg-white/40 dark:bg-white/20"
-                    style={{ left: `${m}%` }}
-                  />
-                ))}
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                <span>0 verset</span>
-                <span>{TOTAL_VERSES} versets au total</span>
-              </div>
-            </motion.div>
-
-            {/* Recently reviewed */}
-            <div className="mb-10">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-black text-foreground">Révisions récentes</h2>
-                <Link to="/SurahList" className="text-primary dark:text-emerald-400 text-sm font-medium flex items-center gap-1 hover:gap-1.5 transition-all">
-                  Toutes les sourates <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              {recentlyReviewed.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-14 glass-card"
-                >
-                  <div className="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <BookOpen className="w-6 h-6 text-primary dark:text-emerald-400" />
-                  </div>
-                  <p className="text-foreground font-semibold text-sm">Aucune révision pour l'instant</p>
-                  <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto">Commencez à mémoriser une sourate pour suivre votre progression ici.</p>
-                  <Link to="/SurahList">
-                    <button className="mt-5 inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
-                      <BookOpen className="w-4 h-4" /> Choisir une sourate
-                    </button>
-                  </Link>
-                </motion.div>
-              ) : (
-                <div className="space-y-2">
-                  {recentlyReviewed.map((prog, i) => {
-                    const surah = SURAHS.find(s => s.number === prog.surah_number);
-                    if (!surah) return null;
-                    const percent = (prog.memorized_verses?.length || 0) / surah.numberOfAyahs * 100;
-                    const isComplete = prog.status === "completed";
-                    return (
-                      <motion.div
-                        key={prog.id}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.06 }}
-                      >
-                        <Link
-                          to={`/Memorize?surah=${surah.number}`}
-                          className="flex items-center gap-4 p-4 rounded-2xl glass-card hover:border-amber-200/60 dark:hover:border-amber-700/40 hover:-translate-y-0.5 hover:shadow-xl transition-all duration-200 group"
-                        >
-                          {/* Diamond number */}
-                          <div className="flex-shrink-0 relative w-12 h-12 flex items-center justify-center">
-                            <div className={`w-10 h-10 rotate-45 rounded-lg ${
-                              isComplete
-                                ? "bg-gradient-to-br from-emerald-500 to-emerald-700"
-                                : "bg-gradient-to-br from-amber-400 to-amber-600"
-                            }`} />
-                            <span className="absolute font-black text-white text-xs">{surah.number}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2">
-                              <p className="font-arabic font-bold text-foreground text-sm">{surah.name}</p>
-                              <p className="text-muted-foreground text-xs truncate">{surah.englishName}</p>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
-                                <div
-                                  className={`h-1.5 rounded-full transition-all ${isComplete ? "bg-gradient-to-r from-emerald-400 to-emerald-600" : "bg-gradient-to-r from-amber-400 to-amber-500"}`}
-                                  style={{ width: `${percent}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-muted-foreground flex-shrink-0">{prog.memorized_verses?.length || 0}/{surah.numberOfAyahs}</span>
-                            </div>
-                          </div>
-                          <ProgressRing
-                            progress={percent}
-                            size={40}
-                            strokeWidth={3.5}
-                            color={isComplete ? "#059669" : "#f59e0b"}
-                          />
-                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-      </div>
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
     </div>
   );
 }

@@ -3,11 +3,7 @@ import { MemorizationProgress } from "@/api/entities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-<<<<<<< HEAD
 import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause } from "lucide-react";
-=======
-import { ArrowLeft, BookMarked, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause } from "lucide-react";
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
@@ -403,7 +399,6 @@ export default function Memorize() {
   }
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-surface">
       {/* ─── HEADER ─── */}
       <div className="bg-surface/95 backdrop-blur-xl border-b border-outline-variant/10 sticky top-0 z-[var(--z-page-header)] shadow-none">
@@ -442,54 +437,10 @@ export default function Memorize() {
 
           {/* Line 2: Action buttons */}
           <div className="flex items-center gap-3 mt-4">
-=======
-    <div className="min-h-screen bg-background">
-      {/* ─── HEADER ─── */}
-      <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3">
-
-          {/* Line 1: Back button + Surah name + Status badge */}
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={handleBack}
-              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <BookMarked className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-            <h1 className="flex-1 min-w-0 text-base font-bold text-gray-900 dark:text-white truncate">
-              <span className="font-arabic text-lg">{surah.name}</span>
-              <span className="text-gray-400 dark:text-gray-500 font-normal text-sm ml-2 hidden sm:inline">— {surah.englishName}</span>
-            </h1>
-            {isComplete && (
-              <span className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-full shadow-sm">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Complète !
-              </span>
-            )}
-          </div>
-
-          {/* Line 2: Verse counter + Progress bar + % + Action buttons */}
-          <div className="flex items-center gap-3 mt-3 min-w-0">
-            <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0 whitespace-nowrap font-medium">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">{memorizedVerses.size}</span>
-              <span className="text-gray-400 dark:text-gray-500">/{surah.numberOfAyahs}</span>
-            </span>
-            <div className="flex-1 min-w-0 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
-              <motion.div
-                animate={{ width: `${percent}%` }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className={`h-2 rounded-full ${isComplete ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : "bg-gradient-to-r from-amber-400 to-amber-500"}`}
-              />
-            </div>
-            <span className="text-sm font-bold text-gray-600 dark:text-gray-400 flex-shrink-0 w-12 text-right">
-              {Math.round(percent)}%
-            </span>
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
             {/* Loop player */}
             {verses.length > 0 && (
               <button
                 onClick={cycleLoopMode}
-<<<<<<< HEAD
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${loopPlaying
                     ? "bg-primary text-on-primary shadow-sm"
                     : loopMode !== "off"
@@ -506,30 +457,10 @@ export default function Memorize() {
               </button>
             )}
 
-=======
-                title={loopMode === "off" ? "Lecture en boucle (une fois)" : loopMode === "once" ? "Lecture infinie" : "Arrêter"}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0 ${
-                  loopPlaying
-                    ? "bg-emerald-500 text-white shadow-md shadow-emerald-300/40 dark:shadow-emerald-900/40"
-                    : loopMode !== "off"
-                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
-              >
-                {loopPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">
-                  {loopPlaying
-                    ? `${loopIndex + 1}/${verses.length}${loopMode === "infinite" ? " ∞" : ""}`
-                    : loopMode === "infinite" ? "∞ Boucle" : "Tout"}
-                </span>
-              </button>
-            )}
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
             {/* Bulk hide toggle */}
             {verses.length > 0 && (
               <button
                 onClick={toggleAllHidden}
-<<<<<<< HEAD
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${allHidden
                     ? "bg-surface-container-highest text-on-surface"
                     : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
@@ -537,16 +468,6 @@ export default function Memorize() {
               >
                 {allHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 <span className="hidden sm:inline">{allHidden ? "Tout révéler" : "Tout masquer"}</span>
-=======
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0 ${
-                  allHidden
-                    ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
-              >
-                {allHidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">{allHidden ? "Révéler" : "Masquer"}</span>
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
               </button>
             )}
           </div>

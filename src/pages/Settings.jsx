@@ -232,11 +232,7 @@ export default function Settings() {
   // Cleanup on unmount
   useEffect(() => {
     return () => { stopCurrentPreview(); };
-<<<<<<< HEAD
    
-=======
-  // eslint-disable-next-line react-hooks/exhaustive-deps
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
   }, []);
 
   // ── Offline storage state ────────────────────────────────────────────────
