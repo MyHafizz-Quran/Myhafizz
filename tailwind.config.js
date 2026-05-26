@@ -7,12 +7,9 @@ module.exports = {
   		fontFamily: {
   			sans: ['Inter', 'system-ui', 'sans-serif'],
   			arabic: ['Amiri Quran', 'Amiri', 'Traditional Arabic', 'serif'],
-<<<<<<< HEAD
   			headline: ['Manrope', 'sans-serif'],
   			body: ['Manrope', 'sans-serif'],
   			label: ['Plus Jakarta Sans', 'sans-serif']
-=======
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -69,7 +66,6 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-<<<<<<< HEAD
   			},
   			"error": "#ba1a1a",
   			"surface": "#fbf9f5",
@@ -80,7 +76,6 @@ module.exports = {
   			"surface-dim": "#dbdad6",
   			"outline-variant": "#c0c9c1",
   			"on-tertiary-container": "#4f3e00",
-  			"secondary": "#456643",
   			"surface-container-highest": "#e4e2de",
   			"tertiary-fixed": "#ffe088",
   			"secondary-container": "#c6edbf",
@@ -105,7 +100,6 @@ module.exports = {
   			"secondary-fixed-dim": "#abd0a5",
   			"surface-bright": "#fbf9f5",
   			"on-secondary": "#ffffff",
-  			"primary": "#14422d",
   			"surface-container-lowest": "#ffffff",
   			"surface-container-low": "#f5f3ef",
   			"on-secondary-container": "#4b6d48",
@@ -118,9 +112,6 @@ module.exports = {
   			"primary-container": "#2d5a43",
   			"on-tertiary-fixed-variant": "#574500",
   			"stitch-bg": "#fbf9f5"
-=======
-  			}
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
   		},
   		keyframes: {
   			'accordion-down': {
