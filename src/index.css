@@ -224,13 +224,10 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-<<<<<<< HEAD
-  
+
   /* ─── Stitch UI Utility Classes ─── */
   .glass-effect {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
-=======
->>>>>>> 7f0356aab4c376641d3aa5b6c0c4f22b935a7fe0
 }
