@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { maskWords } from "@/lib/srs";
 import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, RotateCcw, Repeat, Heart } from "@/components/icons";
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
@@ -28,7 +29,7 @@ function getFavorites() { try { return JSON.parse(localStorage.getItem(FAV_KEY) 
  * - Audio controls: play/pause, restart, repeat, speed
  * - Bottom action row: favorite, stop marker, hide, memorized (with text labels)
  */
-export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, index, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", textContrast = "normal", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings }) {
+export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, index, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", textContrast = "normal", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0 }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
   const [currentRepeat, setCurrentRepeat] = useState(0);
@@ -274,11 +275,11 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
                       : 'hover:text-primary/70'
                     }`}
                 >
-                  {word.text_uthmani}
+                  {maskLevel === 1 && !isHidden ? maskWords(word.text_uthmani, 1) : word.text_uthmani}
                 </span>
               ))
             ) : (
-              verse.text
+              maskLevel === 1 && !isHidden ? maskWords(verse.text, 1) : verse.text
             )}
           </div>
         </div>

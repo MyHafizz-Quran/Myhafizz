@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { MemorizationProgress } from "@/api/entities";
+import { MemorizationProgress, VerseReview } from "@/api/entities";
+import { todayStr } from "@/lib/srs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -69,6 +70,7 @@ export default function Memorize() {
   const [wordsMap, setWordsMap] = useState({});
   const [timingsMap, setTimingsMap] = useState({});
   const [allHidden, setAllHidden] = useState(false);
+  const [maskLevel, setMaskLevel] = useState(0); // 0 texte, 1 initiales, 2 masqué
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef(null);
   const { reciter, showPhonetic, showTranslation, arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers } = usePreferences();
@@ -323,6 +325,16 @@ export default function Memorize() {
       // Always update local cache immediately
       await updateCachedProgress(surahNumber, data);
 
+      // Révision espacée : un verset nouvellement mémorisé revient demain (sabqi)
+      if (navigator.onLine) {
+        const added = memorizedArr.filter(v => !memorizedVerses.has(v));
+        const removed = [...memorizedVerses].filter(v => !newMemorizedSet.has(v));
+        const d = new Date(); d.setDate(d.getDate() + 1);
+        VerseReview.upsert(added.map(v => ({ surah_number: surahNumber, verse_number: v, interval_days: 1, reps: 0, due_date: todayStr(d) })))
+          .then(() => queryClient.invalidateQueries({ queryKey: ["verse-reviews"] })).catch(() => {});
+        VerseReview.remove(surahNumber, removed).catch(() => {});
+      }
+
       if (navigator.onLine) {
         if (currentProgress) {
           return MemorizationProgress.update(currentProgress.id, data);
@@ -354,13 +366,13 @@ export default function Memorize() {
     });
   }, []);
 
+  // Masquage progressif : Texte → Initiales → Masqué → Texte
   const toggleAllHidden = () => {
-    if (allHidden) {
-      setHiddenVerses(new Set());
-    } else {
-      setHiddenVerses(new Set(verses.map(v => v.numberInSurah)));
-    }
-    setAllHidden(!allHidden);
+    const next = (maskLevel + 1) % 3;
+    setMaskLevel(next);
+    if (next === 2) setHiddenVerses(new Set(verses.map(v => v.numberInSurah)));
+    else setHiddenVerses(new Set());
+    setAllHidden(next === 2);
   };
 
   const cycleLoopMode = () => {
@@ -461,13 +473,13 @@ export default function Memorize() {
             {verses.length > 0 && (
               <button
                 onClick={toggleAllHidden}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${allHidden
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${maskLevel > 0
                     ? "bg-surface-container-highest text-on-surface"
                     : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
                   }`}
               >
-                {allHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                <span className="hidden sm:inline">{allHidden ? "Tout révéler" : "Tout masquer"}</span>
+                {maskLevel === 2 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <span>{maskLevel === 0 ? "Texte" : maskLevel === 1 ? "Initiales" : "Masqué"}</span>
               </button>
             )}
           </div>
@@ -479,8 +491,8 @@ export default function Memorize() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-nav">
         {loadingVerses ? (
           <div className="flex flex-col items-center justify-center py-24">
-            <Loader2 className="w-9 h-9 text-emerald-500 animate-spin mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Chargement des versets...</p>
+            <Loader2 className="w-9 h-9 text-primary animate-spin mb-4" />
+            <p className="text-muted-foreground text-sm font-semibold">Chargement des versets...</p>
           </div>
         ) : (
           <>
@@ -489,14 +501,14 @@ export default function Memorize() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="mb-6 flex items-center gap-4 bg-emerald-50 border-2 border-emerald-200 dark:border-emerald-800 rounded-3xl p-5 shadow-sm"
+                className="mb-6 flex items-center gap-4 bg-accent border-2 border-primary/20 rounded-2xl p-5"
               >
-                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-200 dark:shadow-emerald-900/40">
+                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-primary flex items-center justify-center">
                   <CheckCircle2 className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-emerald-800 dark:text-emerald-300 text-base sm:text-lg">Macha'Allah ! Sourate complète 🎉</p>
-                  <p className="text-emerald-600/80 dark:text-emerald-400/70 text-sm mt-0.5">
+                  <p className="font-extrabold text-foreground text-base sm:text-lg">Macha'Allah ! Sourate complète</p>
+                  <p className="text-muted-foreground text-sm mt-0.5">
                     Vous avez mémorisé les {surah.numberOfAyahs} versets de <span className="font-arabic">{surah.name}</span>.
                   </p>
                 </div>
@@ -525,6 +537,7 @@ export default function Memorize() {
                     surahEnglishName={surah?.englishName || ""}
                     words={wordsMap[verse.numberInSurah]}
                     wordTimings={timingsMap[verse.numberInSurah]}
+                    maskLevel={maskLevel}
                   />
                 </div>
               ))}

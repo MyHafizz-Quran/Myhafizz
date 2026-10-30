@@ -1,3 +1,3 @@
 export { MemorizationProgress } from './memorizationProgress';
 export { Challenge, ChallengeParticipant } from './challenges';
-export { StudyProfile, StudyMatchEntity } from './studyMatch';
+export { VerseReview, HifzPlan } from './learning';

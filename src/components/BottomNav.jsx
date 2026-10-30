@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { House, BookOpen, BookmarkSimple, UsersThree, MagnifyingGlass, Play, Pause } from "@phosphor-icons/react";
+import { House, BookOpen, BookmarkSimple, Brain, MagnifyingGlass, Play, Pause } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import usePlatform, { haptic } from "@/hooks/usePlatform";
 import { useAudioManager, getReadingSession } from "@/lib/AudioManager";
@@ -10,7 +10,7 @@ export const TABS = [
   { to: "/Dashboard", icon: House, label: "Accueil" },
   { to: "/SurahList", icon: BookOpen, label: "Coran" },
   { to: "/Bookmarks", icon: BookmarkSimple, label: "Signets" },
-  { to: "/StudyMatch", icon: UsersThree, label: "1to1" },
+  { to: "/Revision", icon: Brain, label: "Réviser" },
 ];
 
 function isActive(to, path) {

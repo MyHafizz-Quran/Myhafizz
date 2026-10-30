@@ -23,10 +23,11 @@ import Memorize from './pages/Memorize.jsx';
 import Quiz from './pages/Quiz.jsx';
 import Bookmarks from './pages/Bookmarks.jsx';
 import Challenges from './pages/Challenges.jsx';
-import StudyMatch from './pages/StudyMatch.jsx';
 import Profile from './pages/Profile.jsx';
 import Settings from './pages/Settings.jsx';
 import Login from './pages/Login.jsx';
+import Revision from './pages/Revision.jsx';
+import ReviewSession from './pages/ReviewSession.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import ConfirmEmail from './pages/ConfirmEmail.jsx';
 import LandingPage from './pages/LandingPage.jsx';
@@ -36,7 +37,7 @@ import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Memorize", "/Quiz"];
+const IMMERSIVE = ["/Memorize", "/Quiz", "/ReviewSession"];
 const WITH_HOME_HEADER = ["/Dashboard"];
 
 const AuthenticatedApp = () => {
@@ -102,7 +103,9 @@ const AuthenticatedApp = () => {
           <Route path="/Quiz" element={<Quiz />} />
           <Route path="/Bookmarks" element={<Bookmarks />} />
           <Route path="/Challenges" element={<Challenges />} />
-          <Route path="/StudyMatch" element={<StudyMatch />} />
+          <Route path="/Revision" element={<Revision />} />
+          <Route path="/ReviewSession" element={<ReviewSession />} />
+          <Route path="/StudyMatch" element={<Navigate to="/Revision" replace />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/Settings" element={<Settings />} />
           <Route path="/Help" element={<Help />} />

@@ -63,7 +63,6 @@ export default function Terms() {
                 "L'écoute audio de réciteurs professionnels",
                 "Des quiz interactifs pour tester la mémorisation",
                 "Un système de défis et de jalons",
-                "Une fonctionnalité de mise en relation avec des partenaires d'étude (StudyMatch)",
                 "La sauvegarde des données de progression dans le cloud",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
@@ -132,7 +131,6 @@ export default function Terms() {
                 "Ne pas tenter de pirater, perturber ou compromettre l'intégrité de l'Application",
                 "Ne pas utiliser de bots, scrapers ou autres outils automatisés",
                 "Ne pas publier de contenu offensant, trompeur ou préjudiciable",
-                "Respecter les autres utilisateurs dans la fonctionnalité StudyMatch",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />

@@ -49,9 +49,9 @@ const features = [
   },
   {
     icon: Users,
-    title: "Partenaires d'étude",
+    title: "Révision intelligente",
     description:
-      "Trouvez un partenaire compatible selon votre niveau et disponibilité pour vous motiver mutuellement.",
+      "Chaque jour, l'app vous propose la nouvelle leçon, la révision récente et l'ancienne, au bon moment pour ne rien oublier.",
     color: "rose",
   },
   {

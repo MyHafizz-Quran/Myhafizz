@@ -58,10 +58,6 @@ export default function Privacy() {
                 Sourates et versets mémorisés, statut de progression (en cours / complété),
                 date de dernière révision, scores aux quiz.
               </DataCategory>
-              <DataCategory label="Données StudyMatch">
-                Niveau de mémorisation, disponibilités, numéro WhatsApp (optionnel, uniquement
-                si vous choisissez de le partager).
-              </DataCategory>
               <DataCategory label="Données techniques">
                 Type d'appareil, navigateur, préférences de l'application (thème, réciteur,
                 mode hors-ligne) stockées localement sur votre appareil.
@@ -77,7 +73,6 @@ export default function Privacy() {
                 "Créer et gérer votre compte utilisateur",
                 "Sauvegarder et synchroniser votre progression de mémorisation",
                 "Afficher vos statistiques et votre tableau de bord personnel",
-                "Faciliter la mise en relation avec des partenaires d'étude (StudyMatch)",
                 "Améliorer les performances et l'expérience de l'Application",
                 "Vous envoyer des notifications importantes liées à votre compte (si activées)",
               ].map((item) => (
@@ -144,7 +139,6 @@ export default function Privacy() {
             <ul className="mt-3 space-y-2 list-none">
               {[
                 "Supabase (infrastructure technique) — uniquement pour le fonctionnement du service",
-                "Votre numéro WhatsApp dans StudyMatch — uniquement visible par les utilisateurs que vous choisissez de contacter",
                 "Si requis par la loi ou une autorité judiciaire compétente",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">

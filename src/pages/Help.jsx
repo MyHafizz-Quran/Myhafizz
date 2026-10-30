@@ -3,11 +3,10 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen, Play, Heart, MapPin, Eye, CheckCircle2,
-  Volume2, EyeOff, Brain, Settings, Users, Smartphone, TrendingUp,
+  Volume2, EyeOff, Brain, Settings, Smartphone, TrendingUp,
   Lightbulb, ChevronDown, ArrowLeft, HelpCircle,
   Mic, PenLine, ListChecks, Sun, Moon, Type, Languages,
-  AlignJustify, Wifi, HardDrive, Sliders, MessageCircle,
-  UserPlus, CheckCheck, Download, BarChart2,
+  AlignJustify, Wifi, HardDrive, Sliders, Download, BarChart2,
   Bookmark, Clock, Repeat, Award,
 } from "@/components/icons";
 
@@ -404,49 +403,6 @@ export default function Help() {
           </Section>
         </motion.div>
 
-        {/* ── 5. StudyMatch ── */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }}>
-          <Section id="studymatch" icon={Users} title="🤝 StudyMatch — Partenaire d'étude" color="teal">
-            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              Trouvez un partenaire pour mémoriser ensemble. Accessible depuis l'icône 🤝 dans la navigation.
-            </p>
-
-            <div className="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200/60 dark:border-teal-800/40 mb-4">
-              <p className="text-xs font-semibold text-teal-700 dark:text-teal-300 mb-1">Créer votre profil d'étude :</p>
-              <p className="text-xs text-teal-600 dark:text-teal-400 leading-relaxed">
-                Renseignez votre nom d'étude, niveau de mémorisation, disponibilités, objectifs et optionnellement votre numéro WhatsApp (visible uniquement par vos partenaires acceptés).
-              </p>
-            </div>
-
-            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Les 3 onglets :</p>
-
-            <FeatureRow
-              icon={UserPlus}
-              iconColor="bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400"
-              label="Découvrir"
-              description="Parcourez les profils actifs. Un score de compatibilité est calculé selon votre niveau, vos disponibilités et vos objectifs communs. Envoyez une demande de partenariat."
-            />
-            <FeatureRow
-              icon={CheckCheck}
-              iconColor="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400"
-              label="Partenaires"
-              description="Consultez vos partenaires dont la demande est acceptée. Contactez-les directement sur WhatsApp depuis l'application."
-            />
-            <FeatureRow
-              icon={MessageCircle}
-              iconColor="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
-              label="Demandes"
-              description="Gérez les demandes reçues. Acceptez ou refusez les partenariats proposés."
-            />
-
-            <div className="mt-3 p-3 bg-muted/60 rounded-xl border border-border/50">
-              <p className="text-xs font-semibold text-foreground mb-1">🔒 Confidentialité WhatsApp</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Votre numéro WhatsApp n'est visible que par vos partenaires <span className="font-medium text-foreground">acceptés</span>. Les utilisateurs que vous n'avez pas acceptés ne peuvent pas voir votre numéro.
-              </p>
-            </div>
-          </Section>
-        </motion.div>
 
         {/* ── 6. Installation & Hors-ligne ── */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.20 }}>
@@ -562,7 +518,6 @@ export default function Help() {
                 { emoji: "📍", title: "Utilisez les marqueurs", desc: "Placez un marqueur d'arrêt à chaque fin de session pour reprendre exactement là où vous vous êtes arrêté(e)." },
                 { emoji: "🎙️", title: "Variez les récitateurs", desc: "Changez de récitateur dans les Réglages de temps en temps pour vous habituer à différentes prononciations et mélodies." },
                 { emoji: "🧠", title: "Quiz réguliers", desc: "Testez-vous avec les Quiz toutes les semaines pour consolider ce que vous avez mémorisé et identifier les versets à retravailler." },
-                { emoji: "🤝", title: "Trouvez un partenaire", desc: "Via StudyMatch, trouvez un hafiz/hafiza avec le même niveau. Se tester mutuellement accélère considérablement la mémorisation." },
                 { emoji: "⏰", title: "Mémorisez à heure fixe", desc: "Créez une routine quotidienne : mémoriser à la même heure chaque jour (ex : après Fajr) améliore la rétention à long terme." },
               ].map((tip, i) => (
                 <motion.div
