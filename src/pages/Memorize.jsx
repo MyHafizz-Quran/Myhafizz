@@ -4,7 +4,7 @@ import { todayStr } from "@/lib/srs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause } from "@/components/icons";
+import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause, Repeat } from "@/components/icons";
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
@@ -466,6 +466,14 @@ export default function Memorize() {
                     ? `Lecture en cours : ${loopIndex + 1}/${verses.length}`
                     : loopMode === "infinite" ? "Boucle infinie" : "Lecture séquentielle"}
                 </span>
+              </button>
+            )}
+
+            {/* Répétition avancée */}
+            {verses.length > 0 && (
+              <button onClick={() => navigate(`/Repeat?surah=${surahNumber}`)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-surface-container-low text-on-surface-variant hover:bg-surface-container">
+                <Repeat className="w-4 h-4" /><span>Répéter</span>
               </button>
             )}
 

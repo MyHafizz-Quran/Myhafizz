@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpenText, ArrowsClockwise, Books, CheckCircle, CaretRight, Target, SlidersHorizontal, X, Minus, Plus } from "@phosphor-icons/react";
+import { BookOpenText, ArrowsClockwise, Books, CheckCircle, CaretRight, Target, SlidersHorizontal, X, Minus, Plus, Shuffle, Repeat, SquaresFour } from "@phosphor-icons/react";
 import { MemorizationProgress, VerseReview, HifzPlan } from "@/api/entities";
 import { buildSession, goalPace, key } from "@/lib/srs";
 import { GOALS, goalSurahs } from "@/lib/learningData";
@@ -180,6 +180,21 @@ export default function Revision() {
                   </button>
                 );
               })}
+            </div>
+
+            <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mt-6 mb-2">Entraînement</p>
+            <div className="card-flat divide-y-2 divide-border overflow-hidden">
+              {[
+                { to: "/Exercises", icon: Shuffle, t: "Enchaînement", d: "Verset suivant, fin du verset, ordre des mots" },
+                { to: `/Repeat?surah=${session.sabaq[0]?.surah_number || plan?.start_surah || 1}`, icon: Repeat, t: "Répétition audio", d: "Boucle d'un verset ou d'une plage" },
+                { to: "/Strength", icon: SquaresFour, t: "Carte de solidité", d: "Repère tes versets fragiles" },
+              ].map(({ to, icon: I, t, d }) => (
+                <button key={t} onClick={() => { haptic(); navigate(to); }} className="w-full flex items-center gap-3 p-4 text-left active:bg-muted">
+                  <I weight="fill" className="w-6 h-6 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0"><p className="font-extrabold">{t}</p><p className="text-sm text-muted-foreground font-semibold truncate">{d}</p></div>
+                  <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+                </button>
+              ))}
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-4">

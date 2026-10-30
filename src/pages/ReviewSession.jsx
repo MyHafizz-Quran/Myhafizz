@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, SpeakerHigh, Pause, Lightbulb, CheckCircle, Repeat } from "@phosphor-icons/react";
 import { MemorizationProgress, VerseReview, HifzPlan } from "@/api/entities";
-import { buildSession, schedule, maskWords, GRADES, key, todayStr } from "@/lib/srs";
+import { buildSession, schedule, maskWords, GRADES, key, todayStr, strength } from "@/lib/srs";
 import { loadSurah, audioUrl } from "@/lib/learningData";
 import { SURAHS } from "@/components/quranData";
 import { usePreferences } from "@/components/usePreferences";
 import { haptic } from "@/hooks/usePlatform";
 
-const TITLES = { sabaq: "Nouvelle leçon", sabqi: "Révision récente", manzil: "Révision ancienne" };
+const TITLES = { sabaq: "Nouvelle leçon", sabqi: "Révision récente", manzil: "Révision ancienne", weak: "Versets à renforcer" };
 const MASK_LABEL = ["Texte complet", "Premières lettres", "Masqué"];
 
 export default function ReviewSession() {
@@ -28,6 +28,16 @@ export default function ReviewSession() {
   const [queue, setQueue] = useState(null);
   useEffect(() => {
     if (queue || !progress || !reviews || !planFetched) return;
+    if (part === "weak") {
+      const rv = new Map(reviews.map((r) => [key(r.surah_number, r.verse_number), r]));
+      const weak = [];
+      progress.forEach((p) => (p.memorized_verses || []).forEach((v) => {
+        const r = rv.get(key(p.surah_number, v));
+        if (r?.last_grade === 0 || strength(r) < 30) weak.push({ surah_number: p.surah_number, verse_number: v, w: r?.last_grade === 0 ? 0 : 1 });
+      }));
+      setQueue(weak.sort((a, b) => a.w - b.w || a.surah_number - b.surah_number || a.verse_number - b.verse_number).slice(0, 20));
+      return;
+    }
     setQueue(buildSession({ plan, progress, reviews })[part] || []);
   }, [queue, progress, reviews, plan, planFetched, part]);
 
