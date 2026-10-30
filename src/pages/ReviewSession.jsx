@@ -33,7 +33,7 @@ export default function ReviewSession() {
       const weak = [];
       progress.forEach((p) => (p.memorized_verses || []).forEach((v) => {
         const r = rv.get(key(p.surah_number, v));
-        if (r?.last_grade === 0 || strength(r) < 30) weak.push({ surah_number: p.surah_number, verse_number: v, w: r?.last_grade === 0 ? 0 : 1 });
+        if (r && r.last_grade != null && (r.last_grade === 0 || strength(r) < 30)) weak.push({ surah_number: p.surah_number, verse_number: v, w: r?.last_grade === 0 ? 0 : 1 });
       }));
       setQueue(weak.sort((a, b) => a.w - b.w || a.surah_number - b.surah_number || a.verse_number - b.verse_number).slice(0, 20));
       return;

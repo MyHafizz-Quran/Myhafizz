@@ -7,15 +7,16 @@ import { strength, key, todayStr } from "@/lib/srs";
 import { SURAHS } from "@/components/quranData";
 import { haptic } from "@/hooks/usePlatform";
 
-// Niveaux : 0 non mémorisé, 1 fragile (oublié), 2 à consolider, 3 correct, 4 solide
+// Niveaux : 0 non mémorisé, 1 fragile (oublié), 2 à consolider, 3 correct, 4 solide, 5 pas encore révisé
 export const level = (memorized, rv) => {
   if (!memorized) return 0;
-  if (rv?.last_grade === 0) return 1;
+  if (!rv || rv.last_grade == null) return 5;
+  if (rv.last_grade === 0) return 1;
   const s = strength(rv);
   return s < 30 ? 2 : s < 65 ? 3 : 4;
 };
-const CELL = ["bg-muted", "bg-destructive", "bg-primary/30", "bg-primary/60", "bg-primary"];
-const LEGEND = [["Fragile", 1], ["À consolider", 2], ["Correct", 3], ["Solide", 4], ["Non mémorisé", 0]];
+const CELL = ["bg-muted", "bg-destructive", "bg-primary/30", "bg-primary/60", "bg-primary", "bg-card border-2 border-primary/40"];
+const LEGEND = [["Fragile", 1], ["À consolider", 2], ["Correct", 3], ["Solide", 4], ["Pas encore révisé", 5], ["Non mémorisé", 0]];
 
 export default function Strength() {
   const navigate = useNavigate();
