@@ -22,12 +22,13 @@ const rawAuth = client.auth;
 // ---- Compatibility layer: Better Auth stores name/image, the app reads
 // user.user_metadata.full_name / avatar_url (Supabase style). Avatars live in
 // public.profiles.avatar_url (kept out of the auth token).
-let avatarCache = { id: null, url: null };
+let avatarCache = { id: null, url: null, name: null };
 
 function normalizeUser(user) {
   if (!user) return user;
   const meta = { ...(user.user_metadata || {}) };
-  if (!meta.full_name && meta.displayName) meta.full_name = meta.displayName;
+  const cachedName = avatarCache.id === user.id ? avatarCache.name : null;
+  if (!meta.full_name) meta.full_name = meta.displayName || user.name || meta.name || cachedName || undefined;
   const avatar = avatarCache.id === user.id ? avatarCache.url : null;
   if (avatar) meta.avatar_url = avatar;
   else if (!meta.avatar_url && meta.profileImageUrl) meta.avatar_url = meta.profileImageUrl;
@@ -38,10 +39,10 @@ const normalizeSession = (s) => (s ? { ...s, user: normalizeUser(s.user) } : s);
 async function loadAvatar(userId) {
   if (!userId || avatarCache.id === userId) return;
   try {
-    const { data } = await client.from('profiles').select('avatar_url').eq('id', userId).maybeSingle();
-    avatarCache = { id: userId, url: data?.avatar_url || null };
+    const { data } = await client.from('profiles').select('avatar_url, full_name').eq('id', userId).maybeSingle();
+    avatarCache = { id: userId, url: data?.avatar_url || null, name: data?.full_name || null };
   } catch {
-    avatarCache = { id: userId, url: null };
+    avatarCache = { id: userId, url: null, name: null };
   }
 }
 
@@ -62,7 +63,7 @@ const auth = {
     return { ...res, data: { ...res?.data, session: normalizeSession(res?.data?.session), user: normalizeUser(res?.data?.user) } };
   },
   signInWithPassword: (...a) => rawAuth.signInWithPassword(...a),
-  signOut: (...a) => { avatarCache = { id: null, url: null }; return rawAuth.signOut(...a); },
+  signOut: (...a) => { avatarCache = { id: null, url: null, name: null }; return rawAuth.signOut(...a); },
   resetPasswordForEmail: (...a) => rawAuth.resetPasswordForEmail(...a),
   onAuthStateChange(cb) {
     return rawAuth.onAuthStateChange((event, session) => cb(event, normalizeSession(session)));
@@ -89,7 +90,7 @@ const auth = {
       if (uid) {
         const { error } = await client.from('profiles').upsert({ id: uid, avatar_url: data.avatar_url, updated_at: new Date().toISOString() });
         if (error) return { data: { user: null }, error };
-        avatarCache = { id: uid, url: data.avatar_url };
+        avatarCache = { ...avatarCache, id: uid, url: data.avatar_url };
       }
     }
     const baData = {};
@@ -99,7 +100,10 @@ const auth = {
       if (res?.error) return res;
       const { data: s } = await rawAuth.getSession();
       const uid = s?.session?.user?.id;
-      if (uid && 'full_name' in data) await client.from('profiles').upsert({ id: uid, full_name: data.full_name, updated_at: new Date().toISOString() });
+      if (uid && 'full_name' in data) {
+        await client.from('profiles').upsert({ id: uid, full_name: data.full_name, updated_at: new Date().toISOString() });
+        if (avatarCache.id === uid) avatarCache.name = data.full_name;
+      }
     }
     const u = await auth.getUser();
     return { data: { user: u?.data?.user ?? null }, error: null };
