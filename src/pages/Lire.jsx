@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight } from "@phosphor-icons/react";
+import { ArrowLeft, Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight, Target, Medal, CheckCircle } from "@phosphor-icons/react";
+import { ReadingSessions } from "@/api/entities/learning";
+import { getGoal, setGoal, GOAL_CHOICES, todayCount, weekStart, BADGES, earnedBadges, weeklyChallenges } from "@/lib/readingGame";
 import { ReadingLessons } from "@/api/entities";
 import { UNITS, ALL_LESSONS, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
@@ -18,6 +20,14 @@ export default function Lire() {
   const currentId = ALL_LESSONS.find((l) => !done.has(l.id))?.id;
   const xp = rows.reduce((t, r) => t + (r.xp || 0), 0);
   const voice = hasArabicVoice();
+  const { data: sessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
+  const [goal, setGoalState] = useState(getGoal());
+  const [editGoal, setEditGoal] = useState(false);
+  const today = todayCount(sessions);
+  const goalDone = today >= goal;
+  const earned = new Set(earnedBadges(rows).map((b) => b.id));
+  const challenges = weeklyChallenges(sessions);
+  const chDone = challenges.filter((c) => c.done).length;
 
   const open = (l, state) => {
     haptic();
@@ -41,6 +51,33 @@ export default function Lire() {
             <p className="text-sm font-semibold text-muted-foreground">Ton appareil n'a pas de voix arabe installée : les exercices d'écoute seront remplacés par des exercices de lecture.</p>
           </div>
         )}
+
+        {/* Objectif du jour */}
+        <div className="card-flat p-4 mt-4">
+          <div className="flex items-center gap-3">
+            <span className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${goalDone ? "bg-gold-tint text-gold" : "bg-accent text-primary"}`}>{goalDone ? <CheckCircle weight="fill" className="w-6 h-6" /> : <Target weight="fill" className="w-6 h-6" />}</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold">{goalDone ? "Objectif du jour atteint" : "Objectif du jour"}</p>
+              <p className="text-[12.5px] font-semibold text-muted-foreground">{Math.min(today, goal)} / {goal} leçon{goal > 1 ? "s" : ""} aujourd'hui</p>
+            </div>
+            <button onClick={() => { haptic(); setEditGoal(!editGoal); }} className="text-sm font-extrabold text-primary px-2 py-1 rounded-lg hover:bg-muted">Modifier</button>
+          </div>
+          <div className="h-2.5 rounded-full bg-muted overflow-hidden mt-3"><div className={`h-full rounded-full ${goalDone ? "bg-gold" : "bg-primary"}`} style={{ width: `${Math.max(4, Math.min(100, (today / goal) * 100))}%` }} /></div>
+          {editGoal && (
+            <div className="grid grid-cols-4 gap-2 mt-3">
+              {GOAL_CHOICES.map((n) => (
+                <button key={n} onClick={() => { haptic(); setGoal(n); setGoalState(n); setEditGoal(false); }}
+                  className={`h-11 rounded-xl border-2 border-b-4 font-extrabold text-sm ${n === goal ? "border-primary bg-accent text-primary" : "border-border bg-card"}`}>{n} / jour</button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button onClick={() => { haptic(); navigate("/Challenges"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3 text-left press">
+          <span className="w-11 h-11 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><Trophy weight="fill" className="w-6 h-6" /></span>
+          <div className="flex-1 min-w-0"><p className="font-extrabold">Défis de la semaine</p><p className="text-[12.5px] font-semibold text-muted-foreground">{chDone} / {challenges.length} réussis · classement lecture</p></div>
+          <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
+        </button>
 
         {done.size === 0 && !isLoading && (
           <button onClick={() => { haptic(); navigate("/Lecon?id=placement"); }} className="card-flat w-full p-4 mt-4 flex items-center gap-3 text-left press">
@@ -86,6 +123,23 @@ export default function Lire() {
             </section>
           );
         })}
+
+        {/* Badges */}
+        <div className="flex items-baseline justify-between mt-2 mb-2 ml-1">
+          <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Badges</p>
+          <p className="text-xs font-extrabold text-muted-foreground">{earned.size} / {BADGES.length}</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2.5 mb-4">
+          {BADGES.map((b) => {
+            const on = earned.has(b.id);
+            return (
+              <button key={b.id} onClick={() => { haptic(); toast({ title: b.name, description: on ? "Badge obtenu." : b.hint }); }} className="card-flat p-3 flex flex-col items-center text-center press">
+                <span className={`w-11 h-11 rounded-full flex items-center justify-center ${on ? "bg-gold-tint text-gold" : "bg-muted text-muted-foreground"}`}>{on ? <Medal weight="fill" className="w-6 h-6" /> : <Lock weight="bold" className="w-5 h-5" />}</span>
+                <p className={`text-[12px] font-extrabold mt-1.5 leading-tight ${on ? "" : "text-muted-foreground"}`}>{b.name}</p>
+              </button>
+            );
+          })}
+        </div>
 
         <button onClick={() => { haptic(); navigate("/SurahList"); }} className="card-flat w-full p-4 mb-6 text-center press">
           <p className="font-extrabold">Et après ?</p>

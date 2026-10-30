@@ -5,6 +5,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { CaretLeft, Trophy, UsersThree, CalendarBlank, CheckCircle, ArrowsClockwise, Medal } from "@phosphor-icons/react";
 import { SURAHS } from "@/components/quranData";
+import { ReadingLessons } from "@/api/entities";
+import { ReadingSessions } from "@/api/entities/learning";
+import { weekStart, daysLeftInWeek, weeklyChallenges, earnedBadges } from "@/lib/readingGame";
+import { BookOpenText } from "@phosphor-icons/react";
 
 function daysDiff(dateStr) {
   const diff = new Date(dateStr) - new Date();
@@ -63,6 +67,11 @@ export default function Challenges() {
   });
 
   const myParticipations = allParticipants.filter(p => p.user_id === user?.id);
+  const { data: readRows = [] } = useQuery({ queryKey: ["reading-lessons"], queryFn: () => ReadingLessons.list() });
+  const { data: sessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
+  const weekly = weeklyChallenges(sessions);
+  const readBadges = earnedBadges(readRows);
+  const left = daysLeftInWeek();
 
   const done = myParticipations.filter((p) => p.completed).map((p) => challenges.find((c) => c.id === p.challenge_id)).filter(Boolean);
 
@@ -75,10 +84,34 @@ export default function Challenges() {
           <span className="text-sm font-extrabold text-muted-foreground">{challenges.length} en cours</span>
         </div>
 
-        {done.length > 0 && (
+        <div className="flex items-baseline justify-between mt-5 mb-2 ml-1">
+          <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Défis de lecture · cette semaine</p>
+          <p className="text-xs font-extrabold text-muted-foreground">{left} jour{left > 1 ? "s" : ""} restant{left > 1 ? "s" : ""}</p>
+        </div>
+        <div className="card-flat divide-y-2 divide-border">
+          {weekly.map((c) => (
+            <div key={c.id} className="p-4 flex items-center gap-3">
+              <span className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${c.done ? "bg-gold-tint text-gold" : "bg-accent text-primary"}`}>{c.done ? <CheckCircle weight="fill" className="w-6 h-6" /> : <BookOpenText weight="fill" className="w-6 h-6" />}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2"><p className="font-extrabold">{c.title}</p><p className="text-[12.5px] font-extrabold text-muted-foreground shrink-0">{Math.min(c.value, c.target)}/{c.target} {c.unit}</p></div>
+                <p className="text-[12.5px] font-semibold text-muted-foreground">{c.desc}</p>
+                <div className="h-2 rounded-full bg-muted overflow-hidden mt-2"><div className={`h-full rounded-full ${c.done ? "bg-gold" : "bg-primary"}`} style={{ width: `${Math.max(3, c.pct)}%` }} /></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 mt-3">
+          <Link to="/Lire" className="btn-relief flex-1 h-11 bg-primary text-primary-foreground">Faire une leçon</Link>
+          <Link to="/Leaderboard?tab=lecture" className="btn-relief flex-1 h-11 bg-card border-2 border-border text-foreground [--relief-color:hsl(var(--border))]">Classement</Link>
+        </div>
+
+        {(done.length > 0 || readBadges.length > 0) && (
           <>
             <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-5 mb-2 ml-1">Mes badges</p>
             <div className="flex flex-wrap gap-2">
+              {readBadges.map((b) => (
+                <span key={b.id} className="h-9 px-3 rounded-xl bg-gold-tint text-[#8A6400] font-extrabold text-sm flex items-center gap-1.5"><Medal weight="fill" className="w-4 h-4 text-gold" />{b.name}</span>
+              ))}
               {done.map((c) => (
                 <span key={c.id} className="h-9 px-3 rounded-xl bg-gold-tint text-[#8A6400] font-extrabold text-sm flex items-center gap-1.5"><Medal weight="fill" className="w-4 h-4 text-gold" />{c.badge_name || c.title}</span>
               ))}
@@ -86,14 +119,15 @@ export default function Challenges() {
           </>
         )}
 
+        <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-6 mb-2 ml-1">Défis de mémorisation</p>
         {!challenges.length ? (
-          <div className="card-flat p-6 mt-4 text-center">
+          <div className="card-flat p-6 text-center">
             <span className="w-14 h-14 mx-auto rounded-2xl bg-accent text-primary flex items-center justify-center"><Trophy weight="fill" className="w-7 h-7" /></span>
             <p className="font-black text-lg mt-3">Aucun défi pour le moment</p>
             <p className="text-sm font-semibold text-muted-foreground mt-1">Les prochains défis communs apparaîtront ici.</p>
           </div>
         ) : (
-          <div className="space-y-3 mt-4">
+          <div className="space-y-3">
             {challenges.map((challenge) => {
               const surah = SURAHS.find((s) => s.number === challenge.surah_number);
               const participants = allParticipants.filter((p) => p.challenge_id === challenge.id);

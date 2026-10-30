@@ -5,6 +5,8 @@ import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, User
 import { supabase } from "@/api/neonClient";
 import { MemorizationProgress, VerseReview, HifzPlan, ActivityDays, Groups, Assignments, KIND_LABEL } from "@/api/entities";
 import { buildSession, key, todayStr, currentStreak } from "@/lib/srs";
+import { ReadingSessions } from "@/api/entities/learning";
+import { getGoal, todayCount, weekStart } from "@/lib/readingGame";
 import { level } from "@/pages/Strength";
 import { SURAHS } from "@/components/quranData";
 import { haptic } from "@/hooks/usePlatform";
@@ -41,6 +43,8 @@ export default function Dashboard() {
   const { data: plan, isLoading: planLoading } = useQuery({ queryKey: ["hifz-plan"], queryFn: () => HifzPlan.get() });
   const { data: days = [] } = useQuery({ queryKey: ["activity-days"], queryFn: () => ActivityDays.list() });
   const { data: groups = [] } = useQuery({ queryKey: ["groups"], queryFn: () => Groups.mine() });
+  const { data: readSessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
+  const readGoal = getGoal(), readToday = todayCount(readSessions);
   const top = groups.slice(0, 2);
   const { data: lessons = {} } = useQuery({
     queryKey: ["dash-lessons", top.map((g) => g.id).join(",")],
@@ -174,7 +178,10 @@ export default function Dashboard() {
           <span className="w-[46px] h-[46px] rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0 font-arabic text-[26px] leading-none">أ ب</span>
           <div className="flex-1 min-w-0">
             <p className="font-black text-[17px]">Apprendre à lire l'arabe</p>
-            <p className="text-[13px] font-semibold text-muted-foreground">Lettres, voyelles, puis les mots du Coran</p>
+            {readSessions.length ? (<>
+              <p className="text-[13px] font-semibold text-muted-foreground">{readToday >= readGoal ? "Objectif du jour atteint" : `Objectif du jour : ${readToday} / ${readGoal} leçon${readGoal > 1 ? "s" : ""}`}</p>
+              <div className="h-2 rounded-full bg-muted overflow-hidden mt-2"><div className={`h-full rounded-full ${readToday >= readGoal ? "bg-gold" : "bg-primary"}`} style={{ width: `${Math.max(4, Math.min(100, (readToday / readGoal) * 100))}%` }} /></div>
+            </>) : <p className="text-[13px] font-semibold text-muted-foreground">Lettres, voyelles, puis les mots du Coran</p>}
           </div>
           <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
         </button>

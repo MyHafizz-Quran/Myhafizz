@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, SpeakerHigh, CheckCircle, XCircle, Eraser, Lightning, Target } from "@phosphor-icons/react";
+import { X, SpeakerHigh, CheckCircle, XCircle, Eraser, Lightning, Target, Medal } from "@phosphor-icons/react";
 import { ReadingLessons } from "@/api/entities";
+import { ReadingSessions } from "@/api/entities/learning";
+import { getGoal, todayCount, weekStart, earnedBadges } from "@/lib/readingGame";
 import { L, HARAKAT, POSITIONS, formsOf, lessonById, buildLesson, speak, hasArabicVoice, PLACEMENT_UNLOCKS, RULES, playUrl, stopAudio } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 
@@ -175,12 +177,13 @@ export default function Lecon() {
 
   const { data: rows = [] } = useQuery({ queryKey: ["reading-lessons"], queryFn: () => ReadingLessons.list() });
   const prev = rows.find((r) => r.lesson_id === lessonId);
+  const { data: sessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
   const save = useMutation({
     mutationFn: async ({ score, xp }) => {
       if (lessonId !== "placement") return ReadingLessons.complete(lessonId, score, xp, prev);
       if (score >= 80) return ReadingLessons.completeMany(PLACEMENT_UNLOCKS.filter((id) => !rows.some((r) => r.lesson_id === id)));
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["reading-lessons"] }); qc.invalidateQueries({ queryKey: ["activity-days"] }); },
+    onSuccess: () => { ["reading-lessons", "reading-sessions", "activity-days", "reading-leaderboard"].forEach((k) => qc.invalidateQueries({ queryKey: [k] })); },
   });
 
   if (!lesson) return <div className="min-h-[100dvh] flex items-center justify-center font-bold text-muted-foreground">Leçon introuvable.</div>;
@@ -198,7 +201,16 @@ export default function Lecon() {
       const s = stats.current;
       const score = s.graded ? Math.round((s.firstOk / s.graded) * 100) : 100;
       const xp = lessonId === "placement" ? 0 : 10 + (score === 100 ? 5 : 0);
-      setFinished({ score, xp, secs: Math.round((Date.now() - s.start) / 1000) });
+      // gains de fin de leçon : objectif du jour, nouveaux badges
+      let goalReached = false, newBadges = [];
+      if (lessonId !== "placement") {
+        const goal = getGoal(), before = todayCount(sessions);
+        goalReached = before < goal && before + 1 >= goal;
+        const after = [...rows.filter((r) => r.lesson_id !== lessonId), { lesson_id: lessonId, attempts: (prev?.attempts || 0) + 1, best_score: Math.max(score, prev?.best_score || 0) }];
+        const had = new Set(earnedBadges(rows).map((b) => b.id));
+        newBadges = earnedBadges(after).filter((b) => !had.has(b.id));
+      }
+      setFinished({ score, xp, goalReached, newBadges, secs: Math.round((Date.now() - s.start) / 1000) });
       save.mutate({ score, xp });
       return;
     }
@@ -250,6 +262,18 @@ export default function Lecon() {
             {lessonId !== "placement" && <div className="card-flat p-4"><Lightning weight="fill" className="w-6 h-6 text-[#F2B530] mx-auto" /><p className="text-2xl font-black mt-1">+{finished.xp}</p><p className="text-xs font-bold text-muted-foreground">points</p></div>}
             <div className="card-flat p-4"><Target weight="fill" className="w-6 h-6 text-primary mx-auto" /><p className="text-2xl font-black mt-1">{finished.score} %</p><p className="text-xs font-bold text-muted-foreground">du premier coup</p></div>
           </div>
+          {finished.goalReached && (
+            <div className="card-flat w-full p-3.5 mt-3 flex items-center gap-3 text-left border-gold">
+              <span className="w-10 h-10 rounded-xl bg-gold-tint text-gold flex items-center justify-center shrink-0"><Target weight="fill" className="w-5 h-5" /></span>
+              <div><p className="font-extrabold">Objectif du jour atteint</p><p className="text-[12.5px] font-semibold text-muted-foreground">Reviens demain pour garder ta série.</p></div>
+            </div>
+          )}
+          {finished.newBadges?.map((b) => (
+            <div key={b.id} className="card-flat w-full p-3.5 mt-3 flex items-center gap-3 text-left border-gold">
+              <span className="w-10 h-10 rounded-full bg-gold-tint text-gold flex items-center justify-center shrink-0"><Medal weight="fill" className="w-5 h-5" /></span>
+              <div><p className="font-extrabold">Nouveau badge : {b.name}</p><p className="text-[12.5px] font-semibold text-muted-foreground">{b.hint}</p></div>
+            </div>
+          ))}
         </div>
         <div className="px-4 max-w-md mx-auto w-full">
           <button onClick={() => navigate("/Lire", { replace: true })} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground">Continuer</button>

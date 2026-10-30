@@ -82,6 +82,23 @@ export const ReadingLessons = {
     if (!prev) row.completed_at = new Date().toISOString();
     const { data, error } = await supabase.from('reading_lessons').upsert(row, { onConflict: 'user_id,lesson_id' }).select().single();
     if (error) throw error;
+    // journal (objectif du jour, défis, classement) : ne bloque pas la sauvegarde
+    await supabase.from('reading_sessions').insert({ user_id: id, lesson_id, score, xp }).then(() => {}, () => {});
     return data;
+  },
+};
+
+export const ReadingSessions = {
+  /** sessions depuis une date (ISO) */
+  async since(iso) {
+    const id = await uid();
+    const { data, error } = await supabase.from('reading_sessions').select('lesson_id, score, xp, created_at').eq('user_id', id).gte('created_at', iso).order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+  async leaderboard(iso) {
+    const { data, error } = await supabase.rpc('get_reading_leaderboard', { since: iso });
+    if (error) throw error;
+    return data || [];
   },
 };

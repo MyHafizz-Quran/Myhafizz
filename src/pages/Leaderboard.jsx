@@ -1,8 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { supabase } from "@/api/neonClient";
 import { useQuery } from "@tanstack/react-query";
 import { CaretLeft, Trophy } from "@phosphor-icons/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ReadingSessions } from "@/api/entities/learning";
+import { weekStart, daysLeftInWeek } from "@/lib/readingGame";
 import { TOTAL_VERSES } from "@/components/quranData";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -18,6 +20,14 @@ const getFirstName = (fullName) => {
 export default function Leaderboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const [tab, setTabState] = useState(params.get("tab") === "lecture" ? "lecture" : "hifz");
+  const setTab = (t) => { setTabState(t); setParams(t === "lecture" ? { tab: "lecture" } : {}, { replace: true }); };
+  const since = weekStart().toISOString();
+  const { data: readingBoard = [], isLoading: readLoading } = useQuery({
+    queryKey: ["reading-leaderboard", since],
+    queryFn: () => ReadingSessions.leaderboard(since),
+  });
 
   const { data: allProgress = [], isLoading } = useQuery({
     queryKey: ["leaderboard-progress"],
@@ -31,8 +41,8 @@ export default function Leaderboard() {
   });
 
   const uniqueUserIds = useMemo(
-    () => [...new Set(allProgress.map(p => p.user_id))].sort(),
-    [allProgress]
+    () => [...new Set([...allProgress.map(p => p.user_id), ...readingBoard.map(r => r.user_id)])].sort(),
+    [allProgress, readingBoard]
   );
 
   const { data: userDisplayData = [] } = useQuery({
@@ -75,9 +85,11 @@ export default function Leaderboard() {
 
   const rankings = useMemo(() => {
     const totals = {};
-    allProgress.forEach(p => {
+    if (tab === "lecture") readingBoard.forEach(r => { totals[r.user_id] = Number(r.xp) || 0; });
+    else allProgress.forEach(p => {
       totals[p.user_id] = (totals[p.user_id] || 0) + (p.memorized_verses?.length || 0);
     });
+    const max = Math.max(1, ...Object.values(totals));
     return Object.entries(totals)
       .sort(([, a], [, b]) => b - a)
       .map(([userId, total], idx) => {
@@ -94,14 +106,17 @@ export default function Leaderboard() {
           userId,
           total,
           rank: idx + 1,
-          percent: TOTAL_VERSES > 0 ? (total / TOTAL_VERSES) * 100 : 0,
+          percent: tab === "lecture" ? (total / max) * 100 : TOTAL_VERSES > 0 ? (total / TOTAL_VERSES) * 100 : 0,
           isMe,
           displayName,
           initials,
           avatarSrc,
         };
       });
-  }, [allProgress, user, userDisplayMap]);
+  }, [allProgress, readingBoard, tab, user, userDisplayMap]);
+  const loading = tab === "lecture" ? readLoading : isLoading;
+  const left = daysLeftInWeek();
+  const unitLabel = tab === "lecture" ? "points" : "versets";
 
   const me = rankings.find((r) => r.isMe);
   const Avatar = ({ r, size = 40 }) => r.avatarSrc
@@ -115,20 +130,32 @@ export default function Leaderboard() {
           <button onClick={() => navigate(-1)} aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></button>
           <h1 className="text-[26px] font-black">Classement</h1>
         </div>
-        <p className="text-sm font-semibold text-muted-foreground ml-1">Selon le nombre de versets mémorisés</p>
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-muted mt-3">
+          {[["hifz", "Mémorisation"], ["lecture", "Lecture"]].map(([k, t]) => (
+            <button key={k} onClick={() => setTab(k)} className={`h-10 rounded-xl font-extrabold text-sm ${tab === k ? "bg-card text-foreground border-2 border-border" : "text-muted-foreground"}`}>{t}</button>
+          ))}
+        </div>
+        <p className="text-sm font-semibold text-muted-foreground ml-1 mt-2">{tab === "lecture" ? `Points de lecture gagnés cette semaine · remise à zéro dans ${left} jour${left > 1 ? "s" : ""}` : "Selon le nombre de versets mémorisés"}</p>
 
         {me && (
           <div className="card-flat p-4 mt-4 flex items-center gap-3 border-primary">
             <span className="text-[26px] font-black text-primary w-12 text-center">{me.rank}<sup className="text-xs">{me.rank === 1 ? "er" : "e"}</sup></span>
-            <div className="flex-1 min-w-0"><p className="font-black">Ta place</p><p className="text-[12.5px] font-semibold text-muted-foreground">{me.total} versets sur {rankings.length} participants</p></div>
+            <div className="flex-1 min-w-0"><p className="font-black">Ta place</p><p className="text-[12.5px] font-semibold text-muted-foreground">{me.total} {unitLabel} · {rankings.length} participant{rankings.length > 1 ? "s" : ""}</p></div>
             <Trophy weight="fill" className="w-7 h-7 text-gold" />
           </div>
         )}
 
-        {isLoading ? (
+        {tab === "lecture" && !me && !loading && (
+          <button onClick={() => navigate("/Lire")} className="card-flat w-full p-4 mt-4 text-left press">
+            <p className="font-black">Tu n'es pas encore classé cette semaine</p>
+            <p className="text-[12.5px] font-semibold text-muted-foreground">Fais une leçon de lecture pour entrer dans le classement.</p>
+          </button>
+        )}
+
+        {loading ? (
           <div className="space-y-2 mt-4">{[0, 1, 2, 3].map((i) => <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />)}</div>
         ) : !rankings.length ? (
-          <div className="card-flat p-6 mt-4 text-center font-bold text-muted-foreground">Le classement apparaîtra dès les premiers versets mémorisés.</div>
+          <div className="card-flat p-6 mt-4 text-center font-bold text-muted-foreground">{tab === "lecture" ? "Personne n'a encore fait de leçon cette semaine." : "Le classement apparaîtra dès les premiers versets mémorisés."}</div>
         ) : (
           <div className="card-flat overflow-hidden divide-y-2 divide-border mt-4">
             {rankings.slice(0, 50).map((r) => (
