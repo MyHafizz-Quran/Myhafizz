@@ -163,8 +163,9 @@ export default function Revision() {
             <div className="space-y-3">
               {BLOCKS.map(({ part, title, sub, icon: Icon }) => {
                 const items = session[part];
-                const done = !items.length;
-                const disabled = part === "sabaq" && !plan;
+                const disabled0 = part === "sabaq" && !plan;
+                const done = !disabled0 && !items.length;
+                const disabled = disabled0;
                 return (
                   <button key={part} disabled={done || disabled} onClick={() => { haptic(); navigate(`/ReviewSession?part=${part}`); }}
                     className={`card-flat w-full flex items-center gap-4 p-4 text-left press ${done || disabled ? "opacity-70" : ""}`}>

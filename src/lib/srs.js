@@ -55,7 +55,8 @@ export function buildSession({ plan, progress = [], reviews = [] }) {
   // Sabaq : prochains versets non mémorisés selon le programme
   const sabaq = [];
   const dailyNew = plan?.daily_new ?? 3;
-  const learnedToday = reviews.filter((r) => todayStr(new Date(r.created_at || 0)) === today).length;
+  // appris aujourd'hui = ligne créée aujourd'hui et jamais encore notée
+  const learnedToday = reviews.filter((r) => r.last_grade == null && todayStr(new Date(r.created_at || 0)) === today).length;
   const need = Math.max(0, dailyNew - learnedToday);
   if (need) {
     outer: for (const s of planOrder(plan)) {
