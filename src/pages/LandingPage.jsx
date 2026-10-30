@@ -81,7 +81,7 @@ const stats = [
   { value: "114", label: "Sourates" },
   { value: "6236", label: "Versets" },
   { value: "30", label: "Juz" },
-  { value: "♾️", label: "Récompenses" },
+  { value: "∞", label: "Récompenses" },
 ];
 
 const steps = [
@@ -111,16 +111,7 @@ const steps = [
   },
 ];
 
-const colorMap = {
-  emerald: "bg-primary/10 text-primary",
-  amber: "bg-tertiary-fixed text-on-tertiary-fixed",
-  sky: "bg-secondary-container text-on-secondary-container",
-  purple: "bg-primary-container text-on-primary-container",
-  rose: "bg-error-container text-on-error-container",
-  orange: "bg-tertiary-fixed-dim text-on-tertiary-fixed-variant",
-  teal: "bg-primary-fixed text-on-primary-fixed",
-  indigo: "bg-[#e2e2fb] text-[#1d1d6b]",
-};
+const colorMap = new Proxy({}, { get: () => "bg-primary/10 text-primary" });
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -140,7 +131,7 @@ export default function LandingPage() {
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 group">
-            <img src="/icons/icon.svg" alt="MyHafizz" className="w-10 h-10 flex-shrink-0" />
+            <img src="/logo.svg" alt="MyHafizz" className="w-9 h-9 flex-shrink-0" />
             <span className="font-headline font-bold text-lg sm:text-xl text-primary tracking-tight">MyHafizz</span>
           </Link>
 
@@ -298,7 +289,7 @@ export default function LandingPage() {
                 Conçu pour la concentration
               </h2>
               <p className="font-body text-lg text-on-surface-variant max-w-2xl mx-auto">
-                Chaque outil a été pensé pour vous offrir une expérience d'apprentissage fluide, respectant le minimalisme ("No-Line rule").
+                Chaque outil a été pensé pour vous offrir une expérience d'apprentissage fluide, sans distraction.
               </p>
             </motion.div>
 
@@ -389,7 +380,7 @@ export default function LandingPage() {
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-3 bg-white text-primary font-extrabold h-14 px-10 rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75 text-lg"
+                  className="inline-flex items-center gap-2 whitespace-nowrap bg-white text-primary font-extrabold h-14 px-7 rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75 text-lg"
                 >
                   Commencer l'aventure
                   <ArrowRight className="w-5 h-5" />
@@ -406,12 +397,12 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-surface-container rounded-xl flex items-center justify-center">
-                <img src="/logo.svg" alt="MyHafizz" className="w-5 h-5 opacity-70" />
+                <img src="/logo.svg" alt="MyHafizz" className="w-6 h-6" />
               </div>
               <span className="font-headline font-bold text-lg text-primary">MyHafizz</span>
             </div>
 
-            <div className="flex gap-8">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
               <Link to="/login" className="font-label text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">
                 Connexion
               </Link>

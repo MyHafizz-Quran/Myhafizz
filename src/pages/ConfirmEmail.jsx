@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/api/neonClient";
 import { motion } from "framer-motion";
-import { BookOpen, CheckCircle2, XCircle, Loader2, ArrowRight } from "@/components/icons";
+import { CheckCircle2, XCircle, Loader2, ArrowRight } from "@/components/icons";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function ConfirmEmail() {
@@ -79,22 +79,22 @@ export default function ConfirmEmail() {
   }, [status, navigate]);
 
   return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center px-5 pt-safe pb-safe">
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center px-5 pt-safe pb-safe">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md my-auto py-8"
       >
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-accent rounded-2xl mb-4">
-              <BookOpen className="w-8 h-8 text-primary" />
+            <div className="inline-flex items-center justify-center w-20 h-20 mb-4">
+              <img src="/logo.svg" alt="MyHafizz" className="w-20 h-20" />
             </div>
           </Link>
           <h1 className="text-[26px] font-black text-foreground mb-1">MyHafizz</h1>
-          <p className="text-primary font-bold text-sm">Confirmation de votre compte</p>
+          <p className="text-muted-foreground font-semibold text-sm">Confirmation de votre compte</p>
         </div>
 
         {/* Card */}
@@ -112,7 +112,7 @@ export default function ConfirmEmail() {
               </div>
               <div>
                 <p className="text-foreground font-extrabold text-lg">Confirmation en cours...</p>
-                <p className="text-primary font-bold text-sm mt-1">Veuillez patienter quelques instants</p>
+                <p className="text-muted-foreground font-semibold text-sm mt-1">Veuillez patienter quelques instants</p>
               </div>
             </motion.div>
           )}
@@ -170,7 +170,7 @@ export default function ConfirmEmail() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-primary font-bold text-sm mt-2 leading-relaxed"
+                  className="text-muted-foreground font-semibold text-sm mt-2 leading-relaxed"
                 >
                   Bienvenue dans votre parcours de mémorisation du Saint Coran. 
                   Qu'Allah vous facilite !
@@ -192,7 +192,7 @@ export default function ConfirmEmail() {
                     className="h-full bg-primary rounded-full"
                   />
                 </div>
-                <p className="text-primary font-bold text-xs mt-2">
+                <p className="text-muted-foreground font-semibold text-xs mt-2">
                   Redirection dans {countdown}s...
                 </p>
               </motion.div>
@@ -237,7 +237,7 @@ export default function ConfirmEmail() {
                 </Link>
                 <Link
                   to="/"
-                  className="text-primary font-bold text-sm hover:text-primary font-bold transition-colors"
+                  className="text-primary font-bold text-sm  transition-colors"
                 >
                   Retour à l'accueil
                 </Link>
@@ -248,7 +248,7 @@ export default function ConfirmEmail() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-primary font-bold text-xs mt-6">
+        <p className="text-center text-muted-foreground font-semibold text-xs mt-6">
           بسم الله الرحمن الرحيم
         </p>
       </motion.div>

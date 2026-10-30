@@ -40,12 +40,12 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center px-5 pt-safe pb-safe">
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center px-5 pt-safe pb-safe">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md my-auto py-8"
       >
         {/* Logo */}
         <div className="text-center mb-8">
@@ -55,7 +55,7 @@ export default function ResetPassword() {
             </div>
           </Link>
           <h1 className="text-[26px] font-black text-foreground mb-1">MyHafizz</h1>
-          <p className="text-primary font-bold text-sm">Réinitialisation du mot de passe</p>
+          <p className="text-muted-foreground font-semibold text-sm">Réinitialisation du mot de passe</p>
         </div>
 
         {/* Card */}
@@ -81,7 +81,7 @@ export default function ResetPassword() {
             <>
               <div className="mb-6">
                 <h2 className="text-xl font-black text-foreground">Nouveau mot de passe</h2>
-                <p className="text-primary font-bold text-sm mt-1">
+                <p className="text-muted-foreground font-semibold text-sm mt-1">
                   Choisissez un nouveau mot de passe sécurisé pour votre compte.
                 </p>
               </div>
@@ -156,7 +156,7 @@ export default function ResetPassword() {
 
         {/* Back to login */}
         <div className="text-center mt-6">
-          <Link to="/login" className="text-primary font-bold text-xs hover:text-primary font-bold transition-colors">
+          <Link to="/login" className="text-primary font-bold text-xs  transition-colors">
             ← Retour à la connexion
           </Link>
         </div>

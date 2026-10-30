@@ -99,12 +99,12 @@ export default function Login() {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center px-5 pt-safe pb-safe">
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center px-5 pt-safe pb-safe">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md my-auto py-8"
       >
         {/* Logo */}
         <div className="text-center mb-8">
@@ -114,7 +114,7 @@ export default function Login() {
             </div>
           </Link>
           <h1 className="text-[26px] font-black text-foreground mb-1">MyHafizz</h1>
-          <p className="text-primary font-bold text-sm">Mémorisation du Saint Coran</p>
+          <p className="text-muted-foreground font-semibold text-sm">Mémorisation du Saint Coran</p>
         </div>
 
         {/* Card */}
@@ -149,7 +149,7 @@ export default function Login() {
                 Retour à la connexion
               </button>
               <h2 className="text-xl font-black text-foreground">Mot de passe oublié</h2>
-              <p className="text-primary font-bold text-sm mt-1">
+              <p className="text-muted-foreground font-semibold text-sm mt-1">
                 Entrez votre adresse email pour recevoir un lien de réinitialisation.
               </p>
             </div>
@@ -264,7 +264,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => switchMode("forgot")}
-                    className="text-primary font-bold text-xs hover:text-primary font-bold transition-colors"
+                    className="text-primary font-bold text-xs  transition-colors"
                   >
                     Mot de passe oublié ?
                   </button>
@@ -316,7 +316,7 @@ export default function Login() {
 
         {/* Back to landing */}
         <div className="text-center mt-6">
-          <Link to="/" className="text-primary font-bold text-xs hover:text-primary font-bold transition-colors">
+          <Link to="/" className="text-primary font-bold text-xs  transition-colors">
             ← Retour à l'accueil
           </Link>
         </div>
