@@ -3,10 +3,10 @@
 //   • App shell assets (JS/CSS/HTML)    → Network First (8s timeout), Cache Fallback
 //   • Quran API (alquran.cloud)         → Stale-While-Revalidate
 //   • Audio (cdn.islamic.network)       → Cache First, Network Fallback
-//   • Supabase API                      → Network Only (auth/data, pass-through)
+//   • Neon Auth / Data API              → Network Only (auth/data, pass-through)
 
 // Version timestamp — update this on each deployment to bust stale caches.
-const SW_VERSION = "20260314";
+const SW_VERSION = "20261030";
 
 const CACHE_STATIC = `myhafizz-static-v${SW_VERSION}`;
 const CACHE_API = `myhafizz-api-v${SW_VERSION}`;
@@ -104,9 +104,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Supabase → Network Only (never cache auth/db requests)
+  // Neon Auth / Data API → Network Only (never cache auth/db requests)
   // Must use event.respondWith() to avoid requests hanging on mobile browsers
-  if (url.hostname.endsWith("supabase.co")) {
+  if (url.hostname.endsWith("neon.tech") || url.hostname.endsWith("neon.build")) {
     event.respondWith(fetch(request).catch(() =>
       new Response(JSON.stringify({ error: "Network unavailable" }), {
         status: 503,
