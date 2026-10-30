@@ -282,6 +282,17 @@ export default function Memorize() {
   useEffect(() => {
     if (verses.length === 0) return;
     if (hasRestoredRef.current === surahNumber) return; // already restored for this surah
+    const verseParam = parseInt(new URLSearchParams(window.location.search).get("verse"), 10);
+    if (verseParam > 1 && verseParam <= verses.length) {
+      hasRestoredRef.current = surahNumber;
+      const idx = verseParam - 1;
+      setVisibleCount(prev => Math.max(prev, idx + 5));
+      setTimeout(() => {
+        const el = document.getElementById(`verse-${idx}`);
+        if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("verse-flash"); setTimeout(() => el.classList.remove("verse-flash"), 1800); }
+      }, 250);
+      return;
+    }
     const session = getReadingSession();
     if (!session || session.surahNumber !== surahNumber) return;
     hasRestoredRef.current = surahNumber;

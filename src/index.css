@@ -318,3 +318,6 @@ html.full-bleed .fixed.left-0.right-0, html.full-bleed .fixed.inset-x-0 { left: 
 .tj-ghunnah { color: #FF7E1E; }
 .dark .tj-madda_necessary { color: #6F7BFF; } .dark .tj-madda_obligatory { color: #6F8FFF; }
 .tj-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: currentColor; }
+
+@keyframes verseFlash { 0%,60% { box-shadow: 0 0 0 3px hsl(var(--primary)); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.verse-flash { animation: verseFlash 1.8s ease-out; border-radius: 16px; }
