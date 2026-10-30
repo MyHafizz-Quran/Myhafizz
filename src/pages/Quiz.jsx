@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MemorizationProgress } from "@/api/entities";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeft, Brain, Trophy, RefreshCw, ChevronRight,
-  CheckCircle2, XCircle, Lightbulb, Zap, Target, BookOpen, Loader2,
-  Mic, MicOff, Keyboard
-} from "@/components/icons";
+import { Link, useNavigate } from "react-router-dom";
+import { X, Brain, Trophy, ArrowsClockwise, CheckCircle, XCircle, Lightbulb, SpinnerGap, Microphone, Stop, Keyboard, Star } from "@phosphor-icons/react";
 import { SURAHS } from "@/components/quranData";
 
 // ── Normalisation arabe ──────────────────────────────────────────────────────
@@ -34,21 +29,6 @@ function scoreAnswer(answer, correct) {
   return Math.round((matches / cWords.length) * 100);
 }
 
-function getScoreInfo(score) {
-  if (score === 100) return { label: "Parfait !", icon: "🌟", color: "emerald" };
-  if (score >= 80)  return { label: "Excellent !", icon: "✅", color: "emerald" };
-  if (score >= 60)  return { label: "Bien !", icon: "👍", color: "amber" };
-  if (score >= 40)  return { label: "Passable", icon: "😐", color: "orange" };
-  return { label: "À retravailler", icon: "📖", color: "red" };
-}
-
-const COLOR_MAP = {
-  emerald: { text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", border: "border-emerald-200 dark:border-emerald-800", bar: "bg-emerald-500" },
-  amber:   { text: "text-amber-600 dark:text-amber-400",   bg: "bg-amber-50 dark:bg-amber-900/20",   border: "border-amber-200 dark:border-amber-800",   bar: "bg-amber-400" },
-  orange:  { text: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-900/20", border: "border-orange-200 dark:border-orange-800", bar: "bg-orange-400" },
-  red:     { text: "text-red-600 dark:text-red-400",       bg: "bg-red-50 dark:bg-red-900/20",       border: "border-red-200 dark:border-red-800",       bar: "bg-red-400" },
-};
-
 const PROMPT_WORDS = 4;
 const MAX_QUESTIONS = 10;
 
@@ -64,24 +44,24 @@ async function fetchSurahVerses(surahNum) {
 }
 
 // ── Composant Header ─────────────────────────────────────────────────────────
-function QuizHeader() {
+function Shell({ children, footer, phase, qIndex, total, onQuit }) {
   return (
-    <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
-        <Link to="/Dashboard">
-          <button className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-        </Link>
-        <Brain className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">Quiz Hifdh</h1>
+    <div className="fixed inset-0 bg-card flex flex-col">
+      <div className="max-w-2xl w-full mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] flex items-center gap-3">
+        <button onClick={onQuit} aria-label="Quitter" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center text-muted-foreground active:bg-muted"><X weight="bold" className="w-6 h-6" /></button>
+        {(phase === "question" || phase === "result") && (
+          <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((qIndex + (phase === "result" ? 1 : 0)) / total) * 100}%` }} /></div>
+        )}
+        {(phase === "question" || phase === "result") && <span className="font-black text-muted-foreground text-sm">{qIndex + 1}/{total}</span>}
       </div>
+      <div className="flex-1 overflow-y-auto"><div className="max-w-2xl mx-auto px-4 py-4">{children}</div></div>
+      {footer}
     </div>
   );
 }
 
-// ── Page principale ──────────────────────────────────────────────────────────
 export default function Quiz() {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState("intro"); // intro | loading | question | result | summary
   const [questions, setQuestions] = useState([]);
   const [qIndex, setQIndex] = useState(0);
@@ -267,410 +247,134 @@ export default function Quiz() {
     clearInterval(recordingTimerRef.current);
   }
 
-  // ── INTRO ────────────────────────────────────────────────────────────────
+  const total = questions.length;
+  const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const good = result && result.score >= 80;
+  const mid = result && result.score >= 50 && result.score < 80;
+
   if (phase === "intro" || phase === "loading") {
     return (
-      <div className="min-h-screen bg-background">
-        <QuizHeader />
-        <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 space-y-5">
-          {/* Hero */}
-          <div className="bg-emerald-900 rounded-3xl p-7 text-center">
-            <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Brain className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Quiz de mémorisation</h2>
-            <p className="text-emerald-300/80 text-sm leading-relaxed">
-              L'application affiche le début d'un verset mémorisé — récitez la suite pour tester votre hifdh.
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { icon: Target, label: "Versets mémorisés", value: isLoadingProgress ? "…" : totalMemorized, c: "text-emerald-500" },
-              { icon: Zap,    label: "Questions/quiz",    value: Math.min(MAX_QUESTIONS, totalMemorized) || "—", c: "text-amber-500" },
-              { icon: Trophy, label: "Score max",         value: "100%", c: "text-sky-500" },
-            ].map(({ icon: Icon, label, value, c }) => (
-              <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-3.5 text-center">
-                <Icon className={`w-5 h-5 mx-auto mb-1.5 ${c}`} />
-                <p className="text-lg font-bold text-gray-900 dark:text-white">{value}</p>
-                <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* How it works */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-3">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Comment ça marche</p>
-            {[
-              "Un verset mémorisé est affiché partiellement",
-              "Récitez la suite à voix haute 🎙️ ou tapez en arabe",
-              "Votre récitation est convertie en texte et comparée",
-              "Un score de précision vous est attribué",
-              "Vibration si la réponse est incorrecte 📳",
-            ].map((txt, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{txt}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Error */}
-          {loadError && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
-              <p className="text-sm text-red-700 dark:text-red-400">{loadError}</p>
-            </div>
+      <Shell phase={phase} qIndex={qIndex} total={questions.length} onQuit={() => { stopRecording(); navigate(-1); }} footer={
+        <div className="max-w-2xl w-full mx-auto px-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
+          {totalMemorized > 0 ? (
+            <button disabled={phase === "loading"} onClick={startQuiz} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground disabled:opacity-70">
+              {phase === "loading" ? <><SpinnerGap weight="bold" className="w-5 h-5 animate-spin" />Préparation…</> : "Commencer le quiz"}
+            </button>
+          ) : (
+            <Link to="/SurahList" className="btn-relief w-full h-[52px] bg-primary text-primary-foreground">Mémoriser un premier verset</Link>
           )}
+        </div>
+      }>
+        <div className="text-center pt-6">
+          <span className="w-20 h-20 mx-auto rounded-3xl bg-accent text-primary flex items-center justify-center"><Brain weight="fill" className="w-11 h-11" /></span>
+          <h1 className="text-[26px] font-black mt-4">Quiz de récitation</h1>
+          <p className="font-semibold text-muted-foreground mt-2 max-w-sm mx-auto">On te donne le début d'un verset que tu as mémorisé. Complète la suite, au clavier ou à voix haute.</p>
+        </div>
+        <div className="card-flat flex mt-6">
+          <div className="flex-1 p-3 text-center"><p className="text-[22px] font-black">{isLoadingProgress ? "…" : totalMemorized}</p><p className="text-[11.5px] font-bold text-muted-foreground">versets disponibles</p></div>
+          <div className="flex-1 p-3 text-center border-l-2 border-border"><p className="text-[22px] font-black">{Math.min(MAX_QUESTIONS, totalMemorized)}</p><p className="text-[11.5px] font-bold text-muted-foreground">questions</p></div>
+        </div>
+        {speechSupported && (
+          <div className="grid grid-cols-2 gap-1 p-1 rounded-[14px] bg-muted mt-4">
+            {[["audio", "À voix haute", Microphone], ["text", "Au clavier", Keyboard]].map(([k, l, I]) => (
+              <button key={k} onClick={() => setMode(k)} className={`h-10 rounded-[10px] text-sm font-extrabold flex items-center justify-center gap-1.5 ${mode === k ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}><I weight="fill" className="w-4 h-4" />{l}</button>
+            ))}
+          </div>
+        )}
+        {loadError && <p className="mt-4 text-sm font-bold text-destructive text-center">{loadError}</p>}
+      </Shell>
+    );
+  }
 
-          {/* CTA */}
-          {isLoadingProgress ? (
-            <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 text-emerald-500 animate-spin" /></div>
-          ) : totalMemorized === 0 ? (
-            <div className="text-center py-4 space-y-3">
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Vous n'avez pas encore de versets mémorisés.</p>
-              <Link to="/SurahList">
-                <button className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold">
-                  <BookOpen className="w-4 h-4" /> Commencer à mémoriser
-                </button>
-              </Link>
+  if (phase === "summary") {
+    const perfect = scores.filter((x) => x >= 80).length;
+    return (
+      <Shell phase={phase} qIndex={qIndex} total={questions.length} onQuit={() => { stopRecording(); navigate(-1); }} footer={
+        <div className="max-w-2xl w-full mx-auto px-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] space-y-2">
+          <button onClick={startQuiz} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground"><ArrowsClockwise weight="bold" className="w-5 h-5" />Nouveau quiz</button>
+          <Link to="/Revision" className="flex items-center justify-center h-12 font-extrabold text-muted-foreground">Retour aux révisions</Link>
+        </div>
+      }>
+        <div className="text-center pt-8">
+          {avg >= 80 ? <Trophy weight="fill" className="w-20 h-20 mx-auto text-gold" /> : <Star weight="fill" className="w-20 h-20 mx-auto text-gold" />}
+          <h1 className="text-[28px] font-black mt-3">{avg >= 80 ? "Excellent travail" : avg >= 50 ? "Bon entraînement" : "Continue à réviser"}</h1>
+          <p className="font-semibold text-muted-foreground mt-1">{perfect} réponse{perfect > 1 ? "s" : ""} juste{perfect > 1 ? "s" : ""} sur {total}</p>
+        </div>
+        <div className="card-flat flex mt-6">
+          <div className="flex-1 p-3 text-center"><p className="text-[22px] font-black text-primary">{avg} %</p><p className="text-[11.5px] font-bold text-muted-foreground">précision</p></div>
+          <div className="flex-1 p-3 text-center border-l-2 border-border"><p className="text-[22px] font-black">{total}</p><p className="text-[11.5px] font-bold text-muted-foreground">questions</p></div>
+        </div>
+        <div className="card-flat overflow-hidden divide-y-2 divide-border mt-3">
+          {questions.map((q, i) => (
+            <div key={i} className="flex items-center gap-3 p-3">
+              {scores[i] >= 80 ? <CheckCircle weight="fill" className="w-6 h-6 text-primary shrink-0" /> : <XCircle weight="fill" className="w-6 h-6 text-destructive shrink-0" />}
+              <p className="flex-1 font-extrabold truncate">{q.surah.englishName}, verset {q.ayah.numberInSurah}</p>
+              <span className="font-black text-sm text-muted-foreground">{scores[i]} %</span>
+            </div>
+          ))}
+        </div>
+      </Shell>
+    );
+  }
+
+  const q = questions[qIndex];
+  const prompt = q.words.slice(0, PROMPT_WORDS).join(" ");
+  const rest = q.words.slice(PROMPT_WORDS);
+  return (
+    <Shell phase={phase} qIndex={qIndex} total={questions.length} onQuit={() => { stopRecording(); navigate(-1); }} footer={
+      phase === "result" ? (
+        <div className={`border-t-2 ${good ? "bg-accent border-primary/30" : "bg-[#FDECEC] border-destructive/30 dark:bg-destructive/15"}`}>
+          <div className="max-w-2xl mx-auto px-4 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
+            <p className={`font-black text-xl flex items-center gap-2 ${good ? "text-accent-foreground" : "text-destructive"}`}>
+              {good ? <CheckCircle weight="fill" className="w-7 h-7" /> : <XCircle weight="fill" className="w-7 h-7" />}
+              {good ? (result.score === 100 ? "Parfait" : "Bien joué") : mid ? "Presque" : "Pas tout à fait"} · {result.score} %
+            </p>
+            {!good && <><p className={`text-sm font-extrabold mt-2 ${good ? "" : "text-destructive"}`}>Bonne réponse :</p><p className="font-arabic text-2xl leading-loose text-foreground" dir="rtl">{result.correct}</p></>}
+            <button onClick={nextQuestion} className={`btn-relief w-full h-[52px] mt-3 ${good ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground [--relief-color:#B8343A]"}`}>
+              {qIndex + 1 >= total ? "Voir le résultat" : "Continuer"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-2xl w-full mx-auto px-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
+          <button disabled={!answer.trim()} onClick={submitAnswer} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground disabled:opacity-50 disabled:shadow-none">Vérifier</button>
+        </div>
+      )
+    }>
+      <p className="font-black text-[22px]">Complète le verset</p>
+      <p className="text-sm font-semibold text-muted-foreground">{q.surah.englishName} · verset {q.ayah.numberInSurah}</p>
+      <div className="rounded-2xl bg-background border-2 border-border p-4 mt-4">
+        <p className="font-arabic text-[28px] leading-[2.1] text-right" dir="rtl">{prompt} <span className="text-muted-foreground">…</span></p>
+      </div>
+
+      {phase === "question" && (
+        <>
+          {mode === "audio" && speechSupported ? (
+            <div className="text-center mt-6">
+              <button onClick={isRecording ? stopRecording : startRecording} aria-label={isRecording ? "Arrêter" : "Réciter"}
+                className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center ${isRecording ? "bg-destructive text-destructive-foreground shadow-[0_4px_0_#B8343A]" : "bg-primary text-primary-foreground shadow-[0_4px_0_var(--primary-lip)]"}`}>
+                {isRecording ? <Stop weight="fill" className="w-8 h-8" /> : <Microphone weight="fill" className="w-9 h-9" />}
+              </button>
+              <p className="font-extrabold text-muted-foreground mt-3">{isRecording ? `J'écoute… ${recordingTime} s` : "Touche et récite la suite"}</p>
+              {answer && <p className="font-arabic text-2xl leading-loose mt-3" dir="rtl">{answer}</p>}
+              <button onClick={() => { stopRecording(); setMode("text"); }} className="mt-3 text-sm font-extrabold text-primary">Écrire plutôt</button>
             </div>
           ) : (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={startQuiz}
-              disabled={phase === "loading"}
-              className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-bold text-base shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-70"
-            >
-              {phase === "loading" ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Chargement des versets...</>
-              ) : (
-                "Lancer le quiz 🚀"
-              )}
-            </motion.button>
+            <>
+              <textarea ref={textareaRef} value={answer} onChange={(e) => setAnswer(e.target.value)} dir="rtl" rows={3} placeholder="اكتب بقية الآية…"
+                className="w-full mt-4 p-4 rounded-2xl border-2 border-border bg-card font-arabic text-2xl leading-loose focus:outline-none focus:border-primary resize-none" />
+              {speechSupported && <button onClick={() => setMode("audio")} className="mt-2 text-sm font-extrabold text-primary">Réciter à voix haute</button>}
+            </>
           )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── SUMMARY ──────────────────────────────────────────────────────────────
-  if (phase === "summary") {
-    const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-    const perfect = scores.filter(s => s === 100).length;
-    const good    = scores.filter(s => s >= 80 && s < 100).length;
-    const poor    = scores.filter(s => s < 40).length;
-    return (
-      <div className="min-h-screen bg-background">
-        <QuizHeader />
-        <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 space-y-5">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <div className={`rounded-3xl p-8 text-center mb-5 ${avg >= 80 ? "bg-emerald-900 " : avg >= 50 ? "bg-amber-700 " : "bg-gray-800 "}`}>
-              <Trophy className="w-12 h-12 text-amber-300 mx-auto mb-4" />
-              <p className="text-white/70 text-sm mb-1">Score final</p>
-              <p className="text-6xl font-black text-white">{avg}<span className="text-3xl text-white/60">%</span></p>
-              <p className="text-white/70 text-sm mt-2">{scores.length} question{scores.length > 1 ? "s" : ""} répondue{scores.length > 1 ? "s" : ""}</p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              {[
-                { val: perfect, label: "Parfait 🌟", c: "text-emerald-600 dark:text-emerald-400" },
-                { val: good,    label: "Bien ✅",    c: "text-amber-600 dark:text-amber-400" },
-                { val: poor,    label: "À revoir 📖", c: "text-red-500 dark:text-red-400" },
-              ].map(({ val, label, c }) => (
-                <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 text-center">
-                  <p className={`text-2xl font-black ${c}`}>{val}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{label}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-5">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Détail par question</p>
-              <div className="space-y-2">
-                {scores.map((s, i) => {
-                  const bar = s >= 80 ? "bg-emerald-500" : s >= 50 ? "bg-amber-400" : "bg-red-400";
-                  const tc  = s >= 80 ? "text-emerald-600" : s >= 50 ? "text-amber-600" : "text-red-500";
-                  return (
-                    <div key={i} className="flex items-center gap-3">
-                      <span className="text-xs text-gray-400 w-6 text-right flex-shrink-0">Q{i + 1}</span>
-                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
-                        <div className={`h-2 rounded-full ${bar}`} style={{ width: `${s}%` }} />
-                      </div>
-                      <span className={`text-xs font-bold w-10 text-right flex-shrink-0 ${tc}`}>{s}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <motion.button whileTap={{ scale: 0.97 }} onClick={startQuiz}
-                className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20">
-                <RefreshCw className="w-4 h-4" /> Rejouer
-              </motion.button>
-              <Link to="/Dashboard" className="flex-1">
-                <button className="w-full py-4 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold">
-                  Accueil
-                </button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── QUESTION / RESULT ────────────────────────────────────────────────────
-  const q = questions[qIndex];
-  if (!q) return null;
-  const promptText  = q.words.slice(0, PROMPT_WORDS).join(" ");
-  const hintText    = q.words.slice(PROMPT_WORDS, PROMPT_WORDS + 4).join(" ") + "...";
-
-  return (
-    <div className="min-h-screen bg-background">
-      <QuizHeader />
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
-
-        {/* Progress */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 bg-gray-200 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
-            <div
-              className="h-2 rounded-full bg-emerald-400 transition-all duration-500"
-              style={{ width: `${(qIndex / questions.length) * 100}%` }}
-            />
-          </div>
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex-shrink-0">
-            {qIndex + 1} / {questions.length}
-          </span>
-        </div>
-
-        <AnimatePresence mode="wait">
-          <motion.div key={`${qIndex}-${phase}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-
-            {/* Surah badge */}
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-bold">{q.surah.number}</span>
-              </div>
-              <span className="text-sm font-bold text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Amiri', serif" }}>{q.surah.name}</span>
-              <span className="text-gray-400 text-xs">— Verset {q.ayah.numberInSurah}</span>
-            </div>
-
-            {/* Prompt */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-              <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-3">Début du verset</p>
-              <p dir="rtl" className="text-3xl sm:text-4xl leading-[2.2] text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif" }}>
-                {promptText}
-                <span className="text-emerald-400 ml-2">...</span>
-              </p>
-            </div>
-
-            {/* Answer input */}
-            {phase === "question" && (
-              <>
-                {/* Mode Toggle */}
-                {speechSupported && (
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => { setMode("text"); stopRecording(); }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        mode === "text"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
-                          : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      }`}
-                    >
-                      <Keyboard className="w-3.5 h-3.5" /> Texte
-                    </button>
-                    <button
-                      onClick={() => setMode("audio")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        mode === "audio"
-                          ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
-                          : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      }`}
-                    >
-                      <Mic className="w-3.5 h-3.5" /> Audio
-                    </button>
-                  </div>
-                )}
-
-                {/* Audio mode UI */}
-                {mode === "audio" && (
-                  <div className="flex flex-col items-center gap-4 py-2">
-                    {/* Mic button */}
-                    <div className="relative flex items-center justify-center">
-                      {isRecording && (
-                        <motion.div
-                          animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.2, 0.5] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                          className="absolute w-24 h-24 rounded-full bg-red-400/30"
-                        />
-                      )}
-                      <motion.button
-                        whileTap={{ scale: 0.93 }}
-                        animate={isRecording ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-                        transition={isRecording ? { duration: 1.2, repeat: Infinity } : {}}
-                        onClick={isRecording ? stopRecording : startRecording}
-                        className={`relative w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-colors ${
-                          isRecording
-                            ? "bg-red-500 shadow-red-500/30"
-                            : "bg-emerald-500 shadow-emerald-500/30"
-                        }`}
-                      >
-                        {isRecording
-                          ? <MicOff className="w-8 h-8 text-white" />
-                          : <Mic className="w-8 h-8 text-white" />
-                        }
-                      </motion.button>
-                    </div>
-
-                    {/* Status text */}
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                      {isRecording
-                        ? `🔴 Écoute en cours... ${recordingTime}s`
-                        : "Appuyez pour réciter"
-                      }
-                    </p>
-
-                    {/* Live transcript preview */}
-                    {answer.trim() && (
-                      <div className="w-full bg-muted/50 rounded-xl p-3">
-                        <p dir="rtl" className="text-base leading-loose text-gray-800 dark:text-gray-200 text-center"
-                          style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif" }}>
-                          {answer}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Optional text correction */}
-                    <div className="w-full">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 text-center">
-                        💡 Ou tapez votre réponse
-                      </p>
-                      <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden focus-within:border-emerald-400 dark:focus-within:border-emerald-600 transition-colors">
-                        <textarea
-                          value={answer}
-                          onChange={e => setAnswer(e.target.value)}
-                          dir="rtl"
-                          rows={3}
-                          placeholder="اكتب هنا..."
-                          className="w-full px-4 py-3 text-xl leading-loose bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 resize-none outline-none"
-                          style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif" }}
-                          onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && answer.trim()) submitAnswer(); }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Text mode UI */}
-                {mode === "text" && (
-                  <div className="bg-white dark:bg-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden focus-within:border-emerald-400 dark:focus-within:border-emerald-600 transition-colors">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pt-3">Votre récitation</p>
-                    <textarea
-                      ref={textareaRef}
-                      value={answer}
-                      onChange={e => setAnswer(e.target.value)}
-                      dir="rtl"
-                      rows={4}
-                      placeholder="اكتب هنا..."
-                      className="w-full px-4 pb-4 pt-2 text-2xl leading-loose bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 resize-none outline-none"
-                      style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif" }}
-                      onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && answer.trim()) submitAnswer(); }}
-                    />
-                  </div>
-                )}
-
-                {showHint && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-                    <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p dir="rtl" className="text-base text-amber-700 dark:text-amber-400" style={{ fontFamily: "'Amiri', serif" }}>{hintText}</p>
-                  </motion.div>
-                )}
-
-                <div className="flex gap-3">
-                  <button onClick={() => setShowHint(v => !v)}
-                    className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    <Lightbulb className="w-4 h-4" /> Indice
-                  </button>
-                  <motion.button whileTap={{ scale: 0.97 }} onClick={submitAnswer} disabled={!answer.trim()}
-                    className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20">
-                    Valider <ChevronRight className="w-4 h-4" />
-                  </motion.button>
-                </div>
-              </>
-            )}
-
-            {/* Result */}
-            {phase === "result" && result && (() => {
-              const info  = getScoreInfo(result.score);
-              const cm    = result.score < 80
-                ? { text: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/30", border: "border-2 border-red-400", bar: "bg-red-400" }
-                : COLOR_MAP[info.color];
-              return (
-                <>
-                  <motion.div
-                    initial={{ x: 0 }}
-                    animate={result.score < 80
-                      ? { x: [0, -12, 12, -12, 12, -6, 6, 0] }
-                      : { scale: [0.95, 1.02, 1] }
-                    }
-                    transition={{ duration: result.score < 80 ? 0.5 : 0.4 }}
-                  >
-                    <div className={`rounded-2xl border p-5 space-y-4 ${cm.bg} ${cm.border}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {result.score >= 80
-                            ? (
-                              <motion.div
-                                initial={{ scale: 0.5 }}
-                                animate={{ scale: [0.5, 1.2, 1] }}
-                                transition={{ duration: 0.4 }}
-                              >
-                                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                              </motion.div>
-                            )
-                            : <XCircle className="w-5 h-5 text-red-400" />
-                          }
-                          <span className={`font-bold text-sm ${cm.text}`}>{info.icon} {info.label}</span>
-                        </div>
-                        <span className={`text-2xl font-black ${cm.text}`}>{result.score}%</span>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Verset complet</p>
-                        <p dir="rtl" className="text-xl leading-loose text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Amiri', serif" }}>
-                          <span className="text-gray-400">{result.prompt} </span>
-                          <span className="text-emerald-700 dark:text-emerald-400">{result.correct}</span>
-                        </p>
-                      </div>
-
-                      {result.given && (
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Votre réponse</p>
-                          <p dir="rtl" className={`text-base leading-loose ${result.score < 80 ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`} style={{ fontFamily: "'Amiri', serif" }}>{result.given}</p>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-
-                  <motion.button whileTap={{ scale: 0.97 }} onClick={nextQuestion}
-                    className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
-                    {qIndex + 1 >= questions.length
-                      ? <><Trophy className="w-4 h-4" /> Voir les résultats</>
-                      : <>Question suivante <ChevronRight className="w-4 h-4" /></>
-                    }
-                  </motion.button>
-                </>
-              );
-            })()}
-
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </div>
+          <button onClick={() => setShowHint(!showHint)} className="mt-4 h-10 px-3 rounded-xl border-2 border-border bg-card text-sm font-extrabold flex items-center gap-1.5">
+            <Lightbulb weight="fill" className="w-4 h-4 text-gold" />{showHint ? "Masquer l'indice" : "Indice"}
+          </button>
+          {showHint && <p className="font-arabic text-2xl mt-2 text-muted-foreground" dir="rtl">{rest.slice(0, 2).join(" ")} …</p>}
+        </>
+      )}
+      {phase === "result" && result.given && (
+        <div className="mt-4"><p className="text-sm font-extrabold text-muted-foreground">Ta réponse</p><p className="font-arabic text-2xl leading-loose" dir="rtl">{result.given}</p></div>
+      )}
+    </Shell>
   );
 }

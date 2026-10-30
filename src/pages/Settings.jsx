@@ -1,164 +1,50 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Type, Languages, CheckCircle2, Download, Trash2, HardDrive, Loader2, AlignJustify, Contrast, ToggleLeft, ToggleRight, AlignVerticalSpaceAround, Play, Square, Palette } from "@/components/icons";
+import { AnimatePresence, motion } from "framer-motion";
+import { CaretLeft, CaretRight, Moon, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
-import {
-  isSurahCached,
-  cacheSurah,
-  clearAllOfflineData,
-  getOfflineStorageSize,
-} from "@/lib/offlineStorage";
+import { isSurahCached, cacheSurah, clearAllOfflineData, getOfflineStorageSize } from "@/lib/offlineStorage";
 import { useToast } from "@/components/ui/use-toast";
 import { getArabicFontClass, getArabicSizeClass, getLineSpacingClass, getTextContrastClass } from "@/lib/arabicDisplayUtils";
+import { haptic } from "@/hooks/usePlatform";
 
-// ─── SegmentedControl ─────────────────────────────────────────────────────────
-function SegmentedControl({ options, value, onChange }) {
+function Seg({ options, value, onChange }) {
   return (
-    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5 gap-0.5">
-      {options.map(opt => (
-        <button
-          key={opt.value}
-          onClick={() => onChange(opt.value)}
-          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all ${
-            value === opt.value
-              ? "bg-white dark:bg-gray-700 text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {opt.label}
-        </button>
+    <div className="grid gap-1 p-1 rounded-[14px] bg-muted" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0,1fr))` }}>
+      {options.map((o) => (
+        <button key={o.value} type="button" onClick={() => { haptic(); onChange(o.value); }}
+          className={`h-9 rounded-[10px] text-[13px] font-extrabold truncate px-1 ${value === o.value ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>{o.label}</button>
       ))}
     </div>
   );
 }
-
-// ─── SegmentRow ───────────────────────────────────────────────────────────────
-function SegmentRow({ icon, iconBg, label, sublabel, options, value, onChange }) {
+function Switch({ on, onClick, label }) {
   return (
-    <div className="py-3">
-      <div className="flex items-center gap-3 mb-2">
-        <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground leading-tight">{label}</p>
-          {sublabel && <p className="text-xs text-muted-foreground leading-tight mt-0.5">{sublabel}</p>}
-        </div>
-      </div>
-      <SegmentedControl options={options} value={value} onChange={onChange} />
+    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => { haptic(); onClick(); }}
+      className={`relative w-[52px] h-[30px] rounded-full shrink-0 transition-colors ${on ? "bg-primary" : "bg-border"}`}>
+      <span className={`absolute top-[3px] left-[3px] w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${on ? "translate-x-[22px]" : ""}`} />
+    </button>
+  );
+}
+const Ico = ({ icon: I }) => <span className="w-[38px] h-[38px] rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><I weight="fill" className="w-[21px] h-[21px]" /></span>;
+function ToggleRow({ icon, label, sub, value, onChange }) {
+  return (
+    <div className="flex items-center gap-3 p-3.5">
+      <Ico icon={icon} />
+      <div className="flex-1 min-w-0"><p className="font-extrabold">{label}</p>{sub && <p className="text-[12.5px] font-semibold text-muted-foreground">{sub}</p>}</div>
+      <Switch on={value} onClick={onChange} label={label} />
     </div>
   );
 }
-
-// ─── ToggleRow ────────────────────────────────────────────────────────────────
-function ToggleRow({ icon, iconBg, label, sublabel, value, onChange }) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-3">
-      <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground leading-tight">{label}</p>
-          <p className="text-xs text-muted-foreground leading-tight mt-0.5">{sublabel}</p>
-        </div>
-      </div>
-      <button
-        onClick={onChange}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0 ${
-          value ? "bg-emerald-500" : "bg-gray-200 dark:bg-gray-700"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-            value ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </div>
-  );
+function SegRow({ label, options, value, onChange }) {
+  return <div className="p-3.5"><p className="font-extrabold mb-2">{label}</p><Seg options={options} value={value} onChange={onChange} /></div>;
 }
+const Label = ({ children }) => <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-5 mb-2 ml-1">{children}</p>;
+const Card = ({ children, className = "" }) => <div className={`card-flat overflow-hidden divide-y-2 divide-border ${className}`}>{children}</div>;
+const initials = (n) => n.split(/[\s-]+/).filter((w) => /^[A-Z]/.test(w)).slice(-2).map((w) => w[0]).join("");
 
-// ─── PrefsCard (grouped rows) ─────────────────────────────────────────────────
-function PrefsCard({ children }) {
-  return (
-    <div className="bg-white dark:bg-gray-900 border border-border rounded-2xl px-4 shadow-sm divide-y divide-border">
-      {children}
-    </div>
-  );
-}
-
-// ─── SectionLabel ─────────────────────────────────────────────────────────────
-function SectionLabel({ children }) {
-  return (
-    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2.5 px-1">
-      {children}
-    </p>
-  );
-}
-
-// ─── ReciterCard ──────────────────────────────────────────────────────────────
-function ReciterCard({ reciter, selected, onSelect, previewingId, onPreview }) {
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(reciter.name)}&background=059669&color=fff&size=80&bold=true`;
-  const isSelected = selected === reciter.id;
-  const isPreviewing = previewingId === reciter.id;
-
-  return (
-    <div className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all ${
-      isSelected
-        ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-600"
-        : "bg-white dark:bg-gray-900 border-border"
-    }`}>
-      {/* Preview button */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onPreview(reciter.id); }}
-        title={isPreviewing ? "Arrêter" : "Écouter 10s"}
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
-          isPreviewing
-            ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-            : "bg-gray-100 dark:bg-gray-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary"
-        }`}
-      >
-        {isPreviewing
-          ? <Square className="w-3.5 h-3.5 fill-current" />
-          : <Play className="w-3.5 h-3.5 fill-current" />
-        }
-      </button>
-
-      {/* Main select button */}
-      <motion.button
-        whileTap={{ scale: 0.98 }}
-        onClick={() => onSelect(reciter.id)}
-        className="flex items-center gap-3 flex-1 min-w-0 text-left"
-      >
-        <img
-          src={avatarUrl}
-          alt={reciter.name}
-          className={`w-12 h-12 rounded-full flex-shrink-0 object-cover border-2 ${
-            isSelected ? "border-emerald-400" : "border-transparent"
-          }`}
-        />
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-bold truncate leading-tight ${
-            isSelected ? "text-emerald-700 dark:text-primary" : "text-foreground"
-          }`}>
-            {reciter.name}
-          </p>
-          <p className="text-xs text-muted-foreground font-arabic mt-0.5">{reciter.nameAr}</p>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xl leading-none">{reciter.flag}</span>
-          {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
-        </div>
-      </motion.button>
-    </div>
-  );
-}
-
-// ─── Settings page ────────────────────────────────────────────────────────────
 export default function Settings() {
   const {
     reciter, showPhonetic, showTranslation, darkMode, showTajweed, setShowTajweed,
@@ -168,7 +54,6 @@ export default function Settings() {
   } = usePreferences();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState("settings");
 
   // ── Audio preview state ──────────────────────────────────────────────────
   const [previewingId, setPreviewingId] = useState(null);
@@ -316,292 +201,96 @@ export default function Settings() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
   };
 
+  const [reciterSheet, setReciterSheet] = useState(false);
+  const current = RECITERS.find((r) => r.id === reciter) || RECITERS[0];
+  const allCached = cachedSurahs.size >= SURAHS.length;
+
   return (
-    <div className="min-h-screen bg-background">
-
-      {/* ─── HEADER STICKY ─── */}
-      <div className="sticky top-0 z-[var(--z-page-header)] bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-          <Link
-            to="/Profile"
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4 text-foreground" />
-          </Link>
-          <h1 className="font-bold text-base text-foreground">Réglages</h1>
+    <div className="min-h-[100dvh] bg-background pb-nav">
+      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
+        <div className="flex items-center gap-2">
+          <Link to="/Profile" aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></Link>
+          <h1 className="text-[26px] font-black">Réglages</h1>
         </div>
 
-        {/* ─── TABS ─── */}
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 flex border-t border-border/60">
-          {[
-            { id: "settings", label: "Réglages" },
-            { id: "affichage", label: "Affichage" },
-            { id: "offline", label: "Stockage hors ligne" },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`relative py-2.5 mr-6 text-sm font-semibold transition-colors ${
-                activeTab === tab.id
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full" />
-              )}
+        <Label>Lecture</Label>
+        <Card>
+          <button onClick={() => setReciterSheet(true)} className="w-full flex items-center gap-3 p-3.5 text-left active:bg-muted">
+            <Ico icon={Microphone} />
+            <div className="flex-1 min-w-0"><p className="font-extrabold">Récitateur</p><p className="text-[12.5px] font-semibold text-muted-foreground truncate">{current.name}</p></div>
+            <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <ToggleRow icon={Translate} label="Traduction française" sub="Hamidullah, sous chaque verset" value={showTranslation} onChange={() => setShowTranslation(!showTranslation)} />
+          <ToggleRow icon={TextAa} label="Translittération" sub="Le texte en lettres latines" value={showPhonetic} onChange={() => setShowPhonetic(!showPhonetic)} />
+          <ToggleRow icon={Palette} label="Couleurs du tajwîd" sub="Règles de récitation en couleur" value={showTajweed} onChange={() => setShowTajweed(!showTajweed)} />
+        </Card>
+
+        <Label>Affichage</Label>
+        <div className="card-flat px-4 py-5 text-center">
+          <p dir="rtl" className={`${getArabicFontClass(arabicFont)} ${getArabicSizeClass(arabicTextSize)} ${getLineSpacingClass(lineSpacing)} ${getTextContrastClass(textContrast)}`}>
+            بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ{showVerseNumbers && <span className="text-primary"> ﴿١﴾</span>}
+          </p>
+          <p className="text-xs font-bold text-muted-foreground mt-2">Aperçu</p>
+        </div>
+        <Card className="mt-3">
+          <SegRow label="Taille du texte arabe" value={arabicTextSize} onChange={setArabicTextSize} options={[{ label: "Petit", value: "small" }, { label: "Moyen", value: "medium" }, { label: "Grand", value: "large" }, { label: "Très grand", value: "xlarge" }]} />
+          <SegRow label="Police arabe" value={arabicFont} onChange={setArabicFont} options={[{ label: "Système", value: "system" }, { label: "Amiri", value: "amiri" }, { label: "Scheherazade", value: "scheherazade" }, { label: "Naskh", value: "noto" }]} />
+          <SegRow label="Espacement des lignes" value={lineSpacing} onChange={setLineSpacing} options={[{ label: "Serré", value: "compact" }, { label: "Normal", value: "normal" }, { label: "Aéré", value: "airy" }]} />
+          <SegRow label="Contraste" value={textContrast} onChange={setTextContrast} options={[{ label: "Normal", value: "normal" }, { label: "Élevé", value: "high" }]} />
+          <ToggleRow icon={Hash} label="Numéros de verset" value={showVerseNumbers} onChange={() => setShowVerseNumbers(!showVerseNumbers)} />
+          <ToggleRow icon={Moon} label="Mode sombre" value={darkMode} onChange={() => setDarkMode(!darkMode)} />
+        </Card>
+
+        <Label>Hors ligne</Label>
+        <Card>
+          <div className="flex items-center gap-3 p-3.5">
+            <Ico icon={HardDrives} />
+            <div className="flex-1 min-w-0"><p className="font-extrabold">{cachedSurahs.size} sourate{cachedSurahs.size > 1 ? "s" : ""} sur {SURAHS.length}</p><p className="text-[12.5px] font-semibold text-muted-foreground">{formatBytes(storageSize)} utilisés sur cet appareil</p></div>
+          </div>
+          <div className="p-3.5">
+            <div className="h-2.5 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${downloadingAll ? downloadProgress : (cachedSurahs.size / SURAHS.length) * 100}%` }} /></div>
+            <button disabled={downloadingAll || allCached} onClick={handleDownloadAll} className="btn-relief w-full h-[50px] mt-3 bg-primary text-primary-foreground disabled:opacity-60">
+              {downloadingAll ? <><SpinnerGap weight="bold" className="w-5 h-5 animate-spin" />Téléchargement {Math.round(downloadProgress)} %</> : allCached ? <><CheckCircle weight="fill" className="w-5 h-5" />Tout le Coran est disponible</> : <><DownloadSimple weight="bold" className="w-5 h-5" />Télécharger tout le Coran</>}
             </button>
-          ))}
-        </div>
+            <p className="text-[12.5px] font-semibold text-muted-foreground mt-2 text-center">Texte, translittération et traduction. L'audio se garde au fil de l'écoute.</p>
+          </div>
+          <button disabled={clearingData || !storageSize} onClick={handleClearData} className="w-full flex items-center justify-center gap-2 p-3.5 font-extrabold text-destructive disabled:opacity-50 active:bg-muted">
+            <Trash weight="bold" className="w-5 h-5" />{clearingData ? "Suppression…" : "Effacer les données hors ligne"}
+          </button>
+        </Card>
       </div>
 
-      {/* ─── CONTENT ─── */}
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 pb-nav space-y-6">
-
-        {activeTab === "settings" && (
-          <>
-            {/* ─── VOLET 1 : Préférences générales ─── */}
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-              <SectionLabel>Préférences</SectionLabel>
-              <PrefsCard>
-                <ToggleRow
-                  icon={darkMode
-                    ? <Moon className="w-4 h-4 text-primary" />
-                    : <Sun className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Mode sombre"
-                  sublabel={darkMode ? "Thème sombre activé" : "Thème clair activé"}
-                  value={darkMode}
-                  onChange={() => setDarkMode(!darkMode)}
-                />
-                <ToggleRow
-                  icon={<Type className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Phonétique"
-                  sublabel="Afficher la translittération"
-                  value={showPhonetic}
-                  onChange={() => setShowPhonetic(!showPhonetic)}
-                />
-                <ToggleRow
-                  icon={<Languages className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Version française"
-                  sublabel="Afficher la traduction"
-                  value={showTranslation}
-                  onChange={() => setShowTranslation(!showTranslation)}
-                />
-                <ToggleRow
-                  icon={<Palette className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Tajwîd en couleur"
-                  sublabel="Colorer les règles de récitation"
-                  value={showTajweed}
-                  onChange={() => setShowTajweed(!showTajweed)}
-                />
-              </PrefsCard>
-            </motion.div>
-
-            {/* ─── VOLET 2 : Récitateurs ─── */}
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-              <SectionLabel>Récitateur</SectionLabel>
+      <AnimatePresence>
+        {reciterSheet && (
+          <motion.div className="fixed inset-0 z-[200] flex items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-foreground/30" onClick={() => { stopCurrentPreview(); setPreviewingId(null); setReciterSheet(false); }} />
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="relative w-full max-w-2xl mx-auto bg-card rounded-t-3xl p-5 pb-[calc(env(safe-area-inset-bottom,0px)+20px)] max-h-[85dvh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-black">Récitateur</h2>
+                <button onClick={() => { stopCurrentPreview(); setPreviewingId(null); setReciterSheet(false); }} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center" aria-label="Fermer"><X weight="bold" /></button>
+              </div>
               <div className="space-y-2">
-                {RECITERS.map((r, i) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.12 + i * 0.04 }}
-                  >
-                    <ReciterCard reciter={r} selected={reciter} onSelect={setReciter} previewingId={previewingId} onPreview={handlePreview} />
-                  </motion.div>
-                ))}
+                {RECITERS.map((r) => {
+                  const on = r.id === reciter, playing = previewingId === r.id;
+                  return (
+                    <div key={r.id} className={`flex items-center gap-3 p-3 rounded-2xl border-2 ${on ? "border-primary bg-accent" : "border-border"}`}>
+                      <button onClick={() => { haptic(); setReciter(r.id); }} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                        <span className={`w-11 h-11 rounded-full font-black flex items-center justify-center shrink-0 ${on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{initials(r.name)}</span>
+                        <div className="min-w-0"><p className={`font-extrabold truncate ${on ? "text-accent-foreground" : ""}`}>{r.name}</p><p className="font-arabic text-sm text-muted-foreground" dir="rtl">{r.nameAr}</p></div>
+                      </button>
+                      <button onClick={() => handlePreview(r.id)} aria-label={playing ? "Arrêter" : "Écouter"} className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${playing ? "bg-primary text-primary-foreground" : "bg-card border-2 border-border"}`}>
+                        {playing ? <Stop weight="fill" /> : <Play weight="fill" />}
+                      </button>
+                      {on && <CheckCircle weight="fill" className="w-6 h-6 text-primary shrink-0" />}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
-          </>
-        )}
-
-        {activeTab === "affichage" && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="space-y-6">
-
-            {/* ─── APERÇU EN DIRECT ─── */}
-            <div>
-              <SectionLabel>Aperçu en direct</SectionLabel>
-              <div className="bg-white dark:bg-gray-900 border border-border rounded-2xl px-4 py-5 shadow-sm text-center">
-                <p className={`${getArabicFontClass(arabicFont)} ${getArabicSizeClass(arabicTextSize)} ${getLineSpacingClass(lineSpacing)} ${getTextContrastClass(textContrast)} transition-all duration-200`} dir="rtl">
-                  بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
-                </p>
-                {showVerseNumbers && (
-                  <div className="mt-3 inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 text-white text-xs font-bold shadow-sm">
-                    1
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ─── OPTIONS D'AFFICHAGE ─── */}
-            <div>
-              <SectionLabel>Options d'affichage</SectionLabel>
-              <PrefsCard>
-                <SegmentRow
-                  icon={<Type className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Taille du texte arabe"
-                  options={[
-                    { label: "Petit", value: "small" },
-                    { label: "Moyen", value: "medium" },
-                    { label: "Grand", value: "large" },
-                    { label: "Très grand", value: "xlarge" },
-                  ]}
-                  value={arabicTextSize}
-                  onChange={setArabicTextSize}
-                />
-                <SegmentRow
-                  icon={<AlignJustify className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Police arabe"
-                  options={[
-                    { label: "Système", value: "system" },
-                    { label: "Amiri", value: "amiri" },
-                    { label: "Scheherazade", value: "scheherazade" },
-                    { label: "Noto Naskh", value: "noto" },
-                  ]}
-                  value={arabicFont}
-                  onChange={setArabicFont}
-                />
-                <SegmentRow
-                  icon={<Contrast className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Contraste du texte"
-                  options={[
-                    { label: "Normal", value: "normal" },
-                    { label: "Élevé", value: "high" },
-                  ]}
-                  value={textContrast}
-                  onChange={setTextContrast}
-                />
-                <SegmentRow
-                  icon={<AlignVerticalSpaceAround className="w-4 h-4 text-primary" />}
-                  iconBg="bg-accent"
-                  label="Espacement des lignes"
-                  options={[
-                    { label: "Compact", value: "compact" },
-                    { label: "Normal", value: "normal" },
-                    { label: "Aéré", value: "airy" },
-                  ]}
-                  value={lineSpacing}
-                  onChange={setLineSpacing}
-                />
-                <ToggleRow
-                  icon={showVerseNumbers
-                    ? <ToggleRight className="w-4 h-4 text-primary" />
-                    : <ToggleLeft className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
-                  iconBg={showVerseNumbers ? "bg-emerald-50 dark:bg-emerald-900/40" : "bg-gray-100 dark:bg-gray-800"}
-                  label="Afficher les numéros"
-                  sublabel="Numéros de verset visibles"
-                  value={showVerseNumbers}
-                  onChange={() => setShowVerseNumbers(!showVerseNumbers)}
-                />
-              </PrefsCard>
-            </div>
-
           </motion.div>
         )}
-
-        {activeTab === "offline" && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-            <SectionLabel>Stockage hors ligne</SectionLabel>
-            <div className="bg-white dark:bg-gray-900 border border-border rounded-2xl overflow-hidden shadow-sm">
-
-              {/* Storage info row */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
-                  <HardDrive className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight">Espace utilisé</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{formatBytes(storageSize)} · {cachedSurahs.size}/{SURAHS.length} sourates</p>
-                </div>
-                {cachedSurahs.size > 0 && (
-                  <div className="flex items-center gap-1 text-xs font-medium text-primary flex-shrink-0">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    {cachedSurahs.size} hors ligne
-                  </div>
-                )}
-              </div>
-
-              {/* Download all button */}
-              <button
-                onClick={handleDownloadAll}
-                disabled={downloadingAll || !navigator.onLine}
-                className="w-full flex items-center gap-3 px-4 py-3 border-b border-border/60 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors disabled:opacity-60"
-              >
-                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                  {downloadingAll
-                    ? <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    : <Download className="w-4 h-4 text-primary" />
-                  }
-                </div>
-                <div className="text-left flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight">
-                    {downloadingAll ? `Téléchargement... ${downloadProgress}%` : "Télécharger toutes les sourates"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Texte arabe + translittération (~10 Mo)</p>
-                </div>
-              </button>
-
-              {/* Surah list */}
-              <div className="max-h-64 overflow-y-auto divide-y divide-border/40">
-                {SURAHS.slice(0, 20).map(surah => (
-                  <div key={surah.number} className="flex items-center gap-3 px-4 py-2.5">
-                    <span className="w-6 text-center text-xs font-bold text-muted-foreground flex-shrink-0">{surah.number}</span>
-                    <span className="font-arabic text-base text-foreground flex-shrink-0">{surah.name}</span>
-                    <span className="text-xs text-muted-foreground truncate flex-1">{surah.englishName}</span>
-                    {cachedSurahs.has(surah.number)
-                      ? <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                      : (
-                        <button
-                          onClick={() => downloadSurah(surah.number).then(() => refreshCacheStatus())}
-                          disabled={!navigator.onLine}
-                          className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors disabled:opacity-50"
-                          title="Télécharger"
-                        >
-                          <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                        </button>
-                      )
-                    }
-                  </div>
-                ))}
-                {SURAHS.length > 20 && (
-                  <div className="px-4 py-2 text-center text-xs text-muted-foreground">
-                    + {SURAHS.length - 20} autres sourates disponibles via "Télécharger tout"
-                  </div>
-                )}
-              </div>
-
-              {/* Clear data button */}
-              <button
-                onClick={handleClearData}
-                disabled={clearingData || cachedSurahs.size === 0}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-40 border-t border-border/60"
-              >
-                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                  {clearingData
-                    ? <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    : <Trash2 className="w-4 h-4 text-primary" />
-                  }
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-primary leading-tight">Supprimer les données hors ligne</p>
-                  <p className="text-xs text-primary/80 dark:text-primary mt-0.5">Libérer l'espace local</p>
-                </div>
-              </button>
-
-            </div>
-          </motion.div>
-        )}
-
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

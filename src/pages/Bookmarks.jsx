@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MapPin, Trash2, Play, BookOpen } from "@/components/icons";
+import { Heart, MapPin, Trash, Play, CaretLeft } from "@phosphor-icons/react";
 import { SURAHS } from "@/components/quranData";
 
 const FAV_KEY = "quran_favorites";
@@ -22,8 +21,8 @@ function verseNumberToInfo(absNumber) {
 }
 
 const TABS = [
-  { key: "favorites", label: "Favoris", icon: Heart, color: "rose" },
-  { key: "markers", label: "Marqueurs", icon: MapPin, color: "amber" },
+  { key: "favorites", label: "Favoris", icon: Heart },
+  { key: "markers", label: "Marqueurs", icon: MapPin },
 ];
 
 export default function Bookmarks() {
@@ -56,142 +55,50 @@ export default function Bookmarks() {
   const favoriteItems = favorites.map(n => ({ verseNumber: n, info: verseNumberToInfo(n) })).filter(i => i.info);
   const markerItems = Object.keys(markers).map(n => ({ verseNumber: parseInt(n), info: verseNumberToInfo(parseInt(n)) })).filter(i => i.info);
 
-  const isEmpty = activeTab === "favorites" ? favoriteItems.length === 0 : markerItems.length === 0;
+  const items = activeTab === "favorites" ? favoriteItems : markerItems;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Glass header */}
-      <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
-        <div className="max-w-2xl mx-auto px-4 py-3.5">
-          <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-base font-black text-foreground">Favoris & Marqueurs</h1>
-          </div>
-          {/* Tabs */}
-          <div className="flex gap-2">
-            {TABS.map(tab => {
-              const count = tab.key === "favorites" ? favoriteItems.length : markerItems.length;
-              const isActive = activeTab === tab.key;
-              return (
-                <motion.button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                    isActive
-                      ? tab.key === "favorites"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-border"
-                  }`}
-                >
-                  <tab.icon className={`w-3.5 h-3.5 ${isActive && tab.key === "favorites" ? "fill-white" : ""}`} />
-                  {tab.label}
-                  <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-black ${
-                    isActive ? "bg-white/25 text-white" : "bg-border text-muted-foreground"
-                  }`}>
-                    {count}
-                  </span>
-                </motion.button>
-              );
-            })}
-          </div>
+    <div className="min-h-[100dvh] bg-background pb-nav">
+      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
+        <div className="flex items-center gap-2">
+          <Link to="/SurahList" aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></Link>
+          <h1 className="text-[26px] font-black">Signets</h1>
         </div>
-      </div>
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-[14px] bg-muted mt-3">
+          {TABS.map((t) => {
+            const n = t.key === "favorites" ? favoriteItems.length : markerItems.length;
+            return (
+              <button key={t.key} onClick={() => setActiveTab(t.key)} className={`h-10 rounded-[10px] text-sm font-extrabold flex items-center justify-center gap-1.5 ${activeTab === t.key ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>
+                <t.icon weight="fill" className="w-4 h-4" />{t.label} <span className="opacity-70">{n}</span>
+              </button>
+            );
+          })}
+        </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <AnimatePresence mode="wait">
-          {isEmpty ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="text-center py-20 glass-card"
-            >
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                {/* Open book SVG */}
-                <svg viewBox="0 0 64 64" className="w-16 h-16 text-muted-foreground/40" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M32 16 C32 16 20 10 8 14 L8 50 C20 46 32 52 32 52 C32 52 44 46 56 50 L56 14 C44 10 32 16 32 16Z" />
-                  <path d="M32 16 L32 52" />
-                </svg>
+        {!items.length ? (
+          <div className="card-flat p-6 mt-4 text-center">
+            <span className="w-14 h-14 mx-auto rounded-2xl bg-accent text-primary flex items-center justify-center">{activeTab === "favorites" ? <Heart weight="fill" className="w-7 h-7" /> : <MapPin weight="fill" className="w-7 h-7" />}</span>
+            <p className="font-black text-lg mt-3">{activeTab === "favorites" ? "Aucun verset favori" : "Aucun marqueur"}</p>
+            <p className="text-sm font-semibold text-muted-foreground mt-1">{activeTab === "favorites" ? "Touche le cœur sous un verset pour le retrouver ici." : "Les endroits où tu t'es arrêté dans l'audio apparaissent ici."}</p>
+            <Link to="/SurahList" className="btn-relief inline-flex h-11 px-5 mt-4 bg-primary text-primary-foreground">Ouvrir le Coran</Link>
+          </div>
+        ) : (
+          <div className="card-flat overflow-hidden divide-y-2 divide-border mt-4">
+            {items.map(({ verseNumber, info }) => (
+              <div key={verseNumber} className="flex items-center gap-3 p-3.5">
+                <Link to={`/Memorize?surah=${info.surah.number}`} className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="w-10 h-10 rounded-xl bg-accent text-accent-foreground font-black text-sm flex items-center justify-center shrink-0">{info.surah.number}</span>
+                  <div className="min-w-0">
+                    <p className="font-extrabold truncate">{info.surah.englishName}</p>
+                    <p className="text-[12.5px] font-semibold text-muted-foreground">Verset {info.numberInSurah}{activeTab === "markers" && markers[verseNumber] > 0 ? ` · arrêt à ${Math.floor(markers[verseNumber])} s` : ""}</p>
+                  </div>
+                </Link>
+                <Link to={`/Memorize?surah=${info.surah.number}`} aria-label="Ouvrir" className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-[0_3px_0_var(--primary-lip)]"><Play weight="fill" className="w-4 h-4" /></Link>
+                <button onClick={() => (activeTab === "favorites" ? removeFavorite(verseNumber) : removeMarker(verseNumber))} aria-label="Retirer" className="w-10 h-10 rounded-full border-2 border-border bg-card flex items-center justify-center shrink-0 text-muted-foreground"><Trash weight="bold" className="w-4 h-4" /></button>
               </div>
-              <p className="text-foreground font-bold text-sm">
-                {activeTab === "favorites" ? "Aucun favori enregistré" : "Aucun marqueur enregistré"}
-              </p>
-              <p className="text-muted-foreground text-xs mt-1 max-w-xs mx-auto">
-                {activeTab === "favorites"
-                  ? "Appuyez sur ❤️ sur un verset pour l'ajouter à vos favoris."
-                  : "Appuyez sur 📍 sur un verset pour marquer votre position."}
-              </p>
-              <Link to="/SurahList" className="mt-5 inline-flex items-center gap-2 bg-primary text-primary-foreground text-xs font-bold px-5 py-2.5 rounded-xl transition-colors">
-                <BookOpen className="w-4 h-4" /> Mémoriser une sourate
-              </Link>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="grid sm:grid-cols-2 gap-3"
-            >
-              <AnimatePresence>
-                {(activeTab === "favorites" ? favoriteItems : markerItems).map(({ verseNumber, info }) => (
-                  <motion.div
-                    key={verseNumber}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, x: 50, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                    className={`glass-card p-4 border ${
-                      activeTab === "favorites"
-                        ? "border-border"
-                        : "border-border"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        activeTab === "favorites"
-                          ? "bg-accent"
-                          : "bg-accent"
-                      }`}>
-                        {activeTab === "favorites"
-                          ? <Heart className="w-4 h-4 text-primary fill-primary" />
-                          : <MapPin className="w-4 h-4 text-primary fill-primary" />
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-arabic font-bold text-foreground text-sm">{info.surah.name}</p>
-                        <p className="text-muted-foreground text-xs mt-0.5">{info.surah.englishName}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Verset {info.numberInSurah}
-                          {activeTab === "markers" && markers[verseNumber] > 0 && (
-                            <span className="ml-1 text-muted-foreground font-semibold">· {Math.floor(markers[verseNumber])}s</span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      <Link to={`/Memorize?surah=${info.surah.number}`} className="flex-1">
-                        <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary dark:text-emerald-400 text-xs font-bold hover:bg-primary/20 transition-colors">
-                          <Play className="w-3.5 h-3.5" />
-                          Ouvrir
-                        </button>
-                      </Link>
-                      <button
-                        onClick={() => activeTab === "favorites" ? removeFavorite(verseNumber) : removeMarker(verseNumber)}
-                        className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-red-50 hover:text-red-400 dark:hover:bg-red-900/20 transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

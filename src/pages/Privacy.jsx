@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Shield } from "@/components/icons";
+import { CaretLeft as ArrowLeft, ShieldCheck as Shield } from "@phosphor-icons/react";
 
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
+      <div className="bg-background border-b-2 border-border sticky top-0 z-[var(--z-page-header)]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <button
             onClick={() => window.history.back()}
@@ -15,7 +15,7 @@ export default function Privacy() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <Shield className="w-4 h-4 text-primary" />
             <h1 className="font-semibold text-foreground text-sm">Politique des données</h1>
           </div>
         </div>
@@ -31,16 +31,16 @@ export default function Privacy() {
         >
           {/* Title block */}
           <div className="text-center pb-4 border-b border-border">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl mb-4">
-              <Shield className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-accent rounded-2xl mb-4">
+              <Shield className="w-7 h-7 text-primary" />
             </div>
             <h2 className="text-2xl font-bold text-foreground">Politique des données</h2>
-            <p className="text-sm text-muted-foreground mt-1">MyHafizz · Dernière mise à jour : mars 2025</p>
+            <p className="text-sm text-muted-foreground mt-1">MyHafizz · Dernière mise à jour : octobre 2026</p>
           </div>
 
           {/* Intro */}
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/40">
-            <p className="text-sm text-emerald-700 dark:text-emerald-300 leading-relaxed">
+          <div className="p-4 bg-accent rounded-2xl border border-primary/30">
+            <p className="text-sm text-accent-foreground leading-relaxed">
               Chez MyHafizz, nous prenons la protection de vos données personnelles très au sérieux.
               Cette politique explique quelles données nous collectons, comment nous les utilisons et
               comment nous les protégeons.
@@ -77,7 +77,7 @@ export default function Privacy() {
                 "Vous envoyer des notifications importantes liées à votre compte (si activées)",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -89,20 +89,19 @@ export default function Privacy() {
           </Section>
 
           {/* Section 3 */}
-          <Section title="3. Stockage des données (Supabase)">
+          <Section title="3. Stockage des données">
             <p>
-              MyHafizz utilise <strong className="text-foreground">Supabase</strong> comme infrastructure
-              de base de données et d'authentification. Supabase est une plateforme de confiance,
-              conforme aux standards de sécurité internationaux.
+              Les données de ton compte et ta progression sont enregistrées dans une base de données
+              <strong className="text-foreground"> Neon</strong> (PostgreSQL), qui gère aussi l'authentification.
+              L'application est hébergée par <strong className="text-foreground">Vercel</strong>.
             </p>
             <p className="mt-3">
-              Vos données sont stockées dans des serveurs sécurisés. Supabase applique le chiffrement
-              des données au repos et en transit (TLS/SSL). Pour en savoir plus sur les pratiques de
-              sécurité de Supabase, consultez leur politique de confidentialité sur supabase.com.
+              Les échanges entre ton appareil et nos services sont chiffrés (HTTPS). Chaque utilisateur
+              n'accède qu'à ses propres données, sauf ce que tu partages volontairement dans un groupe
+              (progression visible par le maître ou le parent du groupe).
             </p>
             <p className="mt-3">
-              Les données de stockage de fichiers (photos de profil) sont hébergées dans des buckets
-              Supabase Storage avec des politiques d'accès strictes.
+              Ta photo de profil est réduite sur ton appareil puis enregistrée avec ton compte.
             </p>
           </Section>
 
@@ -116,10 +115,10 @@ export default function Privacy() {
                 "Vos préférences d'application (thème clair/sombre, réciteur sélectionné)",
                 "Les données de progression hors-ligne en attente de synchronisation",
                 "Le cache des versets téléchargés pour l'utilisation hors connexion",
-                "Votre session d'authentification (token sécurisé géré par Supabase)",
+                "Votre session d'authentification (jeton sécurisé géré par Neon Auth)",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -138,11 +137,11 @@ export default function Privacy() {
             </p>
             <ul className="mt-3 space-y-2 list-none">
               {[
-                "Supabase (infrastructure technique) — uniquement pour le fonctionnement du service",
+                "Neon et Vercel (infrastructure technique), uniquement pour le fonctionnement du service",
                 "Si requis par la loi ou une autorité judiciaire compétente",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -181,12 +180,12 @@ export default function Privacy() {
             <ul className="mt-3 space-y-2 list-none">
               {[
                 "Chiffrement de toutes les communications (HTTPS/TLS)",
-                "Authentification sécurisée via Supabase Auth",
+                "Authentification sécurisée via Neon Auth",
                 "Politiques d'accès aux données (Row Level Security) sur la base de données",
                 "Aucun stockage de mots de passe en clair",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -226,9 +225,9 @@ export default function Privacy() {
               Pour toute question, demande d'exercice de vos droits, ou réclamation concernant la
               protection de vos données personnelles :
             </p>
-            <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40">
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                📧 yiribasylla@gmail.com
+            <div className="mt-3 p-3 bg-accent rounded-xl border border-primary/30">
+              <p className="text-sm font-medium text-accent-foreground">
+                yiribasylla@gmail.com
               </p>
             </div>
             <p className="mt-3">

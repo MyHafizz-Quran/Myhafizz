@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, FileText } from "@/components/icons";
+import { CaretLeft as ArrowLeft, FileText } from "@phosphor-icons/react";
 
 export default function Terms() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
+      <div className="bg-background border-b-2 border-border sticky top-0 z-[var(--z-page-header)]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <button
             onClick={() => window.history.back()}
@@ -15,7 +15,7 @@ export default function Terms() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <FileText className="w-4 h-4 text-primary" />
             <h1 className="font-semibold text-foreground text-sm">Conditions d'utilisation</h1>
           </div>
         </div>
@@ -31,8 +31,8 @@ export default function Terms() {
         >
           {/* Title block */}
           <div className="text-center pb-4 border-b border-border">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl mb-4">
-              <FileText className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-accent rounded-2xl mb-4">
+              <FileText className="w-7 h-7 text-primary" />
             </div>
             <h2 className="text-2xl font-bold text-foreground">Conditions d'utilisation</h2>
             <p className="text-sm text-muted-foreground mt-1">MyHafizz · Dernière mise à jour : mars 2025</p>
@@ -66,7 +66,7 @@ export default function Terms() {
                 "La sauvegarde des données de progression dans le cloud",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -92,7 +92,7 @@ export default function Terms() {
                 "La notification immédiate en cas d'utilisation non autorisée de votre compte",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -133,7 +133,7 @@ export default function Terms() {
                 "Ne pas publier de contenu offensant, trompeur ou préjudiciable",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-muted-foreground">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -184,9 +184,9 @@ export default function Terms() {
               Pour toute question, réclamation ou demande relative à ces conditions d'utilisation,
               vous pouvez nous contacter à l'adresse suivante :
             </p>
-            <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40">
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                📧 yiribasylla@gmail.com
+            <div className="mt-3 p-3 bg-accent rounded-xl border border-primary/30">
+              <p className="text-sm font-medium text-accent-foreground">
+                yiribasylla@gmail.com
               </p>
             </div>
           </Section>
