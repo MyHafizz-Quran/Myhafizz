@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect as useEffectSL } from "react";
 import { MemorizationProgress } from "@/api/entities";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
+import { BookmarkSimple } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import { Search } from "@/components/icons";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ export default function SurahList() {
               <h1 className="font-headline text-3xl font-extrabold text-primary tracking-tight">Bibliothèque</h1>
               <p className="font-body text-on-surface-variant text-sm mt-1">Poursuivez votre voyage à travers le Saint Coran.</p>
             </div>
+            <Link to="/Bookmarks" aria-label="Signets" className="w-11 h-11 rounded-full border-2 border-border bg-card flex items-center justify-center text-primary shrink-0 press"><BookmarkSimple weight="fill" className="w-5 h-5" /></Link>
           </div>
 
           {/* Search bar */}

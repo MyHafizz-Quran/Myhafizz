@@ -32,6 +32,8 @@ import Repeat from './pages/Repeat.jsx';
 import Exercises from './pages/Exercises.jsx';
 import Strength from './pages/Strength.jsx';
 import Recite from './pages/Recite.jsx';
+import Groups from './pages/Groups.jsx';
+import Group from './pages/Group.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import ConfirmEmail from './pages/ConfirmEmail.jsx';
 import LandingPage from './pages/LandingPage.jsx';
@@ -84,7 +86,15 @@ const AuthenticatedApp = () => {
   }
 
   if (!isAuthenticated) {
+    const pendingJoin = new URLSearchParams(window.location.search).get("join");
+    if (pendingJoin) localStorage.setItem("mh_pending_join", pendingJoin);
     return <Navigate to="/login" replace />;
+  }
+
+  const pendingJoin = localStorage.getItem("mh_pending_join");
+  if (pendingJoin && path !== "/Groups") {
+    localStorage.removeItem("mh_pending_join");
+    return <Navigate to={`/Groups?join=${encodeURIComponent(pendingJoin)}`} replace />;
   }
 
   return (
@@ -113,6 +123,8 @@ const AuthenticatedApp = () => {
           <Route path="/Exercises" element={<Exercises />} />
           <Route path="/Strength" element={<Strength />} />
           <Route path="/Recite" element={<Recite />} />
+          <Route path="/Groups" element={<Groups />} />
+          <Route path="/Group" element={<Group />} />
           <Route path="/StudyMatch" element={<Navigate to="/Revision" replace />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/Settings" element={<Settings />} />
