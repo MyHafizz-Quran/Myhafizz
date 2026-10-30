@@ -1,7 +1,7 @@
 {
   "name": "MyHafizz - Mémorisation du Coran",
   "short_name": "MyHafizz",
-  "description": "MyHafizz — Mémorisez le Saint Coran verset par verset avec audio, quiz et défis communautaires. Application gratuite de Hifz par Farouck Sylla.",
+  "description": "Mémorise le Coran avec la méthode des madrasas : séance quotidienne sabaq, sabqi, manzil, révision des versets fragiles, groupes et khatma.",
   "start_url": "/Dashboard?source=pwa",
   "display": "standalone",
   "background_color": "#EFF9F9",
