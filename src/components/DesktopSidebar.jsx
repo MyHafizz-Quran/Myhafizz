@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play, MagnifyingGlass } from "@phosphor-icons/react";
+import { useKidMode } from "@/lib/kidMode";
 import { MhWordmark } from "@/components/MhLogo";
 import { useAuth } from "@/lib/AuthContext";
 import { useAudioManager, getReadingSession } from "@/lib/AudioManager";
@@ -38,6 +39,7 @@ export default function DesktopSidebar() {
   const surah = sn ? SURAHS.find((s) => s.number === Number(sn)) : null;
   const name = user?.user_metadata?.full_name || user?.email || "";
   const avatar = user?.user_metadata?.avatar_url;
+  const kid = useKidMode();
   const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "");
   const openSearch = () => {
     const input = document.querySelector('input[placeholder="Nom ou numéro de sourate"]');
@@ -59,7 +61,7 @@ export default function DesktopSidebar() {
       <nav className="flex flex-col gap-1">
         {MAIN.map((t) => <Item key={t.to} {...t} on={t.match(p)} />)}
         <div className="h-0.5 bg-border my-3 mx-2" />
-        {MORE.map((t) => <Item key={t.to} {...t} on={p.startsWith(t.to)} />)}
+        {MORE.filter((t) => !(kid.on && t.to === "/Leaderboard")).map((t) => <Item key={t.to} {...t} on={p.startsWith(t.to)} />)}
       </nav>
 
       {surah && (

@@ -6,7 +6,7 @@
 //   • Neon Auth / Data API              → Network Only (auth/data, pass-through)
 
 // Version timestamp — update this on each deployment to bust stale caches.
-const SW_VERSION = "20261030-lagon";
+const SW_VERSION = "20261030-rappels";
 
 const CACHE_STATIC = `myhafizz-static-v${SW_VERSION}`;
 const CACHE_API = `myhafizz-api-v${SW_VERSION}`;
@@ -210,3 +210,30 @@ async function navigationHandler(request) {
     });
   }
 }
+
+
+// ─── Rappels après la prière (Web Push) ───
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { data = { body: event.data && event.data.text() }; }
+  const title = data.title || "MyHafizz";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: data.body || "Ta séance du jour t'attend.",
+    icon: "/logo-192.png",
+    badge: "/favicon-32.png",
+    tag: data.tag || "mh-reminder",
+    data: { url: data.url || "/Revision" },
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "/Revision", self.location.origin).href;
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of all) {
+      if (c.url.startsWith(self.location.origin)) { await c.focus(); if ("navigate" in c) await c.navigate(url); return; }
+    }
+    await self.clients.openWindow(url);
+  })());
+});

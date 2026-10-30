@@ -1,3 +1,4 @@
+import { useKidMode } from "@/lib/kidMode";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -323,6 +324,7 @@ function Khatma({ group }) {
 }
 
 export default function Group() {
+  const kid = useKidMode();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const id = new URLSearchParams(window.location.search).get("id");
@@ -373,7 +375,7 @@ export default function Group() {
           : tab === "lessons" ? <Lessons group={group} /> : <Khatma group={group} />}
       </div>
 
-      <button onClick={leave} className="mt-8 mx-auto flex items-center gap-1.5 text-sm font-extrabold text-destructive"><SignOut weight="bold" /> {group.owner_id === group.me ? "Supprimer le groupe" : "Quitter le groupe"}</button>
+      {!kid.on && <button onClick={leave} className="mt-8 mx-auto flex items-center gap-1.5 text-sm font-extrabold text-destructive"><SignOut weight="bold" /> {group.owner_id === group.me ? "Supprimer le groupe" : "Quitter le groupe"}</button>}
     </div>
   );
 }

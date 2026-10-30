@@ -43,6 +43,8 @@ import Download from './pages/Download.jsx';
 import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import Welcome from './pages/Welcome.jsx';
+import { KidLock } from './components/KidMode.jsx';
+import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
 const IMMERSIVE = ["/Bienvenue", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
@@ -55,6 +57,8 @@ const AuthenticatedApp = () => {
   const path = location.pathname;
   const immersive = IMMERSIVE.some((p) => path.startsWith(p));
   const homeHeader = WITH_HOME_HEADER.some((p) => path.startsWith(p));
+  const kid = useKidMode();
+  const kidLocked = kid.on && !kid.unlocked && KID_LOCKED.some((p) => path.startsWith(p));
 
   useEffect(() => {
     const html = document.documentElement;
@@ -111,6 +115,7 @@ const AuthenticatedApp = () => {
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
       >
+        {kidLocked ? <KidLock /> : (
         <Routes location={location}>
           <Route path="/" element={<Navigate to="/Dashboard" replace />} />
           <Route path="/Dashboard" element={<Dashboard />} />
@@ -135,6 +140,7 @@ const AuthenticatedApp = () => {
           <Route path="/Bienvenue" element={<Welcome />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
+        )}
       </motion.div>
       {!immersive && <DesktopSidebar />}
       {!immersive && <div className="lg:hidden"><BottomNav /></div>}

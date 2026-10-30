@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CaretLeft, CaretRight, Moon, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Moon, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -9,6 +9,9 @@ import { isSurahCached, cacheSurah, clearAllOfflineData, getOfflineStorageSize }
 import { useToast } from "@/components/ui/use-toast";
 import { getArabicFontClass, getArabicSizeClass, getLineSpacingClass, getTextContrastClass } from "@/lib/arabicDisplayUtils";
 import { haptic } from "@/hooks/usePlatform";
+import { useKidMode, enableKidMode, disableKidMode, relockKidMode } from "@/lib/kidMode";
+import { PinPad } from "@/components/KidMode";
+import { PRAYERS, pushSupport, getReminder, saveReminder, removeReminder, prayerTimes } from "@/lib/reminders";
 
 function Seg({ options, value, onChange }) {
   return (
@@ -53,6 +56,45 @@ export default function Settings() {
     setArabicTextSize, setArabicFont, setTextContrast, setLineSpacing, setShowVerseNumbers,
   } = usePreferences();
   const { toast } = useToast();
+  const kid = useKidMode();
+  const support = pushSupport();
+  const [rem, setRem] = useState(null);
+  const [remBusy, setRemBusy] = useState(false);
+  useEffect(() => { getReminder().then(setRem).catch(() => {}); }, []);
+  const remError = (e) => {
+    const m = e?.message === "permission" ? "Les notifications sont bloquées. Autorise-les dans les réglages du navigateur."
+      : e?.message === "geo" ? "Autorise la localisation : elle sert seulement à calculer les heures de prière."
+      : "Impossible d'enregistrer le rappel. Réessaie.";
+    toast({ title: "Rappel non activé", description: m, variant: "destructive" });
+  };
+  const updateRem = async (patch) => {
+    setRemBusy(true);
+    try {
+      const next = { prayers: rem?.prayers || ["fajr", "maghrib"], offset_min: rem?.offset_min ?? 15, ...patch };
+      if (!next.prayers.length) { await removeReminder(); setRem(null); }
+      else {
+        const row = await saveReminder({ ...next, position: rem ? { lat: rem.lat, lng: rem.lng } : undefined });
+        setRem(row);
+      }
+    } catch (e) { remError(e); }
+    setRemBusy(false);
+  };
+  const toggleRem = async () => {
+    if (rem) { setRemBusy(true); await removeReminder().catch(() => {}); setRem(null); setRemBusy(false); }
+    else await updateRem({});
+  };
+  const times = rem ? prayerTimes(rem.lat, rem.lng) : null;
+  const hhmm = (d) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const [pinSheet, setPinSheet] = useState(false);
+  const [firstPin, setFirstPin] = useState(null);
+  const [pinError, setPinError] = useState(null);
+  const onPin = async (pin) => {
+    if (!firstPin) { setFirstPin(pin); setPinError(null); return; }
+    if (pin !== firstPin) { setFirstPin(null); setPinError("Les deux codes ne sont pas pareils. Recommence."); return; }
+    await enableKidMode(pin);
+    setPinSheet(false); setFirstPin(null); setPinError(null);
+    toast({ title: "Mode enfant activé", description: "Le profil et les réglages demandent maintenant le code parent." });
+  };
 
 
   // ── Audio preview state ──────────────────────────────────────────────────
@@ -241,6 +283,57 @@ export default function Settings() {
           <ToggleRow icon={Moon} label="Mode sombre" value={darkMode} onChange={() => setDarkMode(!darkMode)} />
         </Card>
 
+        <Label>Rappels</Label>
+        <Card>
+          {support === "ok" ? (
+            <>
+              <ToggleRow icon={Bell} label="Rappel après la prière" sub={rem ? "Une notification pour lancer ta séance du jour" : "Une notification après la prière de ton choix"} value={!!rem} onChange={() => !remBusy && toggleRem()} />
+              {rem && (
+                <>
+                  <div className="p-3.5">
+                    <p className="font-extrabold mb-2">Après quelles prières ?</p>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {PRAYERS.map((pr) => {
+                        const on = rem.prayers.includes(pr.key);
+                        return (
+                          <button key={pr.key} disabled={remBusy} onClick={() => { haptic(); updateRem({ prayers: on ? rem.prayers.filter((x) => x !== pr.key) : [...rem.prayers, pr.key] }); }}
+                            className={`h-[52px] rounded-xl border-2 flex flex-col items-center justify-center ${on ? "border-primary bg-accent text-accent-foreground" : "border-border text-muted-foreground"}`}>
+                            <span className="text-[13px] font-extrabold">{pr.label}</span>
+                            <span className="text-[11px] font-bold">{hhmm(times[pr.key])}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <SegRow label="Délai après la prière" value={rem.offset_min} onChange={(v) => updateRem({ offset_min: v })} options={[{ label: "10 min", value: 10 }, { label: "15 min", value: 15 }, { label: "30 min", value: 30 }]} />
+                  <p className="px-3.5 py-3 text-[12.5px] font-semibold text-muted-foreground">Horaires calculés pour ta position (méthode Ligue islamique mondiale). Ta position n'est utilisée que pour ce calcul.</p>
+                </>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center gap-3 p-3.5">
+              <Ico icon={Bell} />
+              <div className="flex-1 min-w-0">
+                <p className="font-extrabold">Rappel après la prière</p>
+                <p className="text-[12.5px] font-semibold text-muted-foreground">{support === "install" ? "Sur iPhone, les notifications marchent une fois l'app ajoutée à l'écran d'accueil." : "Ce navigateur ne permet pas les notifications."}</p>
+              </div>
+              {support === "install" && <Link to="/telecharger" className="text-sm font-extrabold text-primary">Installer</Link>}
+            </div>
+          )}
+        </Card>
+
+        <Label>Famille</Label>
+        <Card>
+          <ToggleRow icon={Baby} label="Mode enfant" sub={kid.on ? "Activé sur cet appareil. Profil, réglages et classement demandent le code." : "Interface simplifiée, réglages protégés par un code parent"}
+            value={kid.on} onChange={() => { if (kid.on) { disableKidMode(); toast({ title: "Mode enfant désactivé" }); } else { setFirstPin(null); setPinError(null); setPinSheet(true); } }} />
+          {kid.on && (
+            <button onClick={() => { relockKidMode(); window.location.assign("/Dashboard"); }} className="w-full flex items-center gap-3 p-3.5 text-left active:bg-muted">
+              <Ico icon={LockSimple} />
+              <div className="flex-1 min-w-0"><p className="font-extrabold">Rendre l'appareil à l'enfant</p><p className="text-[12.5px] font-semibold text-muted-foreground">Verrouille tout de suite l'espace parent</p></div>
+            </button>
+          )}
+        </Card>
+
         <Label>Hors ligne</Label>
         <Card>
           <div className="flex items-center gap-3 p-3.5">
@@ -259,6 +352,19 @@ export default function Settings() {
           </button>
         </Card>
       </div>
+
+      <AnimatePresence>
+        {pinSheet && (
+          <motion.div className="fixed inset-0 z-[200] flex items-end lg:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-foreground/30" onClick={() => setPinSheet(false)} />
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="relative w-full max-w-md mx-auto bg-card rounded-t-3xl lg:rounded-3xl p-5 pb-[calc(env(safe-area-inset-bottom,0px)+20px)]">
+              <div className="flex justify-end"><button onClick={() => setPinSheet(false)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center" aria-label="Fermer"><X weight="bold" /></button></div>
+              <PinPad key={firstPin ? "confirm" : "new"} title={firstPin ? "Confirme le code" : "Choisis un code parent"} sub={firstPin ? "Tape le même code une seconde fois." : "4 chiffres, à garder pour toi. Il protège le profil, les réglages et le classement."} onComplete={onPin} error={pinError} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {reciterSheet && (

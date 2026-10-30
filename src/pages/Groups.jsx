@@ -1,3 +1,4 @@
+import { useKidMode } from "@/lib/kidMode";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ const KINDS = [
 ];
 
 export default function Groups() {
+  const kid = useKidMode();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: groups, isLoading } = useQuery({ queryKey: ["groups"], queryFn: () => G.mine() });
@@ -46,10 +48,10 @@ export default function Groups() {
       <h1 className="text-2xl font-extrabold">Groupes</h1>
       <p className="text-sm font-semibold text-muted-foreground mt-1">Madrasa, famille ou amis : apprenez ensemble.</p>
 
-      <div className="grid grid-cols-2 gap-3 mt-4">
+      {!kid.on && <div className="grid grid-cols-2 gap-3 mt-4">
         <button onClick={() => { haptic(); setCreate(true); }} className="btn-relief h-[50px] bg-primary text-primary-foreground"><Plus weight="bold" /> Créer</button>
         <button onClick={() => { haptic(); setJoinOpen(true); }} className="btn-relief h-[50px] bg-card border-2 border-border text-foreground" style={{ "--relief-color": "hsl(var(--border))" }}><SignIn weight="bold" /> Rejoindre</button>
-      </div>
+      </div>}
 
       <div className="mt-6">
         {isLoading ? <div className="h-24 rounded-2xl bg-muted animate-pulse" />

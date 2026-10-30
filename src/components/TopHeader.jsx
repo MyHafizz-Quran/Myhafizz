@@ -4,6 +4,7 @@ import { Trophy, MagnifyingGlass } from "@phosphor-icons/react";
 import usePlatform, { haptic } from "@/hooks/usePlatform";
 import { useAuth } from "@/lib/AuthContext";
 import { MhWordmark } from "@/components/MhLogo";
+import { useKidMode } from "@/lib/kidMode";
 
 function Avatar({ user, size = 40 }) {
   const name = user?.user_metadata?.full_name || user?.name || user?.email || "";
@@ -20,6 +21,7 @@ function Avatar({ user, size = 40 }) {
 export default function TopHeader() {
   const platform = usePlatform();
   const { user } = useAuth();
+  const kid = useKidMode();
 
   if (platform === "android") {
     return (
@@ -43,9 +45,9 @@ export default function TopHeader() {
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)", height: "calc(var(--header-height) + env(safe-area-inset-top, 0px))" }}>
         <span className="pointer-events-auto liquid-glass rounded-full h-11 pl-2 pr-3.5 flex items-center"><MhWordmark size={26} /></span>
         <div className="flex gap-2.5 pointer-events-auto">
-          <Link to="/Leaderboard" aria-label="Classement" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
+          {!kid.on && <Link to="/Leaderboard" aria-label="Classement" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
             <Trophy size={21} weight="bold" />
-          </Link>
+          </Link>}
           <Link to="/Profile" aria-label="Profil" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
             <Avatar user={user} size={34} />
           </Link>
