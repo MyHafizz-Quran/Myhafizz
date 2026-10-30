@@ -68,6 +68,14 @@ export const ReadingLessons = {
     if (error) throw error;
     return data || [];
   },
+  async completeMany(ids) {
+    if (!ids.length) return [];
+    const id = await uid();
+    const now = new Date().toISOString();
+    const { error } = await supabase.from('reading_lessons').upsert(ids.map((lesson_id) => ({ user_id: id, lesson_id, best_score: 100, xp: 0, attempts: 0, completed_at: now, updated_at: now })), { onConflict: 'user_id,lesson_id' });
+    if (error) throw error;
+    return ids;
+  },
   async complete(lesson_id, score, xp, prev) {
     const id = await uid();
     const row = { user_id: id, lesson_id, best_score: Math.max(score, prev?.best_score || 0), xp: (prev?.xp || 0) + xp, attempts: (prev?.attempts || 0) + 1, updated_at: new Date().toISOString() };

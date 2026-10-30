@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, SpeakerHigh, CheckCircle, XCircle, Eraser, Lightning, Target } from "@phosphor-icons/react";
 import { ReadingLessons } from "@/api/entities";
-import { L, HARAKAT, POSITIONS, formsOf, lessonById, buildLesson, speak, hasArabicVoice } from "@/lib/qaida";
+import { L, HARAKAT, POSITIONS, formsOf, lessonById, buildLesson, speak, hasArabicVoice, PLACEMENT_UNLOCKS } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 
 const AR = "font-arabic";
@@ -169,7 +169,10 @@ export default function Lecon() {
   const { data: rows = [] } = useQuery({ queryKey: ["reading-lessons"], queryFn: () => ReadingLessons.list() });
   const prev = rows.find((r) => r.lesson_id === lessonId);
   const save = useMutation({
-    mutationFn: ({ score, xp }) => ReadingLessons.complete(lessonId, score, xp, prev),
+    mutationFn: async ({ score, xp }) => {
+      if (lessonId !== "placement") return ReadingLessons.complete(lessonId, score, xp, prev);
+      if (score >= 80) return ReadingLessons.completeMany(PLACEMENT_UNLOCKS.filter((id) => !rows.some((r) => r.lesson_id === id)));
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["reading-lessons"] }); qc.invalidateQueries({ queryKey: ["activity-days"] }); },
   });
 
@@ -186,7 +189,7 @@ export default function Lecon() {
     if (i + 1 >= queue.length) {
       const s = stats.current;
       const score = s.graded ? Math.round((s.firstOk / s.graded) * 100) : 100;
-      const xp = 10 + (score === 100 ? 5 : 0);
+      const xp = lessonId === "placement" ? 0 : 10 + (score === 100 ? 5 : 0);
       setFinished({ score, xp, secs: Math.round((Date.now() - s.start) / 1000) });
       save.mutate({ score, xp });
       return;
@@ -226,10 +229,10 @@ export default function Lecon() {
       <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-md mx-auto w-full">
           <div className="w-24 h-24 rounded-3xl bg-primary text-primary-foreground flex items-center justify-center shadow-[0_5px_0_var(--primary-lip)]"><CheckCircle weight="fill" className="w-12 h-12" /></div>
-          <h1 className="text-[28px] font-black mt-6">Leçon terminée</h1>
-          <p className="font-semibold text-muted-foreground mt-1">{lesson.review ? "Belle révision." : finished.score === 100 ? "Sans aucune erreur, macha'Allah." : "Continue comme ça, chaque leçon compte."}</p>
-          <div className="grid grid-cols-2 gap-3 w-full mt-7">
-            <div className="card-flat p-4"><Lightning weight="fill" className="w-6 h-6 text-[#F2B530] mx-auto" /><p className="text-2xl font-black mt-1">+{finished.xp}</p><p className="text-xs font-bold text-muted-foreground">points</p></div>
+          <h1 className="text-[28px] font-black mt-6">{lessonId === "placement" ? (finished.score >= 80 ? "Niveau validé" : "Test terminé") : "Leçon terminée"}</h1>
+          <p className="font-semibold text-muted-foreground mt-1">{lessonId === "placement" ? (finished.score >= 80 ? "Tu connais déjà les lettres et les voyelles courtes : on passe directement à l'unité 4." : "Pas encore assez sûr : on reprend depuis les lettres, ça ira vite.") : lesson.review ? "Belle révision." : finished.score === 100 ? "Sans aucune erreur, macha'Allah." : "Continue comme ça, chaque leçon compte."}</p>
+          <div className={`grid ${lessonId === "placement" ? "grid-cols-1" : "grid-cols-2"} gap-3 w-full mt-7`}>
+            {lessonId !== "placement" && <div className="card-flat p-4"><Lightning weight="fill" className="w-6 h-6 text-[#F2B530] mx-auto" /><p className="text-2xl font-black mt-1">+{finished.xp}</p><p className="text-xs font-bold text-muted-foreground">points</p></div>}
             <div className="card-flat p-4"><Target weight="fill" className="w-6 h-6 text-primary mx-auto" /><p className="text-2xl font-black mt-1">{finished.score} %</p><p className="text-xs font-bold text-muted-foreground">du premier coup</p></div>
           </div>
         </div>
@@ -278,29 +281,24 @@ export default function Lecon() {
           </div>
         );
       }
-      case "intro-haraka": {
-        const h = HARAKAT[item.h];
+      case "intro-haraka":
         return (
           <div className="text-center">
-            <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Nouvelle voyelle</p>
-            <div className={`${AR} text-[120px] leading-[1.4]`}>{"\u25CC" + h.mark}</div>
-            <p className="text-[26px] font-black">{h.name}</p>
-            <p className="font-semibold text-muted-foreground mt-1 max-w-xs mx-auto">{h.hint}</p>
+            <p className="text-sm font-extrabold uppercase tracking-wide text-primary">{item.label}</p>
+            <div className={`${AR} text-[120px] leading-[1.4]`}>{"\u25CC" + item.mark}</div>
+            <p className="text-[26px] font-black">{item.name}</p>
+            <p className="font-semibold text-muted-foreground mt-1 max-w-xs mx-auto">{item.hint}</p>
             <div className="flex justify-center gap-3 mt-6">
-              {item.example.map((id) => {
-                const s = { ar: (L[id].ar) + h.mark + (item.h === "fathatan" ? "ا" : ""), latin: (L[id].sound) + h.vowel };
-                return (
-                  <button key={id} onClick={() => voice && speak(s.ar)} className="card-flat w-[88px] py-2 press">
-                    <div className={`${AR} text-[44px] leading-[1.5]`}>{s.ar}</div>
-                    <p className="text-sm font-extrabold text-muted-foreground">{s.latin}</p>
-                  </button>
-                );
-              })}
+              {item.examples.map((s) => (
+                <button key={s.ar} onClick={() => voice && speak(s.ar)} className="card-flat w-[92px] py-2 press">
+                  <div className={`${AR} text-[40px] leading-[1.6]`}>{s.ar}</div>
+                  <p className="text-sm font-extrabold text-muted-foreground">{s.latin}</p>
+                </button>
+              ))}
             </div>
-            {voice && <p className="text-xs font-bold text-muted-foreground mt-3">Touche une syllabe pour l'écouter</p>}
+            {voice && <p className="text-xs font-bold text-muted-foreground mt-3">Touche un exemple pour l'écouter</p>}
           </div>
         );
-      }
       case "read": case "form":
         return (<><div className={`${AR} text-[110px] leading-[1.35] text-center mb-6`}>{item.prompt}</div>{opts((o) => item.show === "letter" ? L[o].ar : L[o].name, item.show === "letter")}</>);
       case "listen":
@@ -347,7 +345,7 @@ export default function Lecon() {
       </div>
 
       <div className="flex-1 max-w-xl mx-auto w-full px-4 pt-3 pb-44">
-        {!isIntro && <h2 className="text-[22px] font-black mb-5">{item.retry ? "On réessaie : " : ""}{QUESTION[item.type]}</h2>}
+        {!isIntro && <h2 className="text-[22px] font-black mb-5">{item.retry ? "On réessaie : " : ""}{item.word ? "Comment se lit ce mot ?" : QUESTION[item.type]}</h2>}
         {body()}
       </div>
 

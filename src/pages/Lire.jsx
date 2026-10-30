@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, Lock, Star, Trophy, Lightning, SpeakerSlash } from "@phosphor-icons/react";
+import { ArrowLeft, Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight } from "@phosphor-icons/react";
 import { ReadingLessons } from "@/api/entities";
 import { UNITS, ALL_LESSONS, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
@@ -42,6 +42,14 @@ export default function Lire() {
           </div>
         )}
 
+        {done.size === 0 && !isLoading && (
+          <button onClick={() => { haptic(); navigate("/Lecon?id=placement"); }} className="card-flat w-full p-4 mt-4 flex items-center gap-3 text-left press">
+            <span className="w-11 h-11 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><Exam weight="fill" className="w-6 h-6" /></span>
+            <div className="flex-1 min-w-0"><p className="font-extrabold">Je connais déjà les lettres</p><p className="text-[12.5px] font-semibold text-muted-foreground">12 questions pour passer directement à l'unité 4</p></div>
+            <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
+          </button>
+        )}
+
         {UNITS.map((u, ui) => {
           const n = u.lessons.filter((l) => done.has(l.id)).length;
           return (
@@ -68,7 +76,7 @@ export default function Lire() {
                         style={state === "locked" ? { "--relief-color": "hsl(var(--border))" } : undefined}>
                         <Icon weight={state === "done" ? "bold" : "fill"} className="w-8 h-8" />
                       </button>
-                      {(() => { const arOnly = u.id !== "u3" && !l.review; return (
+                      {(() => { const arOnly = ["u1", "u2"].includes(u.id) && !l.review; return (
                         <p className={`mt-2 text-center max-w-[150px] ${arOnly ? "font-arabic text-[21px] leading-tight" : "text-sm font-extrabold"} ${state === "locked" ? "text-muted-foreground" : "text-foreground"}`} dir={arOnly ? "rtl" : "ltr"}>{l.title}</p>
                       ); })()}
                     </div>
@@ -80,8 +88,8 @@ export default function Lire() {
         })}
 
         <div className="card-flat p-4 mb-6 text-center">
-          <p className="font-extrabold">Ensuite : les voyelles longues, le soukoun et la chadda</p>
-          <p className="text-sm font-semibold text-muted-foreground mt-0.5">Puis les mots du Coran et tes premiers versets.</p>
+          <p className="font-extrabold">Bientôt : les mots du Coran</p>
+          <p className="text-sm font-semibold text-muted-foreground mt-0.5">Puis tes premiers versets : Al-Fâtiḥa et Juz ʿAmma.</p>
         </div>
       </div>
     </div>

@@ -40,5 +40,5 @@ Retiré : 1to1 / StudyMatch (onglet, page, aide, mentions légales). Tables cons
 
 - **Lot A (livré)** : parcours `/Lire` en 3 unités (les 28 lettres, les formes liées, les voyelles courtes + tanwîn), 23 leçons, lecteur `/Lecon` avec 9 types d'exercices (découverte, lire, écouter, formes, position, syllabes, assembler, paires, tracé au doigt). Une erreur fait revenir la question en fin de leçon. Points + précision en fin de leçon, progression enregistrée dans `reading_lessons` (Neon, `neon/004_reading.sql`), qui compte aussi pour la série. Entrées : Accueil, page Coran, barre latérale PC.
 - Voix : voix arabe de l'appareil en attendant des enregistrements (dossier prévu `/audio/qaida/`). Sans voix arabe, les exercices d'écoute sont remplacés par de la lecture.
-- **Lot B** : voyelles longues (madd), soukoun, chadda, test de placement « je connais déjà les lettres ».
+- **Lot B (livré)** : unité 4 (prolongations alif/yâ/wâw, courtes ou longues, soukoun, chadda, révision sur de vrais mots du Coran) et test de niveau de 12 questions qui valide les unités 1 à 3 à partir de 80 %.
 - **Lot C** : mots du Coran (audio mot à mot) puis premiers versets (Al-Fâtiḥa, Juz ʿAmma).
