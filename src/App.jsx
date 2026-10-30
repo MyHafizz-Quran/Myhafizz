@@ -31,6 +31,7 @@ import ReviewSession from './pages/ReviewSession.jsx';
 import Repeat from './pages/Repeat.jsx';
 import Exercises from './pages/Exercises.jsx';
 import Strength from './pages/Strength.jsx';
+import Recite from './pages/Recite.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import ConfirmEmail from './pages/ConfirmEmail.jsx';
 import LandingPage from './pages/LandingPage.jsx';
@@ -40,7 +41,7 @@ import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises"];
+const IMMERSIVE = ["/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = ["/Dashboard"];
 
 const AuthenticatedApp = () => {
@@ -111,6 +112,7 @@ const AuthenticatedApp = () => {
           <Route path="/Repeat" element={<Repeat />} />
           <Route path="/Exercises" element={<Exercises />} />
           <Route path="/Strength" element={<Strength />} />
+          <Route path="/Recite" element={<Recite />} />
           <Route path="/StudyMatch" element={<Navigate to="/Revision" replace />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/Settings" element={<Settings />} />

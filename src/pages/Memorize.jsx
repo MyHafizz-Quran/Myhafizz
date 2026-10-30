@@ -6,7 +6,7 @@ import { TajweedLegend } from "@/components/verseExtras";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause, Repeat, Palette } from "@/components/icons";
+import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause, Repeat, Palette, Mic } from "@/components/icons";
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
@@ -478,6 +478,14 @@ export default function Memorize() {
               <button onClick={() => navigate(`/Repeat?surah=${surahNumber}`)}
                 className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 bg-surface-container-low text-on-surface-variant hover:bg-surface-container">
                 <Repeat className="w-4 h-4" /><span>Répéter</span>
+              </button>
+            )}
+
+            {/* Réciter */}
+            {verses.length > 0 && (
+              <button onClick={() => navigate(`/Recite?surah=${surahNumber}`)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 bg-surface-container-low text-on-surface-variant">
+                <Mic className="w-4 h-4" /><span>Réciter</span>
               </button>
             )}
 

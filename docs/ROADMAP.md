@@ -20,7 +20,9 @@ Retiré : 1to1 / StudyMatch (onglet, page, aide, mentions légales). Tables cons
 10. Tajwîd en couleur (activable).
 7. Versets semblables (mutashâbihât) : alerte + différence surlignée.
 
-## Phase 4 · Voix
+## Phase 4 · Voix (livrée)
+> Page « Réciter » : vérification via la reconnaissance vocale du navigateur (ar-SA, alignement tolérant dans `src/lib/recitation.js`) et enregistrements stockés sur l'appareil (IndexedDB), partagés via la feuille de partage du téléphone.
+
 12. Enregistrer sa récitation, la réécouter, l'envoyer au maître.
 5. Récitation au micro vérifiée (reconnaissance vocale arabe, mot oublié/sauté).
 
