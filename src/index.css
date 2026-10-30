@@ -209,6 +209,10 @@
   .pb-nav {
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.5rem);
   }
+  @media (min-width: 1024px) {
+    .pb-nav { padding-bottom: 2.5rem; }
+    .pb-nav .pb-nav { padding-bottom: 0; }
+  }
   .h-bottom-nav {
     height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   }

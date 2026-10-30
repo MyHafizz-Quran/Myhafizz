@@ -90,6 +90,7 @@ export default function Memorize() {
     clearAudioError,
     startLoop,
     stopLoop,
+    playLoopFrom,
     updateReciter,
     updateSurah,
   } = useAudioManager();
@@ -399,6 +400,51 @@ export default function Memorize() {
     navigate('/SurahList');
   };
 
+  // ─── Raccourcis clavier (ordinateur) ───
+  const [focusIdx, setFocusIdx] = useState(0);
+  const [showKeys, setShowKeys] = useState(false);
+  const kb = useRef({});
+  kb.current = { verses, loopPlaying, loopIndex, loopMode, focusIdx, visibleCount, reciter, surah, toggleMemorized, toggleAllHidden, handleBack, stopLoop, startLoop, playLoopFrom, setLoopMode };
+  useEffect(() => {
+    const onKey = (e) => {
+      const t = e.target;
+      if (e.metaKey || e.ctrlKey || e.altKey || (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable))) return;
+      const k = kb.current; const n = k.verses?.length || 0; if (!n) return;
+      const focus = (i) => {
+        const j = Math.max(0, Math.min(n - 1, i));
+        if (j >= k.visibleCount) setVisibleCount(j + 5);
+        setFocusIdx(j);
+        setTimeout(() => document.getElementById(`verse-${j}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 30);
+        return j;
+      };
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          if (k.loopPlaying) k.stopLoop();
+          else { const m = k.loopMode !== "off" ? k.loopMode : "once"; k.setLoopMode(m); saveReadingSession({ loopMode: m, wasPlaying: true }); k.startLoop(m, k.verses, k.reciter, k.surah, k.focusIdx); }
+          break;
+        case "ArrowDown": case "j": e.preventDefault(); focus(k.focusIdx + 1); break;
+        case "ArrowUp": case "k": e.preventDefault(); focus(k.focusIdx - 1); break;
+        case "ArrowRight": case "ArrowLeft": {
+          e.preventDefault();
+          const base = k.loopPlaying ? k.loopIndex : k.focusIdx;
+          const j = focus(base + (e.key === "ArrowRight" ? 1 : -1));
+          if (k.loopPlaying) k.playLoopFrom(j, k.verses, k.loopMode);
+          break;
+        }
+        case "m": case "M": e.preventDefault(); { const v = k.verses[k.focusIdx]; if (v) k.toggleMemorized(v.numberInSurah); } break;
+        case "h": case "H": e.preventDefault(); k.toggleAllHidden(); break;
+        case "?": e.preventDefault(); setShowKeys((x) => !x); break;
+        case "Escape": if (showKeysRef.current) setShowKeys(false); else k.handleBack(); break;
+        default:
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  const showKeysRef = useRef(false); showKeysRef.current = showKeys;
+  useEffect(() => { if (loopPlaying) setFocusIdx(loopIndex); }, [loopPlaying, loopIndex]);
+
   const percent = surah ? (memorizedVerses.size / surah.numberOfAyahs) * 100 : 0;
   const isComplete = percent === 100;
 
@@ -546,7 +592,7 @@ export default function Memorize() {
             )}
             <div className="space-y-4">
               {verses.slice(0, visibleCount).map((verse, i) => (
-                <div key={verse.number} id={`verse-${i}`}>
+                <div key={verse.number} id={`verse-${i}`} className={`rounded-[22px] ${focusIdx === i ? "lg:ring-2 lg:ring-primary/50 lg:ring-offset-4 lg:ring-offset-background" : ""}`}>
                   <VerseCard
                     key={verse.number}
                     verse={verse}
@@ -580,6 +626,23 @@ export default function Memorize() {
           </>
         )}
       </div>
+      <button onClick={() => setShowKeys(true)} className="hidden lg:flex fixed bottom-6 right-6 z-[var(--z-page-header)] h-10 px-3.5 rounded-xl border-2 border-border bg-card font-extrabold text-sm items-center gap-2 text-muted-foreground hover:text-foreground">
+        <kbd className="px-1.5 rounded-md bg-muted text-xs">?</kbd>Raccourcis clavier
+      </button>
+      {showKeys && (
+        <div className="fixed inset-0 z-[200] hidden lg:flex items-center justify-center" onClick={() => setShowKeys(false)}>
+          <div className="absolute inset-0 bg-foreground/30" />
+          <div className="relative card-flat p-6 w-[420px]" onClick={(e) => e.stopPropagation()}>
+            <p className="text-lg font-black mb-3">Raccourcis clavier</p>
+            {[["Espace", "Lecture / pause"], ["↓  ↑", "Verset suivant / précédent"], ["→  ←", "Écouter le verset suivant / précédent"], ["M", "Marquer le verset comme mémorisé"], ["H", "Masquer le texte (texte, initiales, caché)"], ["Échap", "Retour à la liste"], ["?", "Afficher cette aide"]].map(([key, label]) => (
+              <div key={key} className="flex items-center justify-between py-2 border-b-2 border-border last:border-0">
+                <span className="font-bold text-muted-foreground">{label}</span>
+                <kbd className="min-w-[44px] text-center px-2 py-1 rounded-lg border-2 border-border border-b-4 font-black text-sm bg-card">{key}</kbd>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

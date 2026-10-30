@@ -97,7 +97,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+16px)]">
+      <div className="max-w-2xl lg:max-w-5xl mx-auto px-4 lg:px-8 pt-[calc(env(safe-area-inset-top,0px)+16px)] lg:pt-8">
         {/* En-tête */}
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
@@ -110,6 +110,8 @@ export default function Dashboard() {
           <Link to="/Profile" className="w-10 h-10 rounded-full bg-accent text-accent-foreground font-black flex items-center justify-center" aria-label="Profil">{initial}</Link>
         </div>
 
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6 lg:items-start">
+        <div className="min-w-0">
         {/* Séance du jour */}
         {planLoading ? (
           <div className="h-64 rounded-2xl bg-muted animate-pulse mt-4" />
@@ -167,8 +169,10 @@ export default function Dashboard() {
           </button>
         )}
 
+        </div>
+        <div className="min-w-0 lg:sticky lg:top-8">
         {/* Chiffres */}
-        <Card className="flex mt-3">
+        <Card className="flex mt-3 lg:mt-4">
           <div className="flex-1 p-3 text-center"><p className="text-[22px] font-black">{session.totalMemorized}</p><p className="text-[11.5px] font-bold text-muted-foreground leading-tight">versets<br />mémorisés</p></div>
           <div className="flex-1 p-3 text-center border-l-2 border-border"><p className="text-[22px] font-black">{completed}</p><p className="text-[11.5px] font-bold text-muted-foreground leading-tight">sourates<br />complètes</p></div>
           <button disabled={!fragile} onClick={() => { haptic(); navigate("/ReviewSession?part=weak"); }} className="flex-1 p-3 text-center border-l-2 border-border">
@@ -214,6 +218,8 @@ export default function Dashboard() {
             </button>
           )}
         </Card>
+        </div>
+        </div>
       </div>
     </div>
   );

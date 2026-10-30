@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { PreferencesProvider } from '@/components/usePreferences';
 import { AudioProvider, useAudioManager } from '@/lib/AudioManager';
 import BottomNav from '@/components/BottomNav';
+import DesktopSidebar from '@/components/DesktopSidebar';
 import TopHeader from '@/components/TopHeader';
 import OfflineBanner from '@/components/OfflineBanner';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
@@ -104,7 +105,7 @@ const AuthenticatedApp = () => {
       {/* Contenu principal : transition d'écran native (glissement iOS, fondu Android) */}
       <motion.div
         key={path}
-        className="pb-nav pt-header min-h-full"
+        className={`pb-nav pt-header min-h-full ${immersive ? "" : "lg:pl-[248px]"}`}
         initial={platform === "android" ? { opacity: 0, y: 12 } : { opacity: 0, x: 24 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
@@ -133,7 +134,8 @@ const AuthenticatedApp = () => {
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
-      {!immersive && <BottomNav />}
+      {!immersive && <DesktopSidebar />}
+      {!immersive && <div className="lg:hidden"><BottomNav /></div>}
     </>
   );
 };

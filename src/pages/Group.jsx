@@ -28,8 +28,53 @@ function Tracking({ group }) {
   if (!students.length) {
     return <div className="card-flat p-5 text-center"><p className="font-extrabold">Pas encore {group.kind === "family" ? "d'enfant" : "d'élève"}</p><p className="text-sm font-semibold text-muted-foreground mt-1">Partage le code d'invitation pour qu'ils rejoignent le groupe.</p></div>;
   }
+  const rows = students.map((s) => {
+    const pr = data?.progress.filter((p) => p.user_id === s.user_id) || [];
+    const rv = data?.reviews.filter((r) => r.user_id === s.user_id) || [];
+    const last = [...rv.map((r) => r.last_reviewed), ...pr.map((p) => p.updated_at)].filter(Boolean).sort().pop();
+    return {
+      s, last,
+      memorized: pr.reduce((n, p) => n + (p.memorized_verses?.length || 0), 0),
+      week: rv.filter((r) => r.last_reviewed && new Date(r.last_reviewed) > week).length,
+      due: rv.filter((r) => r.due_date <= today).length,
+      fragile: rv.filter((r) => r.last_grade === 0).length,
+      surahs: pr.filter((p) => p.memorized_verses?.length).length,
+    };
+  });
+  const sum = (k) => rows.reduce((n, r) => n + r[k], 0);
+  const inactive = rows.filter((r) => !r.last || new Date(r.last) < week).length;
   return (
-    <div className="card-flat divide-y-2 divide-border overflow-hidden">
+    <>
+    {/* Tableau du maître (ordinateur) */}
+    <div className="hidden lg:block">
+      <div className="grid grid-cols-4 gap-3 mb-3">
+        {[[rows.length, students.length > 1 ? "élèves" : "élève"], [sum("memorized"), "versets mémorisés au total"], [sum("week"), "révisions cette semaine"], [inactive, "inactifs depuis 7 jours"]].map(([v, l]) => (
+          <div key={l} className="card-flat p-4"><p className="text-[26px] font-black">{v}</p><p className="text-sm font-bold text-muted-foreground">{l}</p></div>
+        ))}
+      </div>
+      <div className="card-flat overflow-hidden">
+        <table className="w-full text-left">
+          <thead><tr className="border-b-2 border-border text-xs font-black uppercase tracking-wider text-muted-foreground">
+            <th className="p-3.5">Élève</th><th className="p-3.5 text-right">Mémorisés</th><th className="p-3.5 text-right">Sourates</th><th className="p-3.5 text-right">Révisés (7 j)</th><th className="p-3.5 text-right">À réviser</th><th className="p-3.5 text-right">Fragiles</th><th className="p-3.5">Dernière activité</th><th className="p-3.5" />
+          </tr></thead>
+          <tbody className="divide-y-2 divide-border">
+            {rows.map((r) => (
+              <tr key={r.s.user_id} className="font-bold hover:bg-muted/60">
+                <td className="p-3.5"><div className="flex items-center gap-2.5"><span className="w-9 h-9 rounded-full bg-accent text-primary font-extrabold flex items-center justify-center shrink-0 text-sm">{initials(r.s.display_name)}</span><span className="font-extrabold truncate">{r.s.display_name || "Élève"}</span></div></td>
+                <td className="p-3.5 text-right font-black">{r.memorized}</td>
+                <td className="p-3.5 text-right">{r.surahs}</td>
+                <td className="p-3.5 text-right">{r.week}</td>
+                <td className="p-3.5 text-right">{r.due ? <span className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-xs font-extrabold">{r.due}</span> : <span className="text-muted-foreground">0</span>}</td>
+                <td className={`p-3.5 text-right ${r.fragile ? "text-gold-lip font-black" : "text-muted-foreground"}`}>{r.fragile}</td>
+                <td className={`p-3.5 ${!r.last || new Date(r.last) < week ? "text-destructive" : "text-muted-foreground"}`}>{ago(r.last)}</td>
+                <td className="p-3.5 text-right"><button onClick={async () => { if (confirm(`Retirer ${r.s.display_name || "ce membre"} du groupe ?`)) { await G.leave(group.id, r.s.user_id); qc.invalidateQueries({ queryKey: ["group", group.id] }); } }} className="text-xs font-extrabold text-muted-foreground hover:text-destructive">Retirer</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div className="card-flat divide-y-2 divide-border overflow-hidden lg:hidden">
       {students.map((s) => {
         const pr = data?.progress.filter((p) => p.user_id === s.user_id) || [];
         const rv = data?.reviews.filter((r) => r.user_id === s.user_id) || [];
@@ -78,6 +123,7 @@ function Tracking({ group }) {
         );
       })}
     </div>
+    </>
   );
 }
 
@@ -303,12 +349,12 @@ export default function Group() {
   if (!group) return <div className="max-w-xl mx-auto p-6 text-center font-extrabold">Groupe introuvable.<button onClick={() => navigate("/Groups")} className="block mx-auto mt-3 text-primary">Retour</button></div>;
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-2 pb-6">
+    <div className="max-w-xl lg:max-w-5xl mx-auto px-4 lg:px-8 pt-2 lg:pt-8 pb-6">
       <button onClick={() => navigate("/Groups")} className="flex items-center gap-1 -ml-1 h-10 text-sm font-extrabold text-muted-foreground"><CaretLeft weight="bold" /> Groupes</button>
       <h1 className="text-2xl font-extrabold">{group.name}</h1>
       <p className="text-sm font-semibold text-muted-foreground">{KIND_LABEL[group.kind]} · {group.members.length} membre{group.members.length > 1 ? "s" : ""} · {ROLE_LABEL[group.role]}</p>
 
-      <div className="card-flat p-3 mt-4 flex items-center gap-3">
+      <div className="card-flat p-3 mt-4 flex items-center gap-3 lg:max-w-md">
         <div className="flex-1">
           <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">Code d'invitation</p>
           <p className="text-2xl font-extrabold tracking-[0.25em] text-primary">{group.invite_code}</p>
@@ -316,7 +362,7 @@ export default function Group() {
         <button onClick={share} className="btn-relief h-11 px-4 bg-primary text-primary-foreground text-sm">{copied ? <><Copy weight="bold" /> Copié</> : <><ShareNetwork weight="bold" /> Inviter</>}</button>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 p-1 mt-4 rounded-2xl bg-muted">
+      <div className="grid grid-cols-3 gap-1 p-1 mt-4 rounded-2xl bg-muted lg:max-w-md">
         {tabs.map(([k, l]) => (
           <button key={k} onClick={() => { haptic(); setTab(k); }} className={`h-10 rounded-xl font-extrabold text-sm ${tab === k ? "bg-card text-primary shadow-sm" : "text-muted-foreground"}`}>{l}</button>
         ))}
