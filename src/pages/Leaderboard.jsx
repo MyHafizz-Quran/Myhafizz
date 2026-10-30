@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { supabase } from "@/api/supabaseClient";
+import { supabase } from "@/api/neonClient";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";

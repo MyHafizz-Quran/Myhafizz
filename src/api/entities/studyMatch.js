@@ -1,4 +1,4 @@
-import { supabase } from '@/api/supabaseClient';
+import { supabase } from '@/api/neonClient';
 
 export const StudyProfile = {
   async filter(filters = {}) {

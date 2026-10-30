@@ -1,4 +1,4 @@
-import { supabase } from '@/api/supabaseClient';
+import { supabase } from '@/api/neonClient';
 
 export const MemorizationProgress = {
   async list() {

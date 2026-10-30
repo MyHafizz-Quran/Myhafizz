@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { supabase } from '@/api/supabaseClient';
+import { supabase } from '@/api/neonClient';
 import { useQuery } from '@tanstack/react-query';
 
 

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
-import { supabase } from '@/api/supabaseClient';
+import { supabase } from '@/api/neonClient';
 
 const AuthContext = createContext();
 

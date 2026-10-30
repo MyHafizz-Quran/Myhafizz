@@ -1,5 +1,5 @@
 import React from "react";
-import { supabase } from "@/api/supabaseClient";
+import { supabase } from "@/api/neonClient";
 import { Challenge, ChallengeParticipant, MemorizationProgress } from "@/api/entities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";

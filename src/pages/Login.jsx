@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "@/api/supabaseClient";
+import { supabase } from "@/api/neonClient";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2, CheckCircle2, User, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";

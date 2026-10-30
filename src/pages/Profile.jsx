@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { supabase } from "@/api/supabaseClient";
+import { supabase } from "@/api/neonClient";
 import { MemorizationProgress } from "@/api/entities";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
