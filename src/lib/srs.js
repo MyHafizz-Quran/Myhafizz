@@ -103,9 +103,11 @@ export function goalPace({ surahs, memorizedSet, goalDate }) {
 export function maskWords(text, level) {
   if (level === 0) return text;
   const words = text.split(/\s+/).filter(Boolean);
-  if (level === 2) return words.map(() => "ـــ").join(" ");
+  const keep = (w) => /^[\u0660-\u0669\u06F0-\u06F90-9\u06DD\u06DE\u06E9]+$/.test(w); // numéros, signes
+  if (level === 2) return words.map((w) => (keep(w) ? w : "ـــ")).join(" ");
   // garde la 1re lettre (avec ses signes diacritiques)
   return words.map((w) => {
+    if (keep(w)) return w;
     const m = w.match(/^[\u0621-\u064A\u0671-\u06D3][\u064B-\u065F\u0670\u06D6-\u06ED]*/);
     return (m ? m[0] : w.slice(0, 1)) + "ـ";
   }).join(" ");
