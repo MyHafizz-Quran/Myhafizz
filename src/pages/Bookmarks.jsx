@@ -79,8 +79,8 @@ export default function Bookmarks() {
                   className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
                     isActive
                       ? tab.key === "favorites"
-                        ? "bg-rose-500 text-white shadow-sm"
-                        : "bg-amber-500 text-white shadow-sm"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:bg-border"
                   }`}
                 >
@@ -146,19 +146,19 @@ export default function Bookmarks() {
                     transition={{ duration: 0.2 }}
                     className={`glass-card p-4 border ${
                       activeTab === "favorites"
-                        ? "border-rose-100/60 dark:border-rose-900/20"
-                        : "border-amber-100/60 dark:border-amber-900/20"
+                        ? "border-border"
+                        : "border-border"
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                         activeTab === "favorites"
-                          ? "bg-rose-50 dark:bg-rose-900/20"
-                          : "bg-amber-50 dark:bg-amber-900/20"
+                          ? "bg-accent"
+                          : "bg-accent"
                       }`}>
                         {activeTab === "favorites"
-                          ? <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-                          : <MapPin className="w-4 h-4 text-amber-500 fill-amber-400" />
+                          ? <Heart className="w-4 h-4 text-primary fill-primary" />
+                          : <MapPin className="w-4 h-4 text-primary fill-primary" />
                         }
                       </div>
                       <div className="flex-1 min-w-0">
@@ -167,7 +167,7 @@ export default function Bookmarks() {
                         <p className="text-xs text-muted-foreground mt-1">
                           Verset {info.numberInSurah}
                           {activeTab === "markers" && markers[verseNumber] > 0 && (
-                            <span className="ml-1 text-amber-500 font-medium">· {Math.floor(markers[verseNumber])}s</span>
+                            <span className="ml-1 text-muted-foreground font-semibold">· {Math.floor(markers[verseNumber])}s</span>
                           )}
                         </p>
                       </div>

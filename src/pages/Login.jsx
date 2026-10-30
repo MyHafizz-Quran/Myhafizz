@@ -3,9 +3,11 @@ import { supabase } from "@/api/neonClient";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2, CheckCircle2, User, Eye, EyeOff, ArrowLeft } from "@/components/icons";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { syncSession } = useAuth();
   const [mode, setMode] = useState("login"); // "login" | "signup" | "forgot"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +40,10 @@ export default function Login() {
     if (error) {
       setError(error.message);
     } else {
-      navigate("/Dashboard", { replace: true });
+      const ok = await syncSession();
+      if (ok) navigate("/Dashboard", { replace: true });
+      else window.location.replace("/Dashboard");
+      return;
     }
     setLoading(false);
   };

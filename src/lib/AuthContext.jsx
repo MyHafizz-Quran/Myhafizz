@@ -66,12 +66,27 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  // Synchronise l'état après une connexion réussie, avant de quitter /login
+  const syncSession = async () => {
+    for (let i = 0; i < 5; i++) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        setIsAuthenticated(true);
+        setIsLoadingAuth(false);
+        return true;
+      }
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    return false;
+  };
+
   const navigateToLogin = () => {
     window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, logout, navigateToLogin }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, logout, navigateToLogin, syncSession }}>
       {children}
     </AuthContext.Provider>
   );
