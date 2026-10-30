@@ -15,7 +15,6 @@ import BottomNav from '@/components/BottomNav';
 import TopHeader from '@/components/TopHeader';
 import OfflineBanner from '@/components/OfflineBanner';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
-import InstallPrompt from '@/components/InstallPrompt';
 
 import Dashboard from './pages/Dashboard.jsx';
 import SurahList from './pages/SurahList.jsx';
@@ -39,12 +38,13 @@ import ConfirmEmail from './pages/ConfirmEmail.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import Terms from './pages/Terms.jsx';
 import Privacy from './pages/Privacy.jsx';
+import Download from './pages/Download.jsx';
 import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
 const IMMERSIVE = ["/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
-const WITH_HOME_HEADER = ["/Dashboard"];
+const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
@@ -134,7 +134,6 @@ const AuthenticatedApp = () => {
         </Routes>
       </motion.div>
       {!immersive && <BottomNav />}
-      <InstallPrompt />
     </>
   );
 };
@@ -172,6 +171,8 @@ function App() {
                 <Route path="/confirm" element={<ConfirmEmail />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
+                <Route path="/telecharger" element={<Download />} />
+                <Route path="/download" element={<Download />} />
                 <Route path="/*" element={<AuthenticatedApp />} />
               </Routes>
             </Router>

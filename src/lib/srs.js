@@ -112,3 +112,25 @@ export function maskWords(text, level) {
     return (m ? m[0] : w.slice(0, 1)) + "ـ";
   }).join(" ");
 }
+
+/** Série en cours (jours consécutifs jusqu'à aujourd'hui ou hier) */
+export function currentStreak(days) {
+  const set = new Set(days);
+  const d = new Date();
+  if (!set.has(todayStr(d))) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (set.has(todayStr(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+/** Plus longue série */
+export function longestStreak(days) {
+  const sorted = [...new Set(days)].sort();
+  let best = 0, run = 0, prev = null;
+  for (const s of sorted) {
+    const t = new Date(s + "T00:00:00Z").getTime();
+    run = prev != null && t - prev === 86400000 ? run + 1 : 1;
+    best = Math.max(best, run); prev = t;
+  }
+  return best;
+}

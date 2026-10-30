@@ -49,3 +49,13 @@ export const HifzPlan = {
     return data;
   },
 };
+
+/** Jours d'activité (rempli côté base par déclencheur sur verse_reviews / memorization_progress) */
+export const ActivityDays = {
+  async list(limit = 400) {
+    const id = await uid();
+    const { data, error } = await supabase.from('activity_days').select('day').eq('user_id', id).order('day', { ascending: false }).limit(limit);
+    if (error) throw error;
+    return (data || []).map((r) => r.day);
+  },
+};
