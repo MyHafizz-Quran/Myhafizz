@@ -2,13 +2,13 @@
 
 Retiré : 1to1 / StudyMatch (onglet, page, aide, mentions légales). Tables conservées en base, inutilisées.
 
-## Phase 1 · Le système d'apprentissage (en cours)
+## Phase 1 · Le système d'apprentissage (livrée)
 1. Programme Sabaq / Sabqi / Manzil : session du jour en 3 blocs, onglet « Réviser » à la place de 1to1.
 2. Révision espacée : chaque verset a un intervalle ; notes Oublié / Hésité / Facile ; file « à réviser aujourd'hui ».
 3. Masquage progressif : Texte complet → Premières lettres → Masqué, en révision et en mémorisation.
 16. Objectif guidé : « Juz Amma en 3 mois » → quota/jour, avance/retard (dans le réglage du programme).
 
-## Phase 2 · Outils de répétition
+## Phase 2 · Outils de répétition (livrée)
 4. Boucle audio : répéter un verset N fois, plage A–B, vitesse, pause de répétition, écran éteint.
 6. Exercices d'enchaînement : verset suivant, compléter la fin, remettre les mots dans l'ordre (dans Quiz).
 8. Carte de solidité : vue par sourate des versets fragiles (données de la phase 1).
