@@ -202,12 +202,14 @@ export default function SurahList() {
               </button>
             )}
 
-            <div className="flex gap-2.5 overflow-x-auto no-scrollbar -mx-4 px-4 mt-3 pb-1 snap-x">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 scroll-px-4 mt-3 pb-1 snap-x snap-mandatory">
               {moments.map((m) => (
-                <button key={m.title} onClick={() => open(m.s, m.v)} className="snap-start shrink-0 w-[150px] card-flat p-3.5 text-left press">
-                  <m.Icon weight="fill" className="w-5 h-5 text-primary" />
-                  <p className="font-extrabold mt-2 leading-tight">{m.title}</p>
-                  <p className="text-[12px] font-semibold text-muted-foreground">{m.label}</p>
+                <button key={m.title} onClick={() => open(m.s, m.v)} className="snap-start shrink-0 h-[60px] pl-2.5 pr-4 rounded-2xl border-2 border-border bg-card flex items-center gap-2.5 text-left press">
+                  <span className="w-9 h-9 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><m.Icon weight="fill" className="w-[18px] h-[18px]" /></span>
+                  <span className="min-w-0">
+                    <span className="block font-extrabold text-[14.5px] leading-tight whitespace-nowrap">{m.title}</span>
+                    <span className="block text-[12px] font-semibold text-muted-foreground whitespace-nowrap">{m.label}</span>
+                  </span>
                 </button>
               ))}
             </div>

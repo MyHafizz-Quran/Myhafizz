@@ -40,7 +40,7 @@ function IOSTabBar({ path }) {
     <div className="fixed left-0 right-0 bottom-0 z-[var(--z-bottom-nav)] pointer-events-none"
          style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)" }}>
       {/* Fondu du contenu sous les barres */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-background/80 " />
+      <div className="absolute inset-x-0 bottom-0 h-[72px] pointer-events-none" style={{ background: "linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / .85) 35%, hsl(var(--background) / 0) 100%)" }} />
       <div className="relative px-3.5 flex flex-col gap-2">
         <AnimatePresence>
           {loopPlaying && surah && (

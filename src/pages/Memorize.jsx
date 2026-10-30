@@ -6,11 +6,13 @@ import { TajweedLegend } from "@/components/verseExtras";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause, Repeat, Palette, Mic } from "@/components/icons";
+import { ArrowLeft, CheckCircle2, Loader2, Play, Pause, Repeat, Palette, Mic } from "@/components/icons";
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
 import { SURAHS } from "@/components/quranData";
+import { SURAH_FR } from "@/components/surahNamesFr";
+import { getReciterDisplayName } from "@/lib/reciterNames";
 import {
   getCachedSurah,
   cacheSurah,
@@ -383,13 +385,13 @@ export default function Memorize() {
   }, []);
 
   // Masquage progressif : Texte → Initiales → Masqué → Texte
-  const toggleAllHidden = () => {
-    const next = (maskLevel + 1) % 3;
+  const setMask = (next) => {
     setMaskLevel(next);
     if (next === 2) setHiddenVerses(new Set(verses.map(v => v.numberInSurah)));
     else setHiddenVerses(new Set());
     setAllHidden(next === 2);
   };
+  const toggleAllHidden = () => setMask((maskLevel + 1) % 3);
 
   const cycleLoopMode = () => {
     if (loopPlaying) {
@@ -404,6 +406,21 @@ export default function Memorize() {
     if (next !== "off") startLoop(next, verses, reciter, surah);
   };
 
+  const loopRepeat = loopMode === "infinite";
+  const togglePlayer = () => {
+    if (loopPlaying) { stopLoop(); saveReadingSession({ wasPlaying: false }); return; }
+    const mode = loopRepeat ? "infinite" : "once";
+    if (loopMode === "off") setLoopMode(mode);
+    saveReadingSession({ loopMode: mode, wasPlaying: true });
+    startLoop(mode, verses, reciter, surah, Math.max(0, focusIdx || 0));
+  };
+  const toggleLoopRepeat = () => {
+    const mode = loopRepeat ? "once" : "infinite";
+    setLoopMode(mode);
+    saveReadingSession({ loopMode: mode });
+    if (loopPlaying) startLoop(mode, verses, reciter, surah, loopIndex);
+  };
+
   // Explicit back: clear session so user starts fresh when they return via SurahList
   const handleBack = () => {
     clearReadingSession();
@@ -413,6 +430,12 @@ export default function Memorize() {
 
   // ─── Raccourcis clavier (ordinateur) ───
   const [focusIdx, setFocusIdx] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const [showKeys, setShowKeys] = useState(false);
   const kb = useRef({});
   kb.current = { verses, loopPlaying, loopIndex, loopMode, focusIdx, visibleCount, reciter, surah, toggleMemorized, toggleAllHidden, handleBack, stopLoop, startLoop, playLoopFrom, setLoopMode };
@@ -473,109 +496,50 @@ export default function Memorize() {
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* ─── HEADER ─── */}
-      <div className="bg-surface/95 backdrop-blur-xl border-b border-outline-variant/10 sticky top-0 z-[var(--z-page-header)] shadow-none">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-
-          {/* Line 1: Back button + Surah name */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleBack}
-                className="p-2 rounded-full hover:bg-surface-container transition-colors duration-300 active:scale-95 text-primary"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <div className="flex flex-col">
-                <h1 className="font-headline text-primary text-xl font-bold tracking-tight">
-                  {surah.englishName}
-                  <span className="font-arabic ml-2 opacity-50">{surah.name}</span>
-                </h1>
-                <span className="font-label text-xs text-on-surface-variant uppercase tracking-widest mt-0.5">
-                  Mémorisés: {memorizedVerses.size} / {surah.numberOfAyahs}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center w-10 h-10">
-                <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                  <circle cx="20" cy="20" r="18" fill="none" strokeWidth="3" className="stroke-surface-container" />
-                  <circle cx="20" cy="20" r="18" fill="none" strokeWidth="3" strokeDasharray={`${percent * 1.13} 113`} className="stroke-primary" strokeLinecap="round" />
-                </svg>
-                <span className="text-[10px] font-bold text-primary">{Math.round(percent)}%</span>
-              </div>
-            </div>
+      {/* ─── EN-TÊTE ─── */}
+      <div className={`sticky top-0 z-[var(--z-page-header)] bg-background/95 backdrop-blur-md border-b-2 transition-colors ${scrolled ? "border-border" : "border-transparent"}`}>
+        <div className="max-w-3xl mx-auto px-3 h-14 flex items-center gap-2">
+          <button onClick={handleBack} aria-label="Retour" className="w-10 h-10 rounded-full flex items-center justify-center text-foreground hover:bg-muted press shrink-0">
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <div className="flex-1 min-w-0 text-center">
+            <p className="font-black text-[17px] leading-tight truncate">{surah.englishName} <span className="font-arabic text-accent-foreground font-normal">{surah.name}</span></p>
+            <p className="text-[12px] font-bold text-muted-foreground truncate">{SURAH_FR[surah.number - 1]} · {memorizedVerses.size}/{surah.numberOfAyahs} mémorisés</p>
           </div>
-
-          {/* Line 2: Action buttons */}
-          <div className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar -mx-4 px-4">
-            {/* Loop player */}
-            {verses.length > 0 && (
-              <button
-                onClick={cycleLoopMode}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${loopPlaying
-                    ? "bg-primary text-on-primary shadow-sm"
-                    : loopMode !== "off"
-                      ? "bg-primary-container text-on-primary-container"
-                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                  }`}
-              >
-                {loopPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                <span>
-                  {loopPlaying
-                    ? `Lecture en cours : ${loopIndex + 1}/${verses.length}`
-                    : loopMode === "infinite" ? "Boucle infinie" : "Lecture séquentielle"}
-                </span>
-              </button>
-            )}
-
-            {/* Répétition avancée */}
-            {verses.length > 0 && (
-              <button onClick={() => navigate(`/Repeat?surah=${surahNumber}`)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 bg-surface-container-low text-on-surface-variant hover:bg-surface-container">
-                <Repeat className="w-4 h-4" /><span>Répéter</span>
-              </button>
-            )}
-
-            {/* Réciter */}
-            {verses.length > 0 && (
-              <button onClick={() => navigate(`/Recite?surah=${surahNumber}`)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 bg-surface-container-low text-on-surface-variant">
-                <Mic className="w-4 h-4" /><span>Réciter</span>
-              </button>
-            )}
-
-            {/* Tajwîd */}
-            {verses.length > 0 && (
-              <button onClick={() => setShowTajweed(!showTajweed)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${showTajweed ? "bg-accent text-primary" : "bg-surface-container-low text-on-surface-variant"}`}>
-                <Palette className="w-4 h-4" /><span>Tajwîd</span>
-              </button>
-            )}
-
-            {/* Bulk hide toggle */}
-            {verses.length > 0 && (
-              <button
-                onClick={toggleAllHidden}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${maskLevel > 0
-                    ? "bg-surface-container-highest text-on-surface"
-                    : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                  }`}
-              >
-                {maskLevel === 2 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                <span>{maskLevel === 0 ? "Texte" : maskLevel === 1 ? "Initiales" : "Masqué"}</span>
-              </button>
-            )}
+          <div className="relative w-10 h-10 shrink-0" aria-label={`${Math.round(percent)} % mémorisé`}>
+            <svg className="absolute inset-0 -rotate-90" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="16" fill="none" strokeWidth="4" stroke="hsl(var(--muted))" />
+              <circle cx="20" cy="20" r="16" fill="none" strokeWidth="4" stroke="hsl(var(--primary))" strokeLinecap="round" strokeDasharray={`${percent * 1.005} 100.5`} />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black">{Math.round(percent)}</span>
           </div>
-
         </div>
+        {verses.length > 0 && (
+          <div className="max-w-3xl mx-auto px-3 pb-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <div className="flex p-1 rounded-xl bg-muted shrink-0" role="tablist" aria-label="Affichage du texte">
+              {["Texte", "Initiales", "Masqué"].map((l, lvl) => (
+                <button key={l} role="tab" aria-selected={maskLevel === lvl} onClick={() => setMask(lvl)}
+                  className={`h-8 px-3 rounded-lg text-[13px] font-extrabold whitespace-nowrap transition-colors ${maskLevel === lvl ? "bg-card text-primary shadow-sm" : "text-muted-foreground"}`}>{l}</button>
+              ))}
+            </div>
+            <button onClick={() => setShowTajweed(!showTajweed)} aria-pressed={showTajweed}
+              className={`h-10 px-3.5 rounded-xl border-2 text-[13px] font-extrabold whitespace-nowrap shrink-0 flex items-center gap-1.5 ${showTajweed ? "border-primary bg-accent text-primary" : "border-border bg-card text-foreground"}`}>
+              <Palette className="w-4 h-4" />Tajwîd
+            </button>
+            <button onClick={() => navigate(`/Repeat?surah=${surahNumber}`)} className="h-10 px-3.5 rounded-xl border-2 border-border bg-card text-[13px] font-extrabold whitespace-nowrap shrink-0 flex items-center gap-1.5">
+              <Repeat className="w-4 h-4" />Répéter
+            </button>
+            <button onClick={() => navigate(`/Recite?surah=${surahNumber}`)} className="h-10 px-3.5 rounded-xl border-2 border-border bg-card text-[13px] font-extrabold whitespace-nowrap shrink-0 flex items-center gap-1.5">
+              <Mic className="w-4 h-4" />Réciter
+            </button>
+          </div>
+        )}
       </div>
 
-      {showTajweed && verses.length > 0 && <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3"><TajweedLegend /></div>}
+      {showTajweed && verses.length > 0 && <div className="max-w-3xl mx-auto px-3 sm:px-4 pt-3"><TajweedLegend /></div>}
 
       {/* ─── VERSES ─── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-nav">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 pt-3 pb-36">
         {loadingVerses ? (
           <div className="flex flex-col items-center justify-center py-24">
             <Loader2 className="w-9 h-9 text-primary animate-spin mb-4" />
@@ -601,9 +565,9 @@ export default function Memorize() {
                 </div>
               </motion.div>
             )}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {verses.slice(0, visibleCount).map((verse, i) => (
-                <div key={verse.number} id={`verse-${i}`} className={`rounded-[22px] ${focusIdx === i ? "lg:ring-2 lg:ring-primary/50 lg:ring-offset-4 lg:ring-offset-background" : ""}`}>
+                <div key={verse.number} id={`verse-${i}`} className={`rounded-[20px] scroll-mt-32 ${focusIdx === i ? "lg:ring-2 lg:ring-primary/50 lg:ring-offset-2 lg:ring-offset-background" : ""}`}>
                   <VerseCard
                     key={verse.number}
                     verse={verse}
@@ -637,7 +601,27 @@ export default function Memorize() {
           </>
         )}
       </div>
-      <button onClick={() => setShowKeys(true)} className="hidden lg:flex fixed bottom-6 right-6 z-[var(--z-page-header)] h-10 px-3.5 rounded-xl border-2 border-border bg-card font-extrabold text-sm items-center gap-2 text-muted-foreground hover:text-foreground">
+      {/* ─── LECTEUR DE LA SOURATE ─── */}
+      {verses.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-[var(--z-page-header)] pointer-events-none" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)" }}>
+          <div className="absolute inset-x-0 bottom-0 h-24" style={{ background: "linear-gradient(to top, hsl(var(--background)) 30%, hsl(var(--background) / 0))" }} />
+          <div className="relative max-w-md mx-auto px-3 pointer-events-auto">
+            <div className="rounded-[22px] border-2 border-border bg-card flex items-center gap-3 p-2 shadow-[0_10px_28px_-14px_rgba(0,0,0,.3)]">
+              <button onClick={togglePlayer} aria-label={loopPlaying ? "Pause" : "Écouter la sourate"} className="btn-relief w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                {loopPlaying ? <Pause weight="fill" className="w-5 h-5" /> : <Play weight="fill" className="w-5 h-5 ml-0.5" />}
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="font-extrabold text-[15px] truncate">{loopPlaying ? `Verset ${loopIndex + 1} sur ${verses.length}` : focusIdx > 0 ? `Écouter depuis le verset ${focusIdx + 1}` : "Écouter la sourate"}</p>
+                <p className="text-[12px] font-bold text-muted-foreground truncate">{getReciterDisplayName(reciter)}{loopRepeat ? " · en boucle" : ""}</p>
+              </div>
+              <button onClick={toggleLoopRepeat} aria-pressed={loopRepeat} aria-label="Lecture en boucle" className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${loopRepeat ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+                <Repeat className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button onClick={() => setShowKeys(true)} className="hidden xl:flex fixed bottom-6 right-6 z-[var(--z-page-header)] h-10 px-3.5 rounded-xl border-2 border-border bg-card font-extrabold text-sm items-center gap-2 text-muted-foreground hover:text-foreground">
         <kbd className="px-1.5 rounded-md bg-muted text-xs">?</kbd>Raccourcis clavier
       </button>
       {showKeys && (

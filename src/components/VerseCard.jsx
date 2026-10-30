@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { maskWords } from "@/lib/srs";
-import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, RotateCcw, Repeat, Heart } from "@/components/icons";
+import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, Repeat, Heart } from "@/components/icons";
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";
@@ -235,113 +235,90 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   }, []);
 
   // Filter displayable words (exclude end markers)
-  const displayWords = words ? words.filter(w => w.char_type !== 'end') : null;
+  const displayWords = words ? words.filter(w => (w.char_type_name || w.char_type) !== 'end') : null;
+  const SIZE = { small: "text-[26px]", medium: "text-[31px]", large: "text-[37px]", xlarge: "text-[44px]" };
+  const LEAD = { compact: "leading-[1.9]", normal: "leading-[2.15]", airy: "leading-[2.5]" };
+  const arNum = String(verse.numberInSurah).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
+  const iconBtn = "w-9 h-9 rounded-full flex items-center justify-center transition-colors press";
+  const endMark = (
+    <span className="inline-flex items-center justify-center align-middle mx-1 min-w-[1.6em] h-[1.6em] px-1 rounded-full border-2 border-primary/40 text-primary text-[0.5em] font-bold leading-none" style={{ fontFamily: "inherit" }} aria-label={`Verset ${verse.numberInSurah}`}>{arNum}</span>
+  );
 
   return (
-    <div
-      className={`group relative py-12 border-b transition-all duration-500 flex flex-col items-center justify-center min-h-[50vh] ${isActive
-          ? "border-primary/20 bg-surface-container-low dark:bg-surface-container-low shadow-[inset_0_4px_24px_rgba(0,0,0,0.02)]"
-          : "border-outline-variant/10 bg-transparent hover:bg-surface-container-lowest"
-        }`}
-    >
-
-      <div className="w-full max-w-2xl mx-auto px-4 z-10 flex flex-col items-center space-y-10">
-
-        {/* Arabic Verse */}
-        <div className="relative group/text w-full">
-          {showVerseNumbers && (
-            <div className="absolute -left-4 md:-left-12 top-2 opacity-50 text-xs font-label font-bold text-on-surface-variant flex flex-col items-center gap-1">
-              <span className="w-8 h-8 rounded-full border border-outline-variant/30 flex items-center justify-center">{verse.numberInSurah}</span>
-              {hasStopMarker && <div className="w-2 h-2 rounded-full bg-primary" />}
-            </div>
-          )}
-          <div
-            dir="rtl"
-            className={`${getArabicFontClass(arabicFont)} text-4xl md:text-5xl lg:text-6xl text-on-surface leading-loose text-center px-4 transition-all duration-500 ${isHidden ? "blur-xl select-none opacity-40" : ""
-              } ${displayWords ? "flex flex-wrap justify-center gap-x-3 gap-y-4" : ""}`}
-          >
-            {displayWords && displayWords.length > 0 ? (
-              displayWords.map((word, i) => (
-                <span
-                  key={i}
-                  onClick={() => !isHidden && setSelectedWord(i)}
-                  className={`inline-block px-1.5 py-1 rounded-xl transition-all duration-300 cursor-pointer ${i === activeWordIndex
-                      ? 'text-primary scale-110 drop-shadow-md'
-                      : 'hover:text-primary/70'
-                    }`}
-                >
-                  {maskLevel === 1 && !isHidden ? maskWords(word.text_uthmani, 1)
-                    : showTajweed && word.text_uthmani_tajweed && i !== activeWordIndex ? <span dangerouslySetInnerHTML={{ __html: tajweedHtml(word.text_uthmani_tajweed) }} />
-                    : word.text_uthmani}
-                </span>
-              ))
-            ) : (
-              maskLevel === 1 && !isHidden ? maskWords(verse.text, 1) : verse.text
-            )}
-          </div>
-        </div>
-
-        {!isHidden && maskLevel === 0 && <SimilarVerses verseText={verse.text} similar={similar} />}
-        <WordSheet word={selectedWord != null ? displayWords?.[selectedWord] : null} onClose={() => setSelectedWord(null)}
-          canPlay={!!wordTimings?.[selectedWord]} onPlayFrom={() => seekToWord(selectedWord)} />
-
-        {/* Translations */}
-        <div className="text-center max-w-xl space-y-4">
-          {showPhonetic && verse.transliteration && (
-            <p className={`font-body text-base text-on-surface-variant italic transition-all duration-500 ${isHidden ? "blur-md select-none opacity-20" : ""}`}>
-              {verse.transliteration}
-            </p>
-          )}
-          {showTranslation && verse.translation && (
-            <p className={`font-headline text-lg md:text-xl text-on-surface-variant font-medium transition-all duration-500 ${isHidden ? "blur-md select-none opacity-20" : ""}`}>
-              "{verse.translation}"
-            </p>
-          )}
-        </div>
-
-        {/* Audio Controls & Actions (Glass Panel) */}
-        <div className="w-full max-w-sm bg-surface/80 backdrop-blur-xl rounded-[2.5rem] p-3 flex flex-col gap-3 shadow-[0_-4px_24px_rgba(27,28,26,0.04)] border border-outline-variant/10">
-
-          <div className="flex items-center justify-between px-2">
-            <button onClick={() => setRepeatMenuOpen(!repeatMenuOpen)} className={`p-3 rounded-full transition-colors ${repeatCount > 1 ? "text-primary bg-primary-container" : "text-on-surface-variant hover:bg-surface-container"}`}>
-              <Repeat className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button onClick={handleRestart} className="p-3 rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
-                <RotateCcw className="w-5 h-5" />
-              </button>
-
-              <button onClick={() => handlePlay()} className="w-14 h-14 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform">
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
-              </button>
-
-              <button onClick={onToggleHidden} className={`p-3 rounded-full transition-colors ${isHidden ? "text-primary bg-primary-container" : "text-on-surface-variant hover:bg-surface-container"}`}>
-                {isHidden ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-
-            <button onClick={onToggleMemorized} className={`p-3 rounded-full transition-colors ${isMemorized ? "text-tertiary bg-tertiary-container/30" : "text-on-surface-variant hover:bg-surface-container"}`}>
-              {isMemorized ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-            </button>
-          </div>
-
-          {repeatMenuOpen && (
-            <div className="flex justify-center gap-2 pt-2 border-t border-outline-variant/10">
-              {REPEAT_OPTIONS.map(n => (
-                <button key={n} onClick={() => cycleRepeat(n)} className={`w-8 h-8 rounded-full text-xs font-bold transition-colors ${repeatCount === n ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container"}`}>
-                  {n === Infinity ? "∞" : n}
-                </button>
-              ))}
-              <button onClick={toggleFavorite} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isFavorite ? "text-rose-500 bg-rose-50" : "text-on-surface-variant hover:bg-surface-container"}`}>
-                <Heart className={`w-4 h-4 ${isFavorite ? "fill-rose-500" : ""}`} />
-              </button>
-            </div>
-          )}
-
-        </div>
-
+    <div className={`relative rounded-[20px] border-2 transition-colors duration-300 ${isActive ? "border-primary bg-accent/60" : "border-border bg-card"}`}>
+      {/* Barre du verset */}
+      <div className="flex items-center gap-1 pl-3 pr-2 pt-2.5">
+        {showVerseNumbers && (
+          <span className={`h-7 min-w-[28px] px-2 rounded-lg text-[13px] font-black flex items-center justify-center ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{verse.numberInSurah}</span>
+        )}
+        {hasStopMarker && <span className="w-2 h-2 rounded-full bg-primary ml-1" title="Reprise ici" />}
+        {isMemorized && <span className="ml-1.5 text-[12px] font-extrabold text-primary flex items-center gap-1"><CheckCircle2 weight="fill" className="w-4 h-4" />Mémorisé</span>}
+        {currentRepeat > 0 && <span className="ml-1.5 text-[12px] font-extrabold text-muted-foreground">{currentRepeat + 1}/{repeatCount === Infinity ? "∞" : repeatCount}</span>}
+        <div className="flex-1" />
+        <button onClick={() => handlePlay()} aria-label={isPlaying ? "Pause" : "Écouter ce verset"} className={`${iconBtn} ${isPlaying ? "bg-primary text-primary-foreground" : "text-primary hover:bg-accent"}`}>
+          {isPlaying ? <Pause weight="fill" className="w-4 h-4" /> : <Play weight="fill" className="w-4 h-4" />}
+        </button>
+        <button onClick={() => setRepeatMenuOpen(!repeatMenuOpen)} aria-label="Répéter ce verset" className={`${iconBtn} ${repeatMenuOpen || repeatCount > 1 ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+          <Repeat className="w-[18px] h-[18px]" />
+        </button>
+        <button onClick={onToggleHidden} aria-label={isHidden ? "Afficher" : "Masquer"} className={`${iconBtn} ${isHidden ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+          {isHidden ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+        </button>
+        <button onClick={onToggleMemorized} aria-label={isMemorized ? "Retirer des versets mémorisés" : "Marquer comme mémorisé"} className={`${iconBtn} ${isMemorized ? "text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+          {isMemorized ? <CheckCircle2 weight="fill" className="w-[22px] h-[22px]" /> : <Circle className="w-[22px] h-[22px]" />}
+        </button>
       </div>
+
+      {repeatMenuOpen && (
+        <div className="mx-3 mt-2 p-1.5 rounded-xl bg-muted flex items-center gap-1">
+          <span className="text-[12px] font-extrabold text-muted-foreground px-1.5">Répéter</span>
+          {REPEAT_OPTIONS.map(n => (
+            <button key={n} onClick={() => cycleRepeat(n)} className={`h-8 min-w-[32px] px-2 rounded-lg text-[13px] font-black ${repeatCount === n ? "bg-card text-primary shadow-sm" : "text-muted-foreground"}`}>
+              {n === Infinity ? "∞" : `${n}×`}
+            </button>
+          ))}
+          <div className="flex-1" />
+          <button onClick={toggleFavorite} aria-label="Favori" className={`w-8 h-8 rounded-lg flex items-center justify-center ${isFavorite ? "text-rose-500" : "text-muted-foreground"}`}>
+            <Heart weight={isFavorite ? "fill" : "bold"} className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Texte arabe */}
+      <div
+        dir="rtl"
+        onClick={() => { if (isHidden) onToggleHidden(); }}
+        className={`${getArabicFontClass(arabicFont)} ${SIZE[arabicTextSize] || SIZE.medium} ${LEAD[lineSpacing] || LEAD.normal} text-foreground text-right px-4 pt-3 pb-2 transition-[filter,opacity] duration-300 ${isHidden ? "blur-lg select-none opacity-40 cursor-pointer" : ""}`}
+      >
+        {displayWords && displayWords.length > 0 ? (
+          <>
+            {displayWords.map((word, i) => (
+              <span key={i}
+                onClick={(e) => { if (isHidden) return; e.stopPropagation(); setSelectedWord(i); }}
+                className={`inline rounded-lg px-[3px] transition-colors duration-200 cursor-pointer ${i === activeWordIndex ? "text-primary bg-accent" : "hover:text-primary"}`}>
+                {maskLevel === 1 && !isHidden ? maskWords(word.text_uthmani, 1)
+                  : showTajweed && word.text_uthmani_tajweed && i !== activeWordIndex ? <span dangerouslySetInnerHTML={{ __html: tajweedHtml(word.text_uthmani_tajweed) }} />
+                  : word.text_uthmani}{" "}
+              </span>
+            ))}
+            {endMark}
+          </>
+        ) : (
+          <>{maskLevel === 1 && !isHidden ? maskWords(verse.text, 1) : verse.text} {endMark}</>
+        )}
+      </div>
+      {isHidden && <p className="text-center text-[12px] font-bold text-muted-foreground -mt-1 pb-2">Touche pour révéler</p>}
+
+      {!isHidden && maskLevel === 0 && <div className="px-4"><SimilarVerses verseText={verse.text} similar={similar} /></div>}
+      <WordSheet word={selectedWord != null ? displayWords?.[selectedWord] : null} onClose={() => setSelectedWord(null)}
+        canPlay={!!wordTimings?.[selectedWord]} onPlayFrom={() => seekToWord(selectedWord)} />
+
+      {(showPhonetic && verse.transliteration) || (showTranslation && verse.translation) ? (
+        <div className={`px-4 pb-4 pt-1 space-y-1.5 transition-[filter,opacity] duration-300 ${isHidden ? "blur-md select-none opacity-20" : ""}`}>
+          {showPhonetic && verse.transliteration && <p className="text-[14px] italic font-semibold text-muted-foreground leading-relaxed">{verse.transliteration}</p>}
+          {showTranslation && verse.translation && <p className="text-[15px] font-semibold text-foreground/80 leading-relaxed">{verse.translation}</p>}
+        </div>
+      ) : <div className="pb-3" />}
     </div>
   );
 })
