@@ -1,331 +1,172 @@
 import React, { useState } from "react";
-import { supabase } from "@/api/neonClient";
-import { motion } from "framer-motion";
-import { Mail, Lock, Loader2, CheckCircle2, User, Eye, EyeOff, ArrowLeft } from "@/components/icons";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { Eye, EyeSlash, SpinnerGap, CheckCircle, CaretLeft, Check } from "@phosphor-icons/react";
+import { supabase, frAuthError } from "@/api/neonClient";
 import { useAuth } from "@/lib/AuthContext";
+import MhLogo, { MhWordmark } from "@/components/MhLogo";
+
+/** Google n'apparaît que lorsque l'identifiant OAuth est configuré côté Neon Auth. */
+const GOOGLE = import.meta.env.VITE_GOOGLE_AUTH === "1";
+
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
+      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.3-.4-3.5z" />
+    </svg>
+  );
+}
+
+const Field = ({ label, children }) => (
+  <label className="block">
+    <span className="block text-sm font-extrabold mb-1.5">{label}</span>
+    {children}
+  </label>
+);
+const inputCls = "w-full h-[52px] px-4 rounded-2xl border-2 border-border bg-card font-bold placeholder:text-muted-foreground focus:outline-none focus:border-primary";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { syncSession } = useAuth();
-  const [mode, setMode] = useState("login"); // "login" | "signup" | "forgot"
+  const [mode, setMode] = useState(params.get("mode") === "signup" ? "signup" : "login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setFullName("");
+  const switchMode = (m) => { setMode(m); setError(null); setSuccess(null); setPassword(""); };
+
+  const google = async () => {
     setError(null);
-    setSuccess(null);
+    const redirectTo = `${window.location.origin}/Dashboard`;
+    const { error: e } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+    if (e) setError(frAuthError(e));
   };
 
-  const switchMode = (newMode) => {
-    setMode(newMode);
-    resetForm();
-  };
-
-  const handleLogin = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    setError(null); setSuccess(null);
+    if (mode === "signup" && password.length < 8) { setError("Le mot de passe doit contenir au moins 8 caractères."); return; }
     setLoading(true);
-    setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
-    } else {
-      const ok = await syncSession();
-      if (ok) navigate("/Dashboard", { replace: true });
-      else window.location.replace("/Dashboard");
-      return;
-    }
-    setLoading(false);
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+    try {
+      if (mode === "login") {
+        const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (err) { setError(frAuthError(err)); return; }
+        const ok = await syncSession();
+        if (ok) navigate("/Dashboard", { replace: true }); else window.location.replace("/Dashboard");
+      } else if (mode === "signup") {
+        const { error: err } = await supabase.auth.signUp({ email: email.trim(), password, options: { data: { full_name: name.trim() } } });
+        if (err) { setError(frAuthError(err)); return; }
+        const ok = await syncSession();
+        if (ok) navigate("/Bienvenue", { replace: true });
+        else setSuccess("Compte créé. Ouvre le lien reçu par email pour confirmer ton inscription.");
+      } else {
+        const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+        if (err) { setError(frAuthError(err)); return; }
+        setSuccess("Si un compte existe avec cet email, tu vas recevoir un lien pour choisir un nouveau mot de passe.");
+      }
+    } catch (err) {
+      setError(frAuthError(err));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères.");
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-      },
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
-    }
-    setLoading(false);
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://myhafizz.com/reset-password",
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("Un email de réinitialisation a été envoyé ! Vérifiez votre boîte de réception.");
-    }
-    setLoading(false);
-  };
-
-  const handleSubmit =
-    mode === "login" ? handleLogin : mode === "signup" ? handleSignup : handleForgotPassword;
-
-  const tabs = [
-    { key: "login", label: "Connexion" },
-    { key: "signup", label: "Inscription" },
-  ];
+  const strong = password.length >= 8;
+  const title = mode === "login" ? "Bon retour" : mode === "signup" ? "Crée ton compte" : "Mot de passe oublié";
+  const sub = mode === "login" ? "Ta séance du jour t'attend." : mode === "signup" ? "Ta progression sera sauvegardée sur tous tes appareils." : "Indique ton email, on t'envoie un lien.";
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col items-center px-5 pt-safe pb-safe">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md my-auto py-8"
-      >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-block">
-            <div className="inline-flex items-center justify-center w-20 h-20 mb-4">
-              <img src="/logo.svg" alt="MyHafizz" className="w-20 h-20" />
-            </div>
-          </Link>
-          <h1 className="text-[26px] font-black text-foreground mb-1">MyHafizz</h1>
-          <p className="text-muted-foreground font-semibold text-sm">Mémorisation du Saint Coran</p>
+    <div className="min-h-[100dvh] bg-background lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="flex flex-col px-5 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-[calc(env(safe-area-inset-bottom,0px)+20px)] lg:px-16 lg:py-10">
+        <div className="flex items-center justify-between">
+          {mode === "forgot"
+            ? <button onClick={() => switchMode("login")} className="h-10 -ml-1 flex items-center gap-1 font-extrabold text-muted-foreground"><CaretLeft weight="bold" className="w-5 h-5" />Connexion</button>
+            : <Link to="/" aria-label="Accueil" className="h-10 flex items-center"><MhWordmark size={28} /></Link>}
         </div>
 
-        {/* Card */}
-        <div className="bg-card border-2 border-border rounded-3xl p-6">
-          {/* Mode tabs (login / signup) */}
+        <div className="w-full max-w-[420px] mx-auto flex-1 flex flex-col justify-center py-6">
+          <h1 className="text-[30px] font-black leading-tight">{title}</h1>
+          <p className="font-semibold text-muted-foreground mt-1">{sub}</p>
+
           {mode !== "forgot" && (
-            <div className="flex gap-1 bg-muted rounded-xl p-1 mb-6">
-              {tabs.map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => switchMode(key)}
-                  className={`flex-1 h-10 text-sm font-extrabold rounded-lg transition-all ${
-                    mode === key
-                      ? "bg-card text-primary border-2 border-border"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {label}
-                </button>
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-[14px] bg-muted mt-5">
+              {[["login", "Connexion"], ["signup", "Inscription"]].map(([k, l]) => (
+                <button key={k} type="button" onClick={() => switchMode(k)} className={`h-10 rounded-[10px] text-sm font-extrabold ${mode === k ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>{l}</button>
               ))}
             </div>
           )}
 
-          {/* Forgot password header */}
-          {mode === "forgot" && (
-            <div className="mb-6">
-              <button
-                onClick={() => switchMode("login")}
-                className="flex items-center gap-1.5 text-primary font-bold text-sm  transition-colors mb-4"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Retour à la connexion
+          {GOOGLE && mode !== "forgot" && (
+            <>
+              <button type="button" onClick={google} className="btn-relief w-full h-[52px] mt-5 bg-card text-foreground border-2 border-border [--relief-color:hsl(var(--border))]">
+                <GoogleIcon />{mode === "signup" ? "S'inscrire avec Google" : "Continuer avec Google"}
               </button>
-              <h2 className="text-xl font-black text-foreground">Mot de passe oublié</h2>
-              <p className="text-muted-foreground font-semibold text-sm mt-1">
-                Entrez votre adresse email pour recevoir un lien de réinitialisation.
-              </p>
-            </div>
+              <div className="flex items-center gap-3 my-4 text-xs font-extrabold uppercase tracking-wider text-muted-foreground"><span className="flex-1 h-0.5 bg-border" />ou avec ton email<span className="flex-1 h-0.5 bg-border" /></div>
+            </>
           )}
 
           {success ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center gap-3 py-6 text-center"
-            >
-              <CheckCircle2 className="w-12 h-12 text-primary" />
-              <p className="text-foreground font-extrabold">{success}</p>
-              <button
-                onClick={() => switchMode("login")}
-                className="text-primary font-bold text-sm underline"
-              >
-                Retour à la connexion
-              </button>
-            </motion.div>
+            <div className="card-flat p-5 mt-5 text-center">
+              <CheckCircle weight="fill" className="w-12 h-12 mx-auto text-primary" />
+              <p className="font-bold mt-2">{success}</p>
+              <button onClick={() => switchMode("login")} className="mt-3 font-extrabold text-primary">Retour à la connexion</button>
+            </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Full Name (signup only) */}
+            <form onSubmit={submit} className={`space-y-3.5 ${GOOGLE && mode !== "forgot" ? "" : "mt-5"}`}>
               {mode === "signup" && (
-                <div>
-                  <label className="block text-sm font-extrabold text-foreground mb-2">
-                    Nom complet <span className="text-muted-foreground font-semibold">(optionnel)</span>
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Votre nom"
-                      className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-4 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                </div>
+                <Field label="Prénom"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" placeholder="Ton prénom" required /></Field>
               )}
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-extrabold text-foreground mb-2">
-                  Adresse email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="votre@email.com"
-                    className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-4 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Password (login & signup) */}
+              <Field label="Email"><input className={inputCls} type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="toi@exemple.com" required /></Field>
               {mode !== "forgot" && (
-                <div>
-                  <label className="block text-sm font-extrabold text-foreground mb-2">
-                    Mot de passe
-                  </label>
+                <Field label="Mot de passe">
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      placeholder="••••••••"
-                      minLength={6}
-                      className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-11 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-muted-foreground"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <input className={`${inputCls} pr-12`} type={show ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={mode === "signup" ? "new-password" : "current-password"} placeholder={mode === "signup" ? "8 caractères minimum" : "Ton mot de passe"} required />
+                    <button type="button" onClick={() => setShow(!show)} aria-label={show ? "Masquer" : "Afficher"} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-muted-foreground">
+                      {show ? <EyeSlash weight="bold" className="w-5 h-5" /> : <Eye weight="bold" className="w-5 h-5" />}
                     </button>
                   </div>
-                </div>
+                  {mode === "signup" && password && (
+                    <span className={`mt-1.5 flex items-center gap-1 text-[13px] font-bold ${strong ? "text-primary" : "text-muted-foreground"}`}>{strong && <Check weight="bold" />}{strong ? "Bon mot de passe." : `Encore ${8 - password.length} caractère${8 - password.length > 1 ? "s" : ""}.`} 8 caractères minimum.</span>
+                  )}
+                </Field>
               )}
-
-              {/* Confirm Password (signup only) */}
-              {mode === "signup" && (
-                <div>
-                  <label className="block text-sm font-extrabold text-foreground mb-2">
-                    Confirmer le mot de passe
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      placeholder="••••••••"
-                      minLength={6}
-                      className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-4 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Forgot password link (login only) */}
               {mode === "login" && (
-                <div className="text-right">
-                  <button
-                    type="button"
-                    onClick={() => switchMode("forgot")}
-                    className="text-primary font-bold text-xs  transition-colors"
-                  >
-                    Mot de passe oublié ?
-                  </button>
-                </div>
+                <div className="text-right -mt-1"><button type="button" onClick={() => switchMode("forgot")} className="text-sm font-extrabold text-primary">Mot de passe oublié ?</button></div>
               )}
-
-              {error && (
-                <p className="text-destructive text-sm font-semibold bg-destructive/10 border-2 border-destructive/20 rounded-xl px-4 py-3">
-                  {error}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-[52px] flex items-center justify-center gap-2 text-base disabled:opacity-60 disabled:cursor-not-allowed bg-primary text-primary-foreground font-extrabold rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    {mode === "login" && "Se connecter"}
-                    {mode === "signup" && "Créer un compte"}
-                    {mode === "forgot" && "Envoyer le lien"}
-                  </>
-                )}
+              {error && <p role="alert" className="rounded-xl bg-destructive/10 text-destructive font-bold text-sm px-3.5 py-2.5">{error}</p>}
+              <button type="submit" disabled={loading} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground disabled:opacity-70">
+                {loading ? <SpinnerGap weight="bold" className="w-5 h-5 animate-spin" /> : mode === "login" ? "Se connecter" : mode === "signup" ? "Créer mon compte" : "Envoyer le lien"}
               </button>
-
-              {/* Bottom links */}
-              {mode === "login" && (
-                <p className="text-center text-muted-foreground text-xs mt-2">
-                  Pas encore de compte ?{" "}
-                  <button type="button" onClick={() => switchMode("signup")} className="text-primary font-bold hover:underline">
-                    S'inscrire
-                  </button>
-                </p>
-              )}
               {mode === "signup" && (
-                <p className="text-center text-muted-foreground text-xs mt-2">
-                  Déjà un compte ?{" "}
-                  <button type="button" onClick={() => switchMode("login")} className="text-primary font-bold hover:underline">
-                    Se connecter
-                  </button>
-                </p>
+                <p className="text-xs font-semibold text-muted-foreground text-center">En créant un compte, tu acceptes les <Link to="/terms" className="underline">Conditions</Link> et la <Link to="/privacy" className="underline">Politique de confidentialité</Link>.</p>
               )}
             </form>
           )}
         </div>
+      </div>
 
-        {/* Back to landing */}
-        <div className="text-center mt-6">
-          <Link to="/" className="text-primary font-bold text-xs  transition-colors">
-            ← Retour à l'accueil
-          </Link>
+      {/* Ordinateur : verset et promesses à droite */}
+      <div className="hidden lg:flex flex-col justify-center bg-accent px-16 border-l-2 border-border">
+        <div className="max-w-[460px]">
+          <MhLogo size={56} />
+          <p className="font-arabic text-[34px] leading-[1.9] text-accent-foreground mt-6" dir="rtl">وَلَقَدْ يَسَّرْنَا ٱلْقُرْءَانَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ</p>
+          <p className="font-bold text-accent-foreground/80 mt-3">« En effet, Nous avons rendu le Coran facile pour la méditation. Y a-t-il quelqu'un pour réfléchir ? »</p>
+          <p className="text-sm font-extrabold text-accent-foreground/70 mt-1">Al-Qamar, 17</p>
+          <div className="mt-8 space-y-3">
+            {["Ta séance sabaq, sabqi, manzil prête chaque jour", "Ta progression synchronisée sur téléphone et ordinateur", "Ton maître ou tes parents peuvent te suivre"].map((t) => (
+              <p key={t} className="flex items-center gap-2.5 font-extrabold"><CheckCircle weight="fill" className="w-6 h-6 text-primary shrink-0" />{t}</p>
+            ))}
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

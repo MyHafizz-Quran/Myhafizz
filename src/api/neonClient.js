@@ -63,6 +63,7 @@ const auth = {
     return { ...res, data: { ...res?.data, session: normalizeSession(res?.data?.session), user: normalizeUser(res?.data?.user) } };
   },
   signInWithPassword: (...a) => rawAuth.signInWithPassword(...a),
+  signInWithOAuth: (...a) => rawAuth.signInWithOAuth(...a),
   signOut: (...a) => { avatarCache = { id: null, url: null, name: null }; return rawAuth.signOut(...a); },
   resetPasswordForEmail: (...a) => rawAuth.resetPasswordForEmail(...a),
   onAuthStateChange(cb) {
@@ -140,3 +141,23 @@ export const supabase = {
   rpc: (...a) => client.rpc(...a),
 };
 export default supabase;
+
+
+/** Traduit les erreurs d'authentification (Better Auth / Neon) en français clair. */
+export function frAuthError(err) {
+  const m = String(err?.message || err || "").toLowerCase();
+  if (!m) return "Une erreur est survenue. Réessaie.";
+  if (m.includes("already exists") || m.includes("already registered") || m.includes("user_already")) return "Un compte existe déjà avec cet email. Connecte-toi.";
+  if (m.includes("invalid email or password") || m.includes("invalid login") || m.includes("invalid credentials") || m.includes("invalid password")) return "Email ou mot de passe incorrect.";
+  if (m.includes("user not found")) return "Aucun compte avec cet email. Crée un compte.";
+  if (m.includes("invalid email") || m.includes("email is invalid")) return "Cette adresse email n'est pas valide.";
+  if (m.includes("password") && (m.includes("short") || m.includes("too small") || m.includes("at least"))) return "Le mot de passe doit contenir au moins 8 caractères.";
+  if (m.includes("password") && m.includes("long")) return "Le mot de passe est trop long.";
+  if (m.includes("not verified") || m.includes("verify your email") || m.includes("email_not_verified")) return "Confirme d'abord ton email avec le lien reçu.";
+  if (m.includes("too many") || m.includes("rate limit") || m.includes("429")) return "Trop de tentatives. Patiente une minute puis réessaie.";
+  if (m.includes("expired") || (m.includes("invalid") && m.includes("token"))) return "Ce lien a expiré. Redemande un email.";
+  if (m.includes("network") || m.includes("failed to fetch") || m.includes("load failed")) return "Pas de connexion. Vérifie ton internet.";
+  if (m.includes("provider") || m.includes("oauth") || m.includes("social")) return "La connexion avec Google n'est pas disponible pour le moment.";
+  if (/[éèàçù]/.test(String(err?.message || err))) return String(err?.message || err);
+  return "Une erreur est survenue. Réessaie.";
+}

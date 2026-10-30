@@ -42,9 +42,10 @@ import Privacy from './pages/Privacy.jsx';
 import Download from './pages/Download.jsx';
 import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
+import Welcome from './pages/Welcome.jsx';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Bienvenue", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -131,6 +132,7 @@ const AuthenticatedApp = () => {
           <Route path="/Settings" element={<Settings />} />
           <Route path="/Help" element={<Help />} />
           <Route path="/Leaderboard" element={<Leaderboard />} />
+          <Route path="/Bienvenue" element={<Welcome />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
