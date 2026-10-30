@@ -13,6 +13,7 @@ const DEFAULT_PREFS = {
   textContrast: "normal",
   lineSpacing: "normal",
   showVerseNumbers: true,
+  showTajweed: false,
 };
 
 function load() {
@@ -88,6 +89,8 @@ export function PreferencesProvider({ children }) {
     textContrast: prefs.textContrast,
     lineSpacing: prefs.lineSpacing,
     showVerseNumbers: prefs.showVerseNumbers,
+    showTajweed: prefs.showTajweed,
+    setShowTajweed: useCallback((v) => update("showTajweed", v), [update]),
     setReciter: useCallback((v) => update("reciter", v), [update]),
     setShowPhonetic: useCallback((v) => update("showPhonetic", v), [update]),
     setShowTranslation: useCallback((v) => update("showTranslation", v), [update]),
@@ -153,6 +156,8 @@ export function usePreferences() {
     textContrast: fallbackPrefs.textContrast,
     lineSpacing: fallbackPrefs.lineSpacing,
     showVerseNumbers: fallbackPrefs.showVerseNumbers,
+    showTajweed: fallbackPrefs.showTajweed,
+    setShowTajweed: (v) => fallbackUpdate("showTajweed", v),
     setReciter: (v) => fallbackUpdate("reciter", v),
     setShowPhonetic: (v) => fallbackUpdate("showPhonetic", v),
     setShowTranslation: (v) => fallbackUpdate("showTranslation", v),

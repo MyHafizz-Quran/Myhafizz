@@ -4,6 +4,7 @@ import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, RotateCcw, Repeat, Hear
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";
+import { WordSheet, SimilarVerses, tajweedHtml } from "@/components/verseExtras";
 
 const REPEAT_OPTIONS = [1, 2, 3, 5, 10, Infinity];
 
@@ -29,7 +30,8 @@ function getFavorites() { try { return JSON.parse(localStorage.getItem(FAV_KEY) 
  * - Audio controls: play/pause, restart, repeat, speed
  * - Bottom action row: favorite, stop marker, hide, memorized (with text labels)
  */
-export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, index, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", textContrast = "normal", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0 }) {
+export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, index, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", textContrast = "normal", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0, showTajweed = false, similar = null }) {
+  const [selectedWord, setSelectedWord] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
   const [currentRepeat, setCurrentRepeat] = useState(0);
@@ -242,13 +244,6 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
           : "border-outline-variant/10 bg-transparent hover:bg-surface-container-lowest"
         }`}
     >
-      {/* Absolute floating decorations to emulate Stitch deep focus */}
-      {isActive && (
-        <>
-          <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-tertiary-fixed/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
-        </>
-      )}
 
       <div className="w-full max-w-2xl mx-auto px-4 z-10 flex flex-col items-center space-y-10">
 
@@ -269,13 +264,15 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
               displayWords.map((word, i) => (
                 <span
                   key={i}
-                  onClick={() => seekToWord(i)}
+                  onClick={() => !isHidden && setSelectedWord(i)}
                   className={`inline-block px-1.5 py-1 rounded-xl transition-all duration-300 cursor-pointer ${i === activeWordIndex
                       ? 'text-primary scale-110 drop-shadow-md'
                       : 'hover:text-primary/70'
                     }`}
                 >
-                  {maskLevel === 1 && !isHidden ? maskWords(word.text_uthmani, 1) : word.text_uthmani}
+                  {maskLevel === 1 && !isHidden ? maskWords(word.text_uthmani, 1)
+                    : showTajweed && word.text_uthmani_tajweed && i !== activeWordIndex ? <span dangerouslySetInnerHTML={{ __html: tajweedHtml(word.text_uthmani_tajweed) }} />
+                    : word.text_uthmani}
                 </span>
               ))
             ) : (
@@ -283,6 +280,10 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
             )}
           </div>
         </div>
+
+        {!isHidden && maskLevel === 0 && <SimilarVerses verseText={verse.text} similar={similar} />}
+        <WordSheet word={selectedWord != null ? displayWords?.[selectedWord] : null} onClose={() => setSelectedWord(null)}
+          canPlay={!!wordTimings?.[selectedWord]} onPlayFrom={() => seekToWord(selectedWord)} />
 
         {/* Translations */}
         <div className="text-center max-w-xl space-y-4">

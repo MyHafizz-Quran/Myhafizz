@@ -17,7 +17,7 @@ const mem = new Map();
 const stripBasmala = (n, a) => {
   if (a.numberInSurah !== 1 || n === 1 || n === 9) return a;
   const w = a.text.split(" ");
-  return w[0].startsWith("بِسْمِ") && w.length > 4 ? { ...a, text: w.slice(4).join(" ") } : a;
+  return w[0].replace(/[\u064B-\u065F\u0670]/g, "") === "بسم" && w.length > 4 ? { ...a, text: w.slice(4).join(" ") } : a;
 };
 
 /** Texte arabe (+ traduction) d'une sourate, depuis le cache hors-ligne ou l'API */

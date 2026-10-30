@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Type, Languages, CheckCircle2, Download, Trash2, HardDrive, Loader2, AlignJustify, Contrast, ToggleLeft, ToggleRight, AlignVerticalSpaceAround, Play, Square } from "@/components/icons";
+import { ArrowLeft, Moon, Sun, Type, Languages, CheckCircle2, Download, Trash2, HardDrive, Loader2, AlignJustify, Contrast, ToggleLeft, ToggleRight, AlignVerticalSpaceAround, Play, Square, Palette } from "@/components/icons";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -119,7 +119,7 @@ function ReciterCard({ reciter, selected, onSelect, previewingId, onPreview }) {
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
           isPreviewing
             ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-            : "bg-gray-100 dark:bg-gray-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+            : "bg-gray-100 dark:bg-gray-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary"
         }`}
       >
         {isPreviewing
@@ -143,7 +143,7 @@ function ReciterCard({ reciter, selected, onSelect, previewingId, onPreview }) {
         />
         <div className="flex-1 min-w-0">
           <p className={`text-sm font-bold truncate leading-tight ${
-            isSelected ? "text-emerald-700 dark:text-emerald-400" : "text-foreground"
+            isSelected ? "text-emerald-700 dark:text-primary" : "text-foreground"
           }`}>
             {reciter.name}
           </p>
@@ -151,7 +151,7 @@ function ReciterCard({ reciter, selected, onSelect, previewingId, onPreview }) {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xl leading-none">{reciter.flag}</span>
-          {isSelected && <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />}
+          {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
         </div>
       </motion.button>
     </div>
@@ -161,7 +161,7 @@ function ReciterCard({ reciter, selected, onSelect, previewingId, onPreview }) {
 // ─── Settings page ────────────────────────────────────────────────────────────
 export default function Settings() {
   const {
-    reciter, showPhonetic, showTranslation, darkMode,
+    reciter, showPhonetic, showTranslation, darkMode, showTajweed, setShowTajweed,
     arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers,
     setReciter, setShowPhonetic, setShowTranslation, setDarkMode,
     setArabicTextSize, setArabicFont, setTextContrast, setLineSpacing, setShowVerseNumbers,
@@ -343,7 +343,7 @@ export default function Settings() {
               onClick={() => setActiveTab(tab.id)}
               className={`relative py-2.5 mr-6 text-sm font-semibold transition-colors ${
                 activeTab === tab.id
-                  ? "text-emerald-600 dark:text-emerald-400"
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -367,29 +367,37 @@ export default function Settings() {
               <PrefsCard>
                 <ToggleRow
                   icon={darkMode
-                    ? <Moon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-                    : <Sun className="w-4 h-4 text-amber-500" />}
-                  iconBg={darkMode ? "bg-indigo-50 dark:bg-indigo-900/40" : "bg-amber-50 dark:bg-amber-900/40"}
+                    ? <Moon className="w-4 h-4 text-primary" />
+                    : <Sun className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Mode sombre"
                   sublabel={darkMode ? "Thème sombre activé" : "Thème clair activé"}
                   value={darkMode}
                   onChange={() => setDarkMode(!darkMode)}
                 />
                 <ToggleRow
-                  icon={<Type className="w-4 h-4 text-violet-500 dark:text-violet-400" />}
-                  iconBg="bg-violet-50 dark:bg-violet-900/40"
+                  icon={<Type className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Phonétique"
                   sublabel="Afficher la translittération"
                   value={showPhonetic}
                   onChange={() => setShowPhonetic(!showPhonetic)}
                 />
                 <ToggleRow
-                  icon={<Languages className="w-4 h-4 text-blue-500 dark:text-blue-400" />}
-                  iconBg="bg-blue-50 dark:bg-blue-900/40"
+                  icon={<Languages className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Version française"
                   sublabel="Afficher la traduction"
                   value={showTranslation}
                   onChange={() => setShowTranslation(!showTranslation)}
+                />
+                <ToggleRow
+                  icon={<Palette className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
+                  label="Tajwîd en couleur"
+                  sublabel="Colorer les règles de récitation"
+                  value={showTajweed}
+                  onChange={() => setShowTajweed(!showTajweed)}
                 />
               </PrefsCard>
             </motion.div>
@@ -436,8 +444,8 @@ export default function Settings() {
               <SectionLabel>Options d'affichage</SectionLabel>
               <PrefsCard>
                 <SegmentRow
-                  icon={<Type className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-                  iconBg="bg-emerald-50 dark:bg-emerald-900/40"
+                  icon={<Type className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Taille du texte arabe"
                   options={[
                     { label: "Petit", value: "small" },
@@ -449,8 +457,8 @@ export default function Settings() {
                   onChange={setArabicTextSize}
                 />
                 <SegmentRow
-                  icon={<AlignJustify className="w-4 h-4 text-violet-500 dark:text-violet-400" />}
-                  iconBg="bg-violet-50 dark:bg-violet-900/40"
+                  icon={<AlignJustify className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Police arabe"
                   options={[
                     { label: "Système", value: "system" },
@@ -462,8 +470,8 @@ export default function Settings() {
                   onChange={setArabicFont}
                 />
                 <SegmentRow
-                  icon={<Contrast className="w-4 h-4 text-amber-500 dark:text-amber-400" />}
-                  iconBg="bg-amber-50 dark:bg-amber-900/40"
+                  icon={<Contrast className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Contraste du texte"
                   options={[
                     { label: "Normal", value: "normal" },
@@ -473,8 +481,8 @@ export default function Settings() {
                   onChange={setTextContrast}
                 />
                 <SegmentRow
-                  icon={<AlignVerticalSpaceAround className="w-4 h-4 text-blue-500 dark:text-blue-400" />}
-                  iconBg="bg-blue-50 dark:bg-blue-900/40"
+                  icon={<AlignVerticalSpaceAround className="w-4 h-4 text-primary" />}
+                  iconBg="bg-accent"
                   label="Espacement des lignes"
                   options={[
                     { label: "Compact", value: "compact" },
@@ -486,7 +494,7 @@ export default function Settings() {
                 />
                 <ToggleRow
                   icon={showVerseNumbers
-                    ? <ToggleRight className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                    ? <ToggleRight className="w-4 h-4 text-primary" />
                     : <ToggleLeft className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
                   iconBg={showVerseNumbers ? "bg-emerald-50 dark:bg-emerald-900/40" : "bg-gray-100 dark:bg-gray-800"}
                   label="Afficher les numéros"
@@ -508,14 +516,14 @@ export default function Settings() {
               {/* Storage info row */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
-                  <HardDrive className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <HardDrive className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground leading-tight">Espace utilisé</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{formatBytes(storageSize)} · {cachedSurahs.size}/{SURAHS.length} sourates</p>
                 </div>
                 {cachedSurahs.size > 0 && (
-                  <div className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                  <div className="flex items-center gap-1 text-xs font-medium text-primary flex-shrink-0">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     {cachedSurahs.size} hors ligne
                   </div>
@@ -530,8 +538,8 @@ export default function Settings() {
               >
                 <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                   {downloadingAll
-                    ? <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-                    : <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    ? <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    : <Download className="w-4 h-4 text-primary" />
                   }
                 </div>
                 <div className="text-left flex-1 min-w-0">
@@ -550,7 +558,7 @@ export default function Settings() {
                     <span className="font-arabic text-base text-foreground flex-shrink-0">{surah.name}</span>
                     <span className="text-xs text-muted-foreground truncate flex-1">{surah.englishName}</span>
                     {cachedSurahs.has(surah.number)
-                      ? <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      ? <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
                       : (
                         <button
                           onClick={() => downloadSurah(surah.number).then(() => refreshCacheStatus())}
@@ -579,13 +587,13 @@ export default function Settings() {
               >
                 <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
                   {clearingData
-                    ? <Loader2 className="w-4 h-4 text-red-500 animate-spin" />
-                    : <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
+                    ? <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                    : <Trash2 className="w-4 h-4 text-primary" />
                   }
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-red-600 dark:text-red-400 leading-tight">Supprimer les données hors ligne</p>
-                  <p className="text-xs text-red-400/80 dark:text-red-500 mt-0.5">Libérer l'espace local</p>
+                  <p className="text-sm font-semibold text-primary leading-tight">Supprimer les données hors ligne</p>
+                  <p className="text-xs text-primary/80 dark:text-primary mt-0.5">Libérer l'espace local</p>
                 </div>
               </button>
 

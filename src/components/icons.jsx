@@ -69,6 +69,7 @@ import {
   Play as PhPlay,
   Question as PhQuestion,
   Repeat as PhRepeat,
+  Palette as PhPalette,
   ShareNetwork as PhShareNetwork,
   Shield as PhShield,
   SidebarSimple as PhSidebarSimple,
@@ -173,6 +174,7 @@ export const PenLine = wrap(PhPencilLine, "PenLine");
 export const Play = wrap(PhPlay, "Play");
 export const RefreshCw = wrap(PhArrowsClockwise, "RefreshCw");
 export const Repeat = wrap(PhRepeat, "Repeat");
+export const Palette = wrap(PhPalette, "Palette");
 export const RotateCcw = wrap(PhArrowCounterClockwise, "RotateCcw");
 export const Search = wrap(PhMagnifyingGlass, "Search");
 export const Settings = wrap(PhGear, "Settings");

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
+import { Lightning, WifiSlash, Bell } from "@phosphor-icons/react";
 
 const isIOS = () =>
   /iphone|ipad|ipod/i.test(navigator.userAgent) &&
@@ -83,11 +84,11 @@ export default function InstallPrompt() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed bottom-0 left-0 right-0 z-[var(--z-modal)] bg-white dark:bg-gray-900 rounded-t-3xl px-6 pt-4 pb-8 shadow-2xl"
+            className="fixed bottom-0 left-0 right-0 z-[var(--z-modal)] bg-card rounded-t-3xl px-6 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+24px)]"
             style={{ maxWidth: 480, margin: "0 auto" }}
           >
             {/* Handle */}
-            <div className="mx-auto mb-5 h-[5px] w-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+            <div className="mx-auto mb-5 h-[5px] w-12 rounded-full bg-border" />
 
             {/* Logo */}
             <div className="flex justify-center mb-4">
@@ -99,39 +100,39 @@ export default function InstallPrompt() {
             </div>
 
             {/* Title */}
-            <h2 className="text-center text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Installer MyHafizz 📲
+            <h2 className="text-center text-xl font-bold text-foreground font-extrabold mb-2">
+              Installer MyHafizz
             </h2>
 
             {/* Description + benefits */}
             {!showIOSInstructions ? (
               <>
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
+                <p className="text-center text-sm text-muted-foreground mb-4 leading-relaxed">
                   Accédez à MyHafizz directement depuis votre écran d'accueil pour une expérience rapide, fluide et disponible même hors ligne.
                 </p>
                 <ul className="mb-6 space-y-2">
                   {[
-                    "⚡ Accès instantané sans navigateur",
-                    "📴 Fonctionne hors connexion",
-                    "🔔 Ne manquez aucun défi",
-                  ].map((benefit) => (
-                    <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                      <span>{benefit}</span>
+                    [Lightning, "Accès instantané sans navigateur"],
+                    [WifiSlash, "Fonctionne hors connexion"],
+                    [Bell, "Rappels pour tes révisions"],
+                  ].map(([Icon, benefit]) => (
+                    <li key={benefit} className="flex items-center gap-2.5 text-sm font-semibold text-muted-foreground">
+                      <Icon weight="fill" className="w-5 h-5 text-primary shrink-0" /><span>{benefit}</span>
                     </li>
                   ))}
                 </ul>
               </>
             ) : (
-              <div className="mb-6 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-2xl p-4">
+              <div className="mb-6 bg-accent border-2 border-primary/20 rounded-2xl p-4">
                 {isIOS() ? (
-                  <ol className="space-y-2 text-sm text-emerald-800 dark:text-emerald-300">
+                  <ol className="space-y-2 text-sm text-foreground">
                     <li>1. Ouvrez cette page dans <strong>Safari</strong></li>
                     <li>2. Appuyez sur le bouton <strong>Partager</strong> (⬆️) en bas de l'écran</li>
                     <li>3. Faites défiler et choisissez <strong>Sur l'écran d'accueil</strong> (➕)</li>
                     <li>4. Appuyez sur <strong>Ajouter</strong></li>
                   </ol>
                 ) : (
-                  <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  <p className="text-sm text-foreground leading-relaxed">
                     Dans votre navigateur, ouvrez le menu (⋮) puis{" "}
                     <strong>Ajouter à l'écran d'accueil</strong>.
                   </p>
@@ -143,14 +144,14 @@ export default function InstallPrompt() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleInstall}
-                className="w-full py-3.5 rounded-2xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/30 active:opacity-90 transition-opacity"
+                className="btn-relief w-full h-[52px] bg-primary text-primary-foreground"
               >
                 Installer l'application
               </button>
 
               <button
                 onClick={markSeen}
-                className="w-full py-2.5 text-gray-400 dark:text-gray-500 text-sm active:opacity-70 transition-opacity"
+                className="w-full py-3 mt-1 text-primary font-extrabold uppercase tracking-wide text-sm"
               >
                 Plus tard
               </button>

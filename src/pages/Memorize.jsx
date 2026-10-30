@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { MemorizationProgress, VerseReview } from "@/api/entities";
 import { todayStr } from "@/lib/srs";
+import { loadSimilar } from "@/lib/similar";
+import { TajweedLegend } from "@/components/verseExtras";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause, Repeat } from "@/components/icons";
+import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause, Repeat, Palette } from "@/components/icons";
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
@@ -68,12 +70,14 @@ export default function Memorize() {
   const [loadingVerses, setLoadingVerses] = useState(true);
   const [hiddenVerses, setHiddenVerses] = useState(new Set());
   const [wordsMap, setWordsMap] = useState({});
+  useEffect(() => { if (surahNumber) loadSimilar(surahNumber).then(setSimilarMap); }, [surahNumber]);
   const [timingsMap, setTimingsMap] = useState({});
   const [allHidden, setAllHidden] = useState(false);
   const [maskLevel, setMaskLevel] = useState(0); // 0 texte, 1 initiales, 2 masqué
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef(null);
-  const { reciter, showPhonetic, showTranslation, arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers } = usePreferences();
+  const { reciter, showPhonetic, showTranslation, arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers, showTajweed, setShowTajweed } = usePreferences();
+  const [similarMap, setSimilarMap] = useState({});
 
   // Global audio manager — loop state lives here so it survives navigation
   const {
@@ -239,7 +243,7 @@ export default function Memorize() {
     const controller = new AbortController();
     Promise.allSettled([
       fetch(
-        `https://api.quran.com/api/v4/verses/by_chapter/${surahNumber}?words=true&word_fields=text_uthmani&per_page=300`,
+        `https://api.quran.com/api/v4/verses/by_chapter/${surahNumber}?words=true&word_fields=text_uthmani,text_uthmani_tajweed&word_translation_language=en&per_page=300`,
         { signal: controller.signal }
       ).then(r => r.json()),
       fetch(
@@ -448,12 +452,12 @@ export default function Memorize() {
           </div>
 
           {/* Line 2: Action buttons */}
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar -mx-4 px-4">
             {/* Loop player */}
             {verses.length > 0 && (
               <button
                 onClick={cycleLoopMode}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${loopPlaying
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${loopPlaying
                     ? "bg-primary text-on-primary shadow-sm"
                     : loopMode !== "off"
                       ? "bg-primary-container text-on-primary-container"
@@ -472,8 +476,16 @@ export default function Memorize() {
             {/* Répétition avancée */}
             {verses.length > 0 && (
               <button onClick={() => navigate(`/Repeat?surah=${surahNumber}`)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-surface-container-low text-on-surface-variant hover:bg-surface-container">
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 bg-surface-container-low text-on-surface-variant hover:bg-surface-container">
                 <Repeat className="w-4 h-4" /><span>Répéter</span>
+              </button>
+            )}
+
+            {/* Tajwîd */}
+            {verses.length > 0 && (
+              <button onClick={() => setShowTajweed(!showTajweed)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${showTajweed ? "bg-accent text-primary" : "bg-surface-container-low text-on-surface-variant"}`}>
+                <Palette className="w-4 h-4" /><span>Tajwîd</span>
               </button>
             )}
 
@@ -481,7 +493,7 @@ export default function Memorize() {
             {verses.length > 0 && (
               <button
                 onClick={toggleAllHidden}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${maskLevel > 0
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${maskLevel > 0
                     ? "bg-surface-container-highest text-on-surface"
                     : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
                   }`}
@@ -494,6 +506,8 @@ export default function Memorize() {
 
         </div>
       </div>
+
+      {showTajweed && verses.length > 0 && <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3"><TajweedLegend /></div>}
 
       {/* ─── VERSES ─── */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-nav">
@@ -546,6 +560,8 @@ export default function Memorize() {
                     words={wordsMap[verse.numberInSurah]}
                     wordTimings={timingsMap[verse.numberInSurah]}
                     maskLevel={maskLevel}
+                    showTajweed={showTajweed}
+                    similar={similarMap[verse.numberInSurah]}
                   />
                 </div>
               ))}

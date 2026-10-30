@@ -289,8 +289,22 @@
 
 /* Retour tactile natif : léger enfoncement au toucher */
 @layer utilities {
+  .no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
   .press { transition: transform .12s ease; }
   .press:active { transform: scale(.96); }
 }
 
 @keyframes mh-load { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+
+/* Tajwîd : couleurs conventionnelles (Quran.com), activables dans les réglages */
+.tj-ham_wasl, .tj-laam_shamsiyah, .tj-slnt { color: #9AA3A6; }
+.tj-madda_normal { color: #537FFF; } .tj-madda_permissible { color: #4050FF; }
+.tj-madda_necessary { color: #000EBC; } .tj-madda_obligatory { color: #2144C1; }
+.tj-qalaqah { color: #DD0008; }
+.tj-ikhafa_shafawi { color: #D500B7; } .tj-ikhafa { color: #9400A8; }
+.tj-iqlab { color: #26BFFD; } .tj-idgham_shafawi { color: #58B800; }
+.tj-idgham_ghunnah { color: #169777; } .tj-idgham_wo_ghunnah { color: #169200; }
+.tj-idgham_mutajanisayn, .tj-idgham_mutaqaribayn { color: #A1A1A1; }
+.tj-ghunnah { color: #FF7E1E; }
+.dark .tj-madda_necessary { color: #6F7BFF; } .dark .tj-madda_obligatory { color: #6F8FFF; }
+.tj-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: currentColor; }
