@@ -13,7 +13,9 @@ Retiré : 1to1 / StudyMatch (onglet, page, aide, mentions légales). Tables cons
 6. Exercices d'enchaînement : verset suivant, compléter la fin, remettre les mots dans l'ordre (dans Quiz).
 8. Carte de solidité : vue par sourate des versets fragiles (données de la phase 1).
 
-## Phase 3 · Compréhension
+## Phase 3 · Compréhension (livrée)
+> Sens mot à mot : traduction en anglais (Quran.com n'a pas de version française mot à mot). Versets semblables : index précalculé via `scripts/build-similar.py`.
+
 9. Sens mot à mot + traduction courte au toucher.
 10. Tajwîd en couleur (activable).
 7. Versets semblables (mutashâbihât) : alerte + différence surlignée.
