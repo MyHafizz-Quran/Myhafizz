@@ -47,8 +47,8 @@ function Verify({ surah, from, to, ayahs }) {
   const okCount = finalStatus.filter((s) => s === "ok").length;
 
   useEffect(() => () => { wantRef.current = false; recRef.current?.abort?.(); }, []);
-  useEffect(() => { stop(true); reset(); }, [from, to, surah.number]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (listening && cursor >= expected.length && expected.length) stop(); }, [cursor]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { stop(true); reset(); }, [from, to, surah.number]);  
+  useEffect(() => { if (listening && cursor >= expected.length && expected.length) stop(); }, [cursor]);  
 
   const reset = () => { finalRef.current = ""; setHeard(""); setDone(false); setSaved(false); setError(""); };
   const start = () => {

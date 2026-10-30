@@ -3,12 +3,13 @@ import { supabase } from "@/api/neonClient";
 import { Challenge, ChallengeParticipant, MemorizationProgress } from "@/api/entities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { CaretLeft, Trophy, UsersThree, CalendarBlank, CheckCircle, ArrowsClockwise, Medal } from "@phosphor-icons/react";
+import { Trophy, UsersThree, CalendarBlank, CheckCircle, ArrowsClockwise, Medal } from "@phosphor-icons/react";
 import { SURAHS } from "@/components/quranData";
 import { ReadingLessons } from "@/api/entities";
 import { ReadingSessions } from "@/api/entities/learning";
 import { weekStart, daysLeftInWeek, weeklyChallenges, earnedBadges } from "@/lib/readingGame";
 import { BookOpenText } from "@phosphor-icons/react";
+import PageHeader from "@/components/PageHeader";
 
 function daysDiff(dateStr) {
   const diff = new Date(dateStr) - new Date();
@@ -77,12 +78,8 @@ export default function Challenges() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex items-center gap-2">
-          <Link to="/Dashboard" aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></Link>
-          <h1 className="text-[26px] font-black flex-1">Défis</h1>
-          <span className="text-sm font-extrabold text-muted-foreground">{challenges.length} en cours</span>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Défis" back />
 
         <div className="flex items-baseline justify-between mt-5 mb-2 ml-1">
           <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Défis de lecture · cette semaine</p>

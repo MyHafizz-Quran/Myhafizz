@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play, MagnifyingGlass, Student } from "@phosphor-icons/react";
+import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play, MagnifyingGlass, GraduationCap } from "@phosphor-icons/react";
 import { useKidMode } from "@/lib/kidMode";
 import { MhWordmark } from "@/components/MhLogo";
 import { useAuth } from "@/lib/AuthContext";
@@ -11,9 +11,9 @@ import { useNavigate } from "react-router-dom";
 const MAIN = [
   { to: "/Dashboard", icon: House, label: "Accueil", match: (p) => p === "/" || p.startsWith("/Dashboard") },
   { to: "/SurahList", icon: BookOpen, label: "Coran", match: (p) => p.startsWith("/SurahList") || p.startsWith("/Memorize") },
+  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: (p) => p.startsWith("/Lire") || p.startsWith("/Lecon") },
   { to: "/Revision", icon: Brain, label: "Réviser", match: (p) => ["/Revision", "/ReviewSession", "/Repeat", "/Exercises", "/Strength", "/Recite", "/Quiz"].some((x) => p.startsWith(x)) },
   { to: "/Groups", icon: UsersThree, label: "Groupes", match: (p) => p.startsWith("/Group") },
-  { to: "/Lire", icon: Student, label: "Apprendre à lire", match: (p) => p.startsWith("/Lire") || p.startsWith("/Lecon") },
 ];
 const MORE = [
   { to: "/Challenges", icon: Trophy, label: "Défis" },

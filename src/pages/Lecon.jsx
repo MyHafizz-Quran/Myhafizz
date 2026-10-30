@@ -25,7 +25,7 @@ function chime(ok) {
 
 function SpeakBtn({ text, audio, big, auto }) {
   const say = () => (audio ? playUrl(audio, text) : speak(text));
-  useEffect(() => { if (auto) { const t = setTimeout(say, 350); return () => clearTimeout(t); } }, [text, audio, auto]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (auto) { const t = setTimeout(say, 350); return () => clearTimeout(t); } }, [text, audio, auto]);  
   return (
     <button onClick={() => { haptic(); say(); }} aria-label="Écouter"
       className={`btn-relief bg-primary text-primary-foreground ${big ? "w-24 h-24 rounded-3xl" : "w-12 h-12"}`}>
@@ -40,7 +40,7 @@ function Option({ children, state, onClick, ar }) {
     : state === "wrong" ? "border-destructive bg-destructive/10 text-destructive"
     : "border-border bg-card text-foreground";
   return (
-    <button onClick={onClick} className={`min-h-[76px] rounded-2xl border-2 border-b-[5px] px-3 py-3 font-extrabold transition-colors active:translate-y-[2px] active:border-b-2 ${cls} ${ar === "word" ? `${AR} text-[26px] leading-[1.8]` : ar ? `${AR} text-[38px] leading-[1.4]` : "text-[17px]"}`} dir={ar ? "rtl" : undefined}>
+    <button onClick={onClick} className={`min-h-[76px] rounded-2xl border-2 border-b-[5px] px-3 py-3 font-extrabold transition-colors active:translate-y-[2px] active:border-b-2 ${cls} ${ar === "word" ? `${AR} text-[26px] leading-[2] break-words` : ar ? `${AR} text-[38px] leading-[1.9]` : "text-[17px]"}`} dir={ar ? "rtl" : undefined}>
       {children}
     </button>
   );
@@ -53,9 +53,19 @@ function Trace({ letter, onInk, resetKey, registerCheck }) {
   const wrap = useRef(null);
   useEffect(() => { const w = Math.min(320, (wrap.current?.clientWidth || 300)); setSize(w); }, []);
   const fontPx = size * 0.58;
+  // la lettre est mesurée puis centrée sur son encre réelle : jamais coupée, quelle que soit sa forme
   const draw = (ctx, s, fill) => {
-    ctx.font = `${fontPx * (s / size)}px Amiri, "Amiri Quran", serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.direction = "rtl";
-    if (fill) ctx.fillText(letter.ar, s / 2, s * 0.47);
+    const fam = 'Amiri, "Amiri Quran", serif';
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.direction = "rtl";
+    let fs = s * 0.5; ctx.font = `${fs}px ${fam}`;
+    let m = ctx.measureText(letter.ar);
+    const w0 = (m.actualBoundingBoxLeft + m.actualBoundingBoxRight) || fs * 0.6, h0 = (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) || fs;
+    fs = Math.min(s * 0.62, fs * Math.min((s * 0.66) / w0, (s * 0.66) / h0));
+    ctx.font = `${fs}px ${fam}`; m = ctx.measureText(letter.ar);
+    const L = m.actualBoundingBoxLeft || 0, R = m.actualBoundingBoxRight || fs * 0.6, A = m.actualBoundingBoxAscent || fs * 0.7, D = m.actualBoundingBoxDescent || 0;
+    const x = (s - (L + R)) / 2 + L, y = (s - (A + D)) / 2 + A;
+    if (fill) ctx.fillText(letter.ar, x, y);
+    return [x, y];
   };
   useEffect(() => {
     const dpr = window.devicePixelRatio || 1;
@@ -67,7 +77,7 @@ function Trace({ letter, onInk, resetKey, registerCheck }) {
       ink.current.getContext("2d").clearRect(0, 0, size, size);
     };
     (document.fonts?.load ? document.fonts.load(`${Math.round(fontPx)}px Amiri`).catch(() => {}) : Promise.resolve()).then(paint);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [letter.id, size, resetKey]);
 
   const pos = (e) => { const r = ink.current.getBoundingClientRect(); return [(e.clientX - r.left), (e.clientY - r.top)]; };
@@ -87,7 +97,7 @@ function Trace({ letter, onInk, resetKey, registerCheck }) {
       const S = 120, k = S / size;
       const mk = () => { const c = document.createElement("canvas"); c.width = S; c.height = S; return c.getContext("2d", { willReadFrequently: true }); };
       const fill = mk(); fill.fillStyle = "#000"; draw(fill, S, true);
-      const dil = mk(); dil.fillStyle = "#000"; dil.strokeStyle = "#000"; dil.lineWidth = S * 0.11; dil.lineJoin = "round"; draw(dil, S, true); dil.strokeText(letter.ar, S / 2, S * 0.47);
+      const dil = mk(); dil.fillStyle = "#000"; dil.strokeStyle = "#000"; dil.lineWidth = S * 0.11; dil.lineJoin = "round"; const [dx, dy] = draw(dil, S, true); dil.strokeText(letter.ar, dx, dy);
       const paintInk = (w) => { const c = mk(); c.strokeStyle = "#000"; c.lineWidth = w; c.lineCap = "round"; c.lineJoin = "round"; strokes.current.forEach((st) => { c.beginPath(); st.forEach(([x, y], i) => (i ? c.lineTo(x * k, y * k) : c.moveTo(x * k, y * k))); if (st.length === 1) c.lineTo(st[0][0] * k + 0.1, st[0][1] * k); c.stroke(); }); return c; };
       const thin = paintInk(S * 0.04), thick = paintInk(S * 0.14);
       const A = (c) => c.getImageData(0, 0, S, S).data;
@@ -129,8 +139,8 @@ function Pairs({ pairs, arBoth, onDone }) {
   const st = (side, id) => done.includes(id) ? "opacity-40 border-border bg-muted" : sel?.side === side && sel.id === id ? "border-primary bg-accent" : bad && ((bad[2] === side && bad[0] === id) || (bad[2] !== side && bad[1] === id)) ? "border-destructive bg-destructive/10" : "border-border bg-card";
   return (
     <div className="grid grid-cols-2 gap-3">
-      <div className="space-y-3">{left.map((x) => <button key={x.id} disabled={done.includes(x.id)} onClick={() => tap("l", x.id)} className={`w-full h-[68px] rounded-2xl border-2 border-b-[5px] ${AR} text-[32px] ${st("l", x.id)}`}>{x.label}</button>)}</div>
-      <div className="space-y-3">{right.map((x) => <button key={x.id} disabled={done.includes(x.id)} onClick={() => tap("r", x.id)} className={`w-full h-[68px] rounded-2xl border-2 border-b-[5px] font-extrabold ${arBoth ? `${AR} text-[32px]` : "text-[17px]"} ${st("r", x.id)}`}>{x.label}</button>)}</div>
+      <div className="space-y-3">{left.map((x) => <button key={x.id} disabled={done.includes(x.id)} onClick={() => tap("l", x.id)} className={`w-full min-h-[68px] px-2 py-1 rounded-2xl border-2 border-b-[5px] ${AR} ${[...x.label].length > 5 ? "text-[22px]" : "text-[30px]"} leading-[1.9] break-words ${st("l", x.id)}`} dir="rtl">{x.label}</button>)}</div>
+      <div className="space-y-3">{right.map((x) => <button key={x.id} disabled={done.includes(x.id)} onClick={() => tap("r", x.id)} className={`w-full min-h-[68px] px-2 py-1 rounded-2xl border-2 border-b-[5px] font-extrabold ${arBoth ? `${AR} text-[30px] leading-[1.9]` : "text-[16px] leading-tight"} ${st("r", x.id)}`}>{x.label}</button>)}</div>
     </div>
   );
 }
@@ -160,7 +170,7 @@ export default function Lecon() {
       if (x.type === "listen-syl") return { ...x, type: "read-ar", prompt: null };
       return x;
     }).filter((x) => x.type !== "read-ar");
-  }, [lessonId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lessonId]);  
 
   const [queue, setQueue] = useState(initial);
   const [i, setI] = useState(0);
@@ -312,7 +322,7 @@ export default function Lecon() {
             <p className="text-sm font-extrabold uppercase tracking-wide text-primary">{l.name} dans un mot</p>
             <div className="grid grid-cols-2 gap-3 mt-4" dir="rtl">
               {["iso", "ini", "med", "fin"].map((k) => (
-                <div key={k} className="card-flat py-3"><div className={`${AR} text-[56px] leading-[1.5]`}>{f[k]}</div><p className="text-xs font-extrabold text-muted-foreground" dir="ltr">{POSITIONS[k]}</p></div>
+                <div key={k} className="card-flat py-3"><div className={`${AR} text-[52px] leading-[1.9]`}>{f[k]}</div><p className="text-xs font-extrabold text-muted-foreground" dir="ltr">{POSITIONS[k]}</p></div>
               ))}
             </div>
             {l.joins === false && <p className="text-sm font-bold text-muted-foreground mt-4">Cette lettre ne s'attache jamais à la lettre qui suit.</p>}
@@ -324,7 +334,7 @@ export default function Lecon() {
         return (
           <div className="text-center">
             <p className="text-sm font-extrabold uppercase tracking-wide text-primary">{item.label}</p>
-            <div className={`${AR} text-[120px] leading-[1.4]`}>{"\u25CC" + item.mark}</div>
+            <div className={`${AR} text-[110px] leading-[1.75]`}>{"\u25CC" + item.mark}</div>
             <p className="text-[26px] font-black">{item.name}</p>
             <p className="font-semibold text-muted-foreground mt-1 max-w-xs mx-auto">{item.hint}</p>
             <div className="flex justify-center gap-3 mt-6">
@@ -391,11 +401,11 @@ export default function Lecon() {
       case "listen-word":
         return (<><div className="flex justify-center mb-8"><SpeakBtn text={item.say} audio={item.audio} big auto /></div>{opts((o) => o, "word")}</>);
       case "read-word":
-        return (<><div className={`${AR} text-[60px] leading-[1.7] text-center mb-6 break-words`} dir="rtl">{item.prompt}</div>{opts((o) => o)}</>);
+        return (<><div className={`${AR} text-[56px] leading-[1.9] text-center mb-6 break-words`} dir="rtl">{item.prompt}</div>{opts((o) => o)}</>);
       case "meaning":
-        return (<><div className={`${AR} text-[60px] leading-[1.7] text-center mb-6 break-words`} dir="rtl">{item.prompt}</div>{opts((o) => o)}</>);
+        return (<><div className={`${AR} text-[56px] leading-[1.9] text-center mb-6 break-words`} dir="rtl">{item.prompt}</div>{opts((o) => o)}</>);
       case "lam":
-        return (<><div className={`${AR} text-[60px] leading-[1.7] text-center mb-6 break-words`} dir="rtl">{item.prompt}</div>{opts((o) => LAM[o])}</>);
+        return (<><div className={`${AR} text-[56px] leading-[1.9] text-center mb-6 break-words`} dir="rtl">{item.prompt}</div>{opts((o) => LAM[o])}</>);
       case "missing": {
         const v = item.v;
         return (<>
@@ -413,25 +423,25 @@ export default function Lecon() {
           <div className="min-h-[132px] rounded-2xl border-2 border-dashed border-border p-3 mb-5 flex flex-wrap content-start justify-start gap-2" dir="rtl">
             {order.map((t, k) => (
               <button key={k} onClick={() => { if (!result) { haptic(); setOrder(order.filter((_, j) => j !== k)); } }}
-                className={`${AR} text-[26px] leading-[1.7] px-3 rounded-xl border-2 border-b-4 bg-card ${result === "ok" ? "border-primary text-primary" : result === "ko" ? "border-destructive text-destructive" : "border-border"}`}>{item.tiles[t].ar}</button>
+                className={`${AR} text-[26px] leading-[1.95] px-3 rounded-xl border-2 border-b-4 bg-card ${result === "ok" ? "border-primary text-primary" : result === "ko" ? "border-destructive text-destructive" : "border-border"}`}>{item.tiles[t].ar}</button>
             ))}
           </div>
           <div className="flex flex-wrap justify-center gap-2" dir="rtl">
             {item.tiles.map((tl, t) => (
               <button key={t} disabled={used.has(t) || !!result} onClick={() => { haptic(); playUrl(item.v.words[tl.i].audio); setOrder([...order, t]); }}
-                className={`${AR} text-[26px] leading-[1.7] px-3 rounded-xl border-2 border-b-4 ${used.has(t) ? "bg-muted border-muted text-transparent" : "bg-card border-border"}`}>{tl.ar}</button>
+                className={`${AR} text-[26px] leading-[1.95] px-3 rounded-xl border-2 border-b-4 ${used.has(t) ? "bg-muted border-muted text-transparent" : "bg-card border-border"}`}>{tl.ar}</button>
             ))}
           </div>
         </>);
       }
       case "read": case "form":
-        return (<><div className={`${AR} text-[110px] leading-[1.35] text-center mb-6`}>{item.prompt}</div>{opts((o) => item.show === "letter" ? L[o].ar : L[o].name, item.show === "letter")}</>);
+        return (<><div className={`${AR} text-[104px] leading-[1.75] text-center mb-6`}>{item.prompt}</div>{opts((o) => item.show === "letter" ? L[o].ar : L[o].name, item.show === "letter")}</>);
       case "listen":
         return (<><div className="flex justify-center mb-8"><SpeakBtn text={item.say} big auto /></div>{opts((o) => L[o].ar, true)}</>);
       case "position":
-        return (<><div className={`${AR} text-[110px] leading-[1.35] text-center mb-6`}>{item.prompt}</div>{opts((o) => POSITIONS[o])}</>);
+        return (<><div className={`${AR} text-[104px] leading-[1.75] text-center mb-6`}>{item.prompt}</div>{opts((o) => POSITIONS[o])}</>);
       case "read-syl":
-        return (<><div className={`${AR} text-[110px] leading-[1.35] text-center mb-6`}>{item.prompt}</div>{opts((o) => o)}</>);
+        return (<><div className={`${AR} text-[104px] leading-[1.75] text-center mb-6`}>{item.prompt}</div>{opts((o) => o)}</>);
       case "listen-syl":
         return (<><div className="flex justify-center mb-8"><SpeakBtn text={item.say} big auto /></div>{opts((o) => o, true)}</>);
       case "pairs":
@@ -483,7 +493,7 @@ export default function Lecon() {
               {result === "ok" ? <CheckCircle weight="fill" className="w-8 h-8 shrink-0" /> : <XCircle weight="fill" className="w-8 h-8 shrink-0" />}
               <div className="min-w-0">
                 <p className="text-[20px] font-black">{result === "ok" ? ["Bien joué !", "Excellent !", "Parfait !", "Bravo !"][i % 4] : "Pas tout à fait"}</p>
-                {result === "ko" && item.type !== "pairs" && <p className={`font-bold ${["trace", "meaning", "lam"].includes(item.type) ? "" : `${AR} text-[22px]`} text-destructive/90`} dir="auto">{item.type === "trace" ? correctText() : `Réponse : ${correctText()}`}</p>}
+                {result === "ko" && item.type !== "pairs" && <p className={`font-bold ${["trace", "meaning", "lam"].includes(item.type) ? "" : `${AR} text-[22px] leading-[1.9]`} text-destructive/90`} dir="auto">{item.type === "trace" ? correctText() : `Réponse : ${correctText()}`}</p>}
                 {result === "ko" && <p className="text-xs font-bold text-destructive/70 mt-0.5">Cette question reviendra à la fin.</p>}
               </div>
             </div>

@@ -7,8 +7,9 @@ import { supabase } from "@/api/neonClient";
 import { MemorizationProgress, ActivityDays } from "@/api/entities";
 import { currentStreak, longestStreak } from "@/lib/srs";
 import { useAuth } from "@/lib/AuthContext";
-import InvitePosterModal from "@/components/InvitePosterModal";
+import InviteSheet from "@/components/InviteSheet";
 import { haptic } from "@/hooks/usePlatform";
+import PageHeader from "@/components/PageHeader";
 
 const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
@@ -98,10 +99,8 @@ export default function Profile() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex justify-end">
-          <Link to="/Settings" aria-label="Réglages" className="w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center press"><GearSix weight="bold" className="w-5 h-5" /></Link>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Profil" back="/Dashboard" right={<Link to="/Settings" aria-label="Réglages" className="w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center press"><GearSix weight="bold" className="w-5 h-5" /></Link>} />
 
         <div className="text-center">
           <button onClick={() => fileRef.current?.click()} className="relative mx-auto block" aria-label="Changer la photo">
@@ -169,7 +168,7 @@ export default function Profile() {
         </p>
       </div>
 
-      <InvitePosterModal open={invite} onClose={() => setInvite(false)} user={user} />
+      <InviteSheet open={invite} onClose={() => setInvite(false)} kind="app" name={fullName.trim().split(/\s+/)[0] || ""} stats={{ verses: total, streak, surahs: completed.size }} />
 
       <AnimatePresence>
         {logoutOpen && (

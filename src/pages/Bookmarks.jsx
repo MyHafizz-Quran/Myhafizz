@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MapPin, Trash, Play, CaretLeft } from "@phosphor-icons/react";
+import { Heart, MapPin, Trash, Play } from "@phosphor-icons/react";
 import { SURAHS } from "@/components/quranData";
+import PageHeader from "@/components/PageHeader";
 
 const FAV_KEY = "quran_favorites";
 const STOP_KEY = "quran_stop_markers";
@@ -59,11 +60,8 @@ export default function Bookmarks() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex items-center gap-2">
-          <Link to="/SurahList" aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></Link>
-          <h1 className="text-[26px] font-black">Signets</h1>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Signets" back="/SurahList" />
         <div className="grid grid-cols-2 gap-1 p-1 rounded-[14px] bg-muted mt-3">
           {TABS.map((t) => {
             const n = t.key === "favorites" ? favoriteItems.length : markerItems.length;

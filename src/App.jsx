@@ -43,6 +43,7 @@ import Download from './pages/Download.jsx';
 import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import Welcome from './pages/Welcome.jsx';
+import Join from '@/pages/Join';
 import Lire from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
 import { KidLock } from './components/KidMode.jsx';
@@ -95,14 +96,14 @@ const AuthenticatedApp = () => {
 
   if (!isAuthenticated) {
     const pendingJoin = new URLSearchParams(window.location.search).get("join");
-    if (pendingJoin) localStorage.setItem("mh_pending_join", pendingJoin);
+    if (pendingJoin) return <Navigate to={`/rejoindre/${encodeURIComponent(pendingJoin)}`} replace />;
     return <Navigate to="/login" replace />;
   }
 
   const pendingJoin = localStorage.getItem("mh_pending_join");
-  if (pendingJoin && path !== "/Groups") {
+  if (pendingJoin) {
     localStorage.removeItem("mh_pending_join");
-    return <Navigate to={`/Groups?join=${encodeURIComponent(pendingJoin)}`} replace />;
+    return <Navigate to={`/rejoindre/${encodeURIComponent(pendingJoin)}`} replace />;
   }
 
   return (
@@ -194,6 +195,8 @@ function App() {
                 <Route path="/confirm" element={<FullBleed><ConfirmEmail /></FullBleed>} />
                 <Route path="/terms" element={<FullBleed><Terms /></FullBleed>} />
                 <Route path="/privacy" element={<FullBleed><Privacy /></FullBleed>} />
+                <Route path="/rejoindre/:code" element={<Join />} />
+                <Route path="/join/:code" element={<Join />} />
                 <Route path="/telecharger" element={<FullBleed><Download /></FullBleed>} />
                 <Route path="/download" element={<FullBleed><Download /></FullBleed>} />
                 <Route path="/*" element={<AuthenticatedApp />} />

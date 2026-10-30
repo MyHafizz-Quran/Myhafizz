@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CaretLeft, CaretRight, Moon, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell } from "@phosphor-icons/react";
+import { getFeedback, setFeedback, vibrate } from "@/lib/feedback";
+import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -12,6 +13,7 @@ import { haptic } from "@/hooks/usePlatform";
 import { useKidMode, enableKidMode, disableKidMode, relockKidMode } from "@/lib/kidMode";
 import { PinPad } from "@/components/KidMode";
 import { PRAYERS, pushSupport, getReminder, saveReminder, removeReminder, prayerTimes } from "@/lib/reminders";
+import PageHeader from "@/components/PageHeader";
 
 function Seg({ options, value, onChange }) {
   return (
@@ -49,8 +51,9 @@ const Card = ({ children, className = "" }) => <div className={`card-flat overfl
 const initials = (n) => n.split(/[\s-]+/).filter((w) => /^[A-Z]/.test(w)).slice(-2).map((w) => w[0]).join("");
 
 export default function Settings() {
+  const [fb, setFb] = React.useState(getFeedback());
   const {
-    reciter, showPhonetic, showTranslation, darkMode, showTajweed, setShowTajweed,
+    reciter, showPhonetic, showTranslation, darkMode, theme, setTheme, showTajweed, setShowTajweed,
     arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers,
     setReciter, setShowPhonetic, setShowTranslation, setDarkMode,
     setArabicTextSize, setArabicFont, setTextContrast, setLineSpacing, setShowVerseNumbers,
@@ -249,11 +252,8 @@ export default function Settings() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex items-center gap-2">
-          <Link to="/Profile" aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></Link>
-          <h1 className="text-[26px] font-black">Réglages</h1>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Réglages" back="/Profile" />
 
         <Label>Lecture</Label>
         <Card>
@@ -280,7 +280,9 @@ export default function Settings() {
           <SegRow label="Espacement des lignes" value={lineSpacing} onChange={setLineSpacing} options={[{ label: "Serré", value: "compact" }, { label: "Normal", value: "normal" }, { label: "Aéré", value: "airy" }]} />
           <SegRow label="Contraste" value={textContrast} onChange={setTextContrast} options={[{ label: "Normal", value: "normal" }, { label: "Élevé", value: "high" }]} />
           <ToggleRow icon={Hash} label="Numéros de verset" value={showVerseNumbers} onChange={() => setShowVerseNumbers(!showVerseNumbers)} />
-          <ToggleRow icon={Moon} label="Mode sombre" value={darkMode} onChange={() => setDarkMode(!darkMode)} />
+          <ToggleRow icon={SpeakerHigh} label="Sons des boutons" value={fb.sound} onChange={() => { const v = { sound: !fb.sound }; setFeedback(v); setFb({ ...fb, ...v }); }} />
+          <ToggleRow icon={Vibrate} label="Vibrations" sub="Sur iPhone : iOS 18 ou plus récent" value={fb.haptics} onChange={() => { const v = { haptics: !fb.haptics }; setFeedback(v); setFb({ ...fb, ...v }); vibrate(12); }} />
+          <SegRow label="Apparence" value={theme} onChange={setTheme} options={[{ label: "Comme l'appareil", value: "system" }, { label: "Clair", value: "light" }, { label: "Nuit", value: "dark" }]} />
         </Card>
 
         <Label>Rappels</Label>

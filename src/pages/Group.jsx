@@ -2,12 +2,14 @@ import { useKidMode } from "@/lib/kidMode";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CaretLeft, ShareNetwork, Plus, BookOpen, Microphone, CheckCircle, ArrowCounterClockwise, Trash, SignOut, CaretDown, Copy } from "@phosphor-icons/react";
+import { Plus, BookOpen, Microphone, CheckCircle, ArrowCounterClockwise, Trash, SignOut, CaretDown, CaretRight, UserPlus } from "@phosphor-icons/react";
 import { Groups as G, Assignments, Khatmas, ROLE_LABEL, KIND_LABEL, isStaff } from "@/api/entities";
 import { SURAHS } from "@/components/quranData";
 import Sheet, { Field, inputCls, JUZ_START } from "@/components/community/Sheet";
 import { todayStr } from "@/lib/srs";
 import { haptic } from "@/hooks/usePlatform";
+import PageHeader from "@/components/PageHeader";
+import InviteSheet from "@/components/InviteSheet";
 
 const ago = (d) => {
   if (!d) return "jamais";
@@ -332,14 +334,8 @@ export default function Group() {
   const staff = isStaff(group?.role);
   const tabs = useMemo(() => [["track", staff ? "Suivi" : "Membres"], ["lessons", "Leçons"], ["khatma", "Khatma"]], [staff]);
   const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get("tab") || "lessons");
-  const [copied, setCopied] = useState(false);
-
-  const link = group ? `${window.location.origin}/Groups?join=${group.invite_code}` : "";
-  const share = async () => {
-    const text = `Rejoins « ${group.name} » sur MyHafizz avec le code ${group.invite_code}`;
-    if (navigator.share) { try { await navigator.share({ title: "MyHafizz", text, url: link }); return; } catch { return; } }
-    await navigator.clipboard?.writeText(`${text} : ${link}`); setCopied(true); setTimeout(() => setCopied(false), 1500);
-  };
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const myName = (group?.members?.find((m) => m.user_id === group?.me)?.display_name || "").trim().split(/\s+/)[0];
   const leave = async () => {
     const owner = group.owner_id === group.me;
     if (!confirm(owner ? "Supprimer définitivement ce groupe pour tous ses membres ?" : "Quitter ce groupe ?")) return;
@@ -351,18 +347,21 @@ export default function Group() {
   if (!group) return <div className="max-w-xl mx-auto p-6 text-center font-extrabold">Groupe introuvable.<button onClick={() => navigate("/Groups")} className="block mx-auto mt-3 text-primary">Retour</button></div>;
 
   return (
-    <div className="max-w-xl lg:max-w-5xl mx-auto px-4 lg:px-8 pt-2 lg:pt-8 pb-6">
-      <button onClick={() => navigate("/Groups")} className="flex items-center gap-1 -ml-1 h-10 text-sm font-extrabold text-muted-foreground"><CaretLeft weight="bold" /> Groupes</button>
-      <h1 className="text-2xl font-extrabold">{group.name}</h1>
-      <p className="text-sm font-semibold text-muted-foreground">{KIND_LABEL[group.kind]} · {group.members.length} membre{group.members.length > 1 ? "s" : ""} · {ROLE_LABEL[group.role]}</p>
+    <div className="max-w-xl lg:max-w-5xl mx-auto px-4 lg:px-8 pb-6">
+      <PageHeader title={group.name} back="/Groups" />
+      <p className="text-sm font-semibold text-muted-foreground mt-0.5">{KIND_LABEL[group.kind]} · {group.members.length} membre{group.members.length > 1 ? "s" : ""} · {ROLE_LABEL[group.role]}</p>
 
-      <div className="card-flat p-3 mt-4 flex items-center gap-3 lg:max-w-md">
-        <div className="flex-1">
-          <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">Code d'invitation</p>
-          <p className="text-2xl font-extrabold tracking-[0.25em] text-primary">{group.invite_code}</p>
-        </div>
-        <button onClick={share} className="btn-relief h-11 px-4 bg-primary text-primary-foreground text-sm">{copied ? <><Copy weight="bold" /> Copié</> : <><ShareNetwork weight="bold" /> Inviter</>}</button>
-      </div>
+      {!kid.on && (
+        <button onClick={() => { haptic(); setInviteOpen(true); }} className="card-flat w-full p-3.5 mt-4 flex items-center gap-3 text-left lg:max-w-md active:translate-y-[1px]">
+          <span className="w-11 h-11 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><UserPlus weight="fill" className="w-6 h-6" /></span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-extrabold">{group.kind === "class" ? "Inviter des élèves" : group.kind === "family" ? "Inviter la famille" : "Inviter des amis"}</span>
+            <span className="block text-sm font-semibold text-muted-foreground">Lien, QR code ou WhatsApp · code <span className="font-black tracking-widest text-accent-foreground">{group.invite_code}</span></span>
+          </span>
+          <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+        </button>
+      )}
+      <InviteSheet open={inviteOpen} onClose={() => setInviteOpen(false)} kind="group" group={group} name={myName} />
 
       <div className="grid grid-cols-3 gap-1 p-1 mt-4 rounded-2xl bg-muted lg:max-w-md">
         {tabs.map(([k, l]) => (

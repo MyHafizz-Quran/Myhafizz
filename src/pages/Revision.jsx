@@ -8,6 +8,7 @@ import { buildSession, goalPace, key } from "@/lib/srs";
 import { GOALS, goalSurahs } from "@/lib/learningData";
 import { SURAHS } from "@/components/quranData";
 import { haptic } from "@/hooks/usePlatform";
+import PageHeader from "@/components/PageHeader";
 
 const BLOCKS = [
   { part: "sabaq", title: "Sabaq", sub: "Nouvelle leçon", icon: BookOpenText },
@@ -120,13 +121,8 @@ export default function Revision() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+16px)]">
-        <div className="flex items-center justify-between mb-1">
-          <h1 className="text-2xl font-extrabold">Réviser</h1>
-          <button onClick={() => setSheet(true)} className="w-10 h-10 rounded-xl border-2 border-border bg-card flex items-center justify-center press" aria-label="Mon programme">
-            <SlidersHorizontal weight="bold" className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Réviser" right={<button onClick={() => setSheet(true)} className="w-10 h-10 rounded-xl border-2 border-border bg-card flex items-center justify-center press" aria-label="Mon programme"><SlidersHorizontal weight="bold" className="w-5 h-5" /></button>} />
         <p className="text-sm font-semibold text-muted-foreground mb-5">
           {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
           {!loading && (remainingToday ? ` · ${remainingToday} verset${remainingToday > 1 ? "s" : ""} au programme` : " · Session du jour terminée")}

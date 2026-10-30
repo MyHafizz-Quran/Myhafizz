@@ -38,6 +38,11 @@ export const Groups = {
     const r = ok(await supabase.rpc('group_preview', { p_code: code }));
     return Array.isArray(r) ? r[0] || null : r;
   },
+  /** Infos publiques d'une invitation (fonctionne sans compte) */
+  async inviteInfo(code) {
+    const r = ok(await supabase.rpc('group_invite_info', { p_code: code }));
+    return Array.isArray(r) ? r[0] || null : r;
+  },
   async join(code, role, name) {
     const u = await me();
     return ok(await supabase.rpc('join_group', { p_code: code, p_display: name || displayName(u), p_role: role || 'child' }));

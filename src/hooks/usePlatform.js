@@ -1,3 +1,4 @@
+import { vibrate } from "@/lib/feedback";
 /**
  * Détecte la plateforme pour adapter la navigation :
  * - "ios"     → barres Liquid Glass (iOS 26)
@@ -28,9 +29,8 @@ export function isStandalone() {
   return window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
 
-export function haptic(ms = 8) {
-  try { if (navigator.vibrate) navigator.vibrate(ms); } catch { /* ignore */ }
-}
+/** Le tap simple est déjà géré globalement (son + vibration) ; ici seulement les retours marqués (réussite, erreur). */
+export function haptic(ms = 8) { if (ms !== 8) vibrate(ms); }
 
 export default function usePlatform() {
   return PLATFORM;

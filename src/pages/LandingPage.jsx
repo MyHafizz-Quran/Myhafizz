@@ -7,7 +7,7 @@ import {
 import { MhWordmark } from "@/components/MhLogo";
 import { loadSurah } from "@/lib/learningData";
 
-const GOOGLE = import.meta.env.VITE_GOOGLE_AUTH === "1";
+const GOOGLE = import.meta.env.VITE_GOOGLE_AUTH !== "0";
 
 const initialLang = () => {
   try { const s = localStorage.getItem("mh_lang"); if (s) return s; } catch { /* ignore */ }

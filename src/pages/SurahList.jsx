@@ -8,6 +8,7 @@ import { SURAH_FR } from "@/components/surahNamesFr";
 import { JUZ_START } from "@/components/community/Sheet";
 import { getReadingSession } from "@/lib/AudioManager";
 import { haptic } from "@/hooks/usePlatform";
+import PageHeader from "@/components/PageHeader";
 
 const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/['’`-]/g, "").replace(/[^a-z0-9 ]/g, "").trim();
 const normLoose = (s) => norm(s).replace(/^(al|an|ar|as|at|ad|az|ash|adh|aal e|al )\s?/, "").replace(/\s/g, "");
@@ -139,11 +140,8 @@ export default function SurahList() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-3xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+16px)]">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[28px] font-black">Coran</h1>
-          <Link to="/Bookmarks" aria-label="Signets" className="w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center press"><BookmarkSimple weight="bold" className="w-5 h-5" /></Link>
-        </div>
+      <div className="max-w-3xl mx-auto px-4">
+        <PageHeader title="Coran" right={<Link to="/Bookmarks" aria-label="Signets" className="w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center press"><BookmarkSimple weight="bold" className="w-5 h-5" /></Link>} />
       </div>
 
       {/* Recherche collante */}

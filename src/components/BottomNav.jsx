@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { House, BookOpen, UsersThree, Brain, MagnifyingGlass, Play, Pause } from "@phosphor-icons/react";
+import { House, BookOpen, GraduationCap, Brain, MagnifyingGlass, Play, Pause } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import usePlatform, { haptic } from "@/hooks/usePlatform";
 import { useAudioManager, getReadingSession } from "@/lib/AudioManager";
@@ -9,14 +9,14 @@ import { SURAHS } from "@/components/quranData";
 export const TABS = [
   { to: "/Dashboard", icon: House, label: "Accueil" },
   { to: "/SurahList", icon: BookOpen, label: "Coran" },
-  { to: "/Groups", icon: UsersThree, label: "Groupes", match: ["/Groups", "/Group"] },
+  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: ["/Lire", "/Lecon"] },
   { to: "/Revision", icon: Brain, label: "Réviser" },
 ];
 
 function isActive(to, path) {
   if (to === "/Dashboard") return path === "/" || path.startsWith("/Dashboard");
   if (to === "/SurahList") return path.startsWith("/SurahList") || path.startsWith("/Memorize") || path.startsWith("/Bookmarks");
-  if (to === "/Groups") return path.startsWith("/Group");
+  if (to === "/Lire") return path.startsWith("/Lire") || path.startsWith("/Lecon");
   return path.startsWith(to);
 }
 

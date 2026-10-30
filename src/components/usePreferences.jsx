@@ -7,7 +7,7 @@ const DEFAULT_PREFS = {
   reciter: "ar.alafasy",
   showPhonetic: false,
   showTranslation: false,
-  darkMode: false,
+  theme: "system", // "system" (suit l'appareil) | "light" | "dark"
   arabicTextSize: "medium",
   arabicFont: "system",
   textContrast: "normal",
@@ -19,7 +19,10 @@ const DEFAULT_PREFS = {
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const p = raw ? JSON.parse(raw) : {};
+    // ancien réglage « mode sombre » : on repasse sur le thème de l'appareil
+    if (!p.theme) { delete p.darkMode; p.theme = "system"; }
+    return p;
   } catch {
     return {};
   }
@@ -29,6 +32,28 @@ function save(data) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch {}
+}
+
+const mq = () => (typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null);
+function useSystemDark() {
+  const [dark, setDark] = useState(() => !!mq()?.matches);
+  useEffect(() => {
+    const m = mq(); if (!m) return;
+    const on = (e) => setDark(e.matches);
+    m.addEventListener ? m.addEventListener("change", on) : m.addListener(on);
+    return () => (m.removeEventListener ? m.removeEventListener("change", on) : m.removeListener(on));
+  }, []);
+  return dark;
+}
+const LIGHT_BAR = "#EFF9F9", DARK_BAR = "#0A1418";
+function applyTheme(dark, theme) {
+  const html = document.documentElement;
+  html.classList.toggle("dark", dark);
+  html.style.colorScheme = dark ? "dark" : "light";
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+    const media = m.getAttribute("media") || "";
+    m.setAttribute("content", theme === "system" ? (media.includes("dark") ? DARK_BAR : LIGHT_BAR) : dark ? DARK_BAR : LIGHT_BAR);
+  });
 }
 
 // Create a context for global preferences
@@ -44,14 +69,10 @@ export function PreferencesProvider({ children }) {
     ...load(),
   }));
 
-  // Apply dark mode class on mount and when darkMode changes
-  useEffect(() => {
-    if (prefs.darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [prefs.darkMode]);
+  // Thème : suit l'appareil (clair / nuit) sauf choix contraire, et change en direct
+  const systemDark = useSystemDark();
+  const isDark = prefs.theme === "dark" || (prefs.theme !== "light" && systemDark);
+  useEffect(() => { applyTheme(isDark, prefs.theme); }, [isDark, prefs.theme]);
 
   // Listen for storage events from other tabs/windows
   // Note: Storage events only fire in OTHER tabs/windows, not the one that made the change
@@ -83,7 +104,9 @@ export function PreferencesProvider({ children }) {
     reciter: prefs.reciter,
     showPhonetic: prefs.showPhonetic,
     showTranslation: prefs.showTranslation,
-    darkMode: prefs.darkMode,
+    darkMode: isDark,
+    theme: prefs.theme,
+    setTheme: useCallback((v) => update("theme", v), [update]),
     arabicTextSize: prefs.arabicTextSize,
     arabicFont: prefs.arabicFont,
     textContrast: prefs.textContrast,
@@ -94,7 +117,7 @@ export function PreferencesProvider({ children }) {
     setReciter: useCallback((v) => update("reciter", v), [update]),
     setShowPhonetic: useCallback((v) => update("showPhonetic", v), [update]),
     setShowTranslation: useCallback((v) => update("showTranslation", v), [update]),
-    setDarkMode: useCallback((v) => update("darkMode", v), [update]),
+    setDarkMode: useCallback((v) => update("theme", v ? "dark" : "light"), [update]),
     setArabicTextSize: useCallback((v) => update("arabicTextSize", v), [update]),
     setArabicFont: useCallback((v) => update("arabicFont", v), [update]),
     setTextContrast: useCallback((v) => update("textContrast", v), [update]),
@@ -123,14 +146,7 @@ export function usePreferences() {
     ...load(),
   }));
 
-  // Apply dark mode for fallback
-  useEffect(() => {
-    if (!context && fallbackPrefs.darkMode) {
-      document.documentElement.classList.add("dark");
-    } else if (!context) {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [context, fallbackPrefs.darkMode]);
+
 
   const fallbackUpdate = useCallback((key, value) => {
     setFallbackPrefs(prev => {
@@ -150,7 +166,9 @@ export function usePreferences() {
     reciter: fallbackPrefs.reciter,
     showPhonetic: fallbackPrefs.showPhonetic,
     showTranslation: fallbackPrefs.showTranslation,
-    darkMode: fallbackPrefs.darkMode,
+    darkMode: fallbackPrefs.theme === "dark",
+    theme: fallbackPrefs.theme,
+    setTheme: (v) => fallbackUpdate("theme", v),
     arabicTextSize: fallbackPrefs.arabicTextSize,
     arabicFont: fallbackPrefs.arabicFont,
     textContrast: fallbackPrefs.textContrast,
@@ -161,7 +179,7 @@ export function usePreferences() {
     setReciter: (v) => fallbackUpdate("reciter", v),
     setShowPhonetic: (v) => fallbackUpdate("showPhonetic", v),
     setShowTranslation: (v) => fallbackUpdate("showTranslation", v),
-    setDarkMode: (v) => fallbackUpdate("darkMode", v),
+    setDarkMode: (v) => fallbackUpdate("theme", v ? "dark" : "light"),
     setArabicTextSize: (v) => fallbackUpdate("arabicTextSize", v),
     setArabicFont: (v) => fallbackUpdate("arabicFont", v),
     setTextContrast: (v) => fallbackUpdate("textContrast", v),

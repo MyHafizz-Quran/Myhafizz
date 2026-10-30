@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UsersThree, Plus, SignIn, CaretRight, GraduationCap, House, Users } from "@phosphor-icons/react";
 import { Groups as G, KIND_LABEL, ROLE_LABEL } from "@/api/entities";
+import PageHeader from "@/components/PageHeader";
 import Sheet, { Field, inputCls } from "@/components/community/Sheet";
 import { haptic } from "@/hooks/usePlatform";
 
@@ -44,9 +45,8 @@ export default function Groups() {
   };
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-4 pb-6">
-      <h1 className="text-2xl font-extrabold">Groupes</h1>
-      <p className="text-sm font-semibold text-muted-foreground mt-1">Madrasa, famille ou amis : apprenez ensemble.</p>
+    <div className="max-w-xl mx-auto px-4 pb-6">
+      <PageHeader title="Groupes" back subtitle="Madrasa, famille ou amis : apprenez ensemble." />
 
       {!kid.on && <div className="grid grid-cols-2 gap-3 mt-4">
         <button onClick={() => { haptic(); setCreate(true); }} className="btn-relief h-[50px] bg-primary text-primary-foreground"><Plus weight="bold" /> Créer</button>

@@ -1,11 +1,12 @@
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { CaretLeft, CaretRight, Warning } from "@phosphor-icons/react";
+import { CaretRight, Warning } from "@phosphor-icons/react";
 import { MemorizationProgress, VerseReview } from "@/api/entities";
 import { strength, key, todayStr } from "@/lib/srs";
 import { SURAHS } from "@/components/quranData";
 import { haptic } from "@/hooks/usePlatform";
+import PageHeader from "@/components/PageHeader";
 
 // Niveaux : 0 non mémorisé, 1 fragile (oublié), 2 à consolider, 3 correct, 4 solide, 5 pas encore révisé
 export const level = (memorized, rv) => {
@@ -40,11 +41,8 @@ export default function Strength() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 -ml-2 flex items-center justify-center" aria-label="Retour"><CaretLeft weight="bold" className="w-6 h-6" /></button>
-          <h1 className="text-2xl font-extrabold">Solidité</h1>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Solidité" back /><div className="h-4" />
 
         {weakTotal > 0 && (
           <button onClick={() => { haptic(); navigate("/ReviewSession?part=weak"); }} className="card-flat w-full flex items-center gap-3 p-4 mb-4 text-left press">

@@ -66,7 +66,7 @@ export default function Repeat() {
   useEffect(() => { loadSurah(n).then(setAyahs).catch(() => setAyahs([])); }, [n]);
   useEffect(() => { localStorage.setItem(LS, JSON.stringify({ repeats, rangeRepeats, speed, gap })); }, [repeats, rangeRepeats, speed, gap]);
   useEffect(() => { if (audio.current) audio.current.playbackRate = speed; }, [speed]);
-  useEffect(() => () => stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => stop(), []);  
 
   const setMedia = (v) => {
     if (!("mediaSession" in navigator)) return;

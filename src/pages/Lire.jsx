@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight, Target, Medal, CheckCircle } from "@phosphor-icons/react";
+import { Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight, Target, Medal, CheckCircle } from "@phosphor-icons/react";
 import { ReadingSessions } from "@/api/entities/learning";
 import { getGoal, setGoal, GOAL_CHOICES, todayCount, weekStart, BADGES, earnedBadges, weeklyChallenges } from "@/lib/readingGame";
 import { ReadingLessons } from "@/api/entities";
 import { UNITS, ALL_LESSONS, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 import { useToast } from "@/components/ui/use-toast";
+import PageHeader from "@/components/PageHeader";
 
 // décalage en zigzag façon chemin
 const OFFSET = [0, 44, 64, 44, 0, -44, -64, -44];
@@ -37,12 +38,8 @@ export default function Lire() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} aria-label="Retour" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center hover:bg-muted press"><ArrowLeft weight="bold" className="w-6 h-6" /></button>
-          <h1 className="text-[24px] font-black flex-1">Apprendre à lire</h1>
-          <span className="h-9 px-3 rounded-xl border-2 border-border bg-card flex items-center gap-1.5 font-black text-sm"><Lightning weight="fill" className="w-4 h-4 text-[#F2B530]" />{xp}</span>
-        </div>
+      <div className="max-w-xl mx-auto px-4">
+        <PageHeader title="Apprendre" right={<span className="h-9 px-3 rounded-xl border-2 border-border bg-card flex items-center gap-1.5 font-black text-sm"><Lightning weight="fill" className="w-4 h-4 text-gold" />{xp}</span>} />
         <p className="font-semibold text-muted-foreground mt-1">De la première lettre jusqu'à la lecture du Coran, en petites leçons de 5 minutes.</p>
 
         {!voice && (
@@ -114,7 +111,7 @@ export default function Lire() {
                         <Icon weight={state === "done" ? "bold" : "fill"} className="w-8 h-8" />
                       </button>
                       {(() => { const arOnly = ["u1", "u2"].includes(u.id) && !l.review; return (
-                        <p className={`mt-2 text-center max-w-[150px] ${arOnly ? "font-arabic text-[21px] leading-tight" : "text-sm font-extrabold"} ${state === "locked" ? "text-muted-foreground" : "text-foreground"}`} dir={arOnly ? "rtl" : "ltr"}>{l.title}</p>
+                        <p className={`mt-2 text-center max-w-[150px] ${arOnly ? "font-arabic text-[21px] leading-[1.9]" : "text-sm font-extrabold"} ${state === "locked" ? "text-muted-foreground" : "text-foreground"}`} dir={arOnly ? "rtl" : "ltr"}>{l.title}</p>
                       ); })()}
                     </div>
                   );

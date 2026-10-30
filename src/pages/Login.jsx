@@ -5,8 +5,8 @@ import { supabase, frAuthError } from "@/api/neonClient";
 import { useAuth } from "@/lib/AuthContext";
 import MhLogo, { MhWordmark } from "@/components/MhLogo";
 
-/** Google n'apparaît que lorsque l'identifiant OAuth est configuré côté Neon Auth. */
-const GOOGLE = import.meta.env.VITE_GOOGLE_AUTH === "1";
+/** Connexion Google (fournisseur intégré de Neon Auth). VITE_GOOGLE_AUTH=0 pour la masquer. */
+const GOOGLE = import.meta.env.VITE_GOOGLE_AUTH !== "0";
 
 function GoogleIcon() {
   return (

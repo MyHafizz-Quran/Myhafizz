@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CaretLeft, CaretDown, MagnifyingGlass, RocketLaunch, CalendarCheck, Toolbox, UsersThree, DeviceMobile, UserCircle, EnvelopeSimple } from "@phosphor-icons/react";
+import { CaretDown, MagnifyingGlass, RocketLaunch, CalendarCheck, Toolbox, UsersThree, DeviceMobile, UserCircle, EnvelopeSimple } from "@phosphor-icons/react";
+import PageHeader from "@/components/PageHeader";
 
 const SECTIONS = [
   { icon: RocketLaunch, title: "Bien démarrer", items: [
@@ -47,11 +48,8 @@ export default function Help() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)]">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} aria-label="Retour" className="w-10 h-10 -ml-1 rounded-full flex items-center justify-center active:bg-muted"><CaretLeft weight="bold" className="w-6 h-6" /></button>
-          <h1 className="text-[26px] font-black">Aide</h1>
-        </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <PageHeader title="Aide" back />
         <div className="relative mt-3">
           <MagnifyingGlass weight="bold" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une question"

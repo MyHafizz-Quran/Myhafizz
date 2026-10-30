@@ -245,6 +245,8 @@
   input, select, textarea { font-size: 16px; }
   /* Pages internes : pas de header global, juste la safe-area */
   html.no-global-header { --header-height: 0px; }
+  /* Chaque page gère sa propre zone de la barre d'état (PageHeader ou safe-area) : pas de double marge */
+  html.no-global-header .pt-header { padding-top: 0; }
   html.no-tabbar { --bottom-nav-height: 0px; }
 }
 
