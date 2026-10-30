@@ -6,7 +6,11 @@ import usePlatform from '@/hooks/usePlatform';
 import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes as RouterRoutes, Navigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
+
+// Routes instrumentées par Sentry (noms de transactions = chemins des routes)
+const Routes = Sentry.withSentryReactRouterV6Routing(RouterRoutes);
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { PreferencesProvider } from '@/components/usePreferences';

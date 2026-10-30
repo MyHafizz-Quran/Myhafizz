@@ -1,3 +1,5 @@
+import '@/instrument'
+import * as Sentry from '@sentry/react'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
@@ -15,5 +17,7 @@ if (isStandalone()) html.classList.add('standalone');
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <App />
+  <Sentry.ErrorBoundary fallback={<p style={{ padding: 24, fontFamily: 'Nunito, sans-serif' }}>Une erreur est survenue. Recharge la page.</p>}>
+    <App />
+  </Sentry.ErrorBoundary>
 )
