@@ -87,10 +87,10 @@ export default function Lire() {
           );
         })}
 
-        <div className="card-flat p-4 mb-6 text-center">
-          <p className="font-extrabold">Bientôt : les mots du Coran</p>
-          <p className="text-sm font-semibold text-muted-foreground mt-0.5">Puis tes premiers versets : Al-Fâtiḥa et Juz ʿAmma.</p>
-        </div>
+        <button onClick={() => { haptic(); navigate("/SurahList"); }} className="card-flat w-full p-4 mb-6 text-center press">
+          <p className="font-extrabold">Et après ?</p>
+          <p className="text-sm font-semibold text-muted-foreground mt-0.5">Quand tu sais lire, passe à la mémorisation dans l'onglet Coran.</p>
+        </button>
       </div>
     </div>
   );

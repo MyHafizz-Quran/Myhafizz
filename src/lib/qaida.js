@@ -3,6 +3,8 @@
  * Contenu des unités, génération des exercices et voix.
  */
 
+import QURAN from "@/data/qaida-quran.json";
+
 // ── Les 28 lettres ─────────────────────────────────────────────
 // joins: false = ne s'attache pas à la lettre suivante (ا د ذ ر ز و)
 export const LETTERS = [
@@ -138,7 +140,35 @@ export const UNITS = [
       { id: "u4r", kind: "words", title: "Révision", words: ["sukun", "shadda"], letters: NOALIF, review: true },
     ],
   },
+  {
+    id: "u5", title: "Les mots du Coran", subtitle: "Lire, écouter et comprendre des mots qui reviennent souvent",
+    lessons: [
+      { id: "u5l1", kind: "qwords", title: "Allah et Ses noms", set: "noms" },
+      { id: "u5l2", kind: "qwords", title: "Petits mots fréquents", set: "petits" },
+      { id: "u5l3", kind: "qwords", title: "Al- : lettres lunaires", set: "lunaires", rule: "lunaire" },
+      { id: "u5l4", kind: "qwords", title: "Al- : lettres solaires", set: "solaires", rule: "solaire" },
+      { id: "u5r", kind: "qwords", title: "Révision", set: ["noms", "petits", "lunaires", "solaires"], review: true },
+    ],
+  },
+  {
+    id: "u6", title: "Premières sourates", subtitle: "Lire tes premiers versets, mot à mot",
+    lessons: [
+      { id: "u6l1", kind: "verses", title: "Al-Ikhlâṣ", verses: ["112:1", "112:2", "112:3", "112:4"] },
+      { id: "u6l2", kind: "verses", title: "Al-Kawthar", verses: ["108:1", "108:2", "108:3"] },
+      { id: "u6l3", kind: "verses", title: "Al-ʿAṣr", verses: ["103:1", "103:2", "103:3"] },
+      { id: "u6l4", kind: "verses", title: "Al-Fâtiḥa 1 à 4", verses: ["1:1", "1:2", "1:3", "1:4"] },
+      { id: "u6l5", kind: "verses", title: "Al-Fâtiḥa 5 à 7", verses: ["1:5", "1:6", "1:7"] },
+      { id: "u6l6", kind: "verses", title: "Al-Falaq", verses: ["113:1", "113:2", "113:3", "113:4", "113:5"] },
+      { id: "u6l7", kind: "verses", title: "An-Nâs", verses: ["114:1", "114:2", "114:3", "114:4", "114:5", "114:6"] },
+      { id: "u6r", kind: "verses", title: "Révision", verses: Object.keys(QURAN.verses), review: true },
+    ],
+  },
 ];
+export const VERSES = QURAN.verses;
+export const RULES = {
+  lunaire: { title: "Lettre lunaire", hint: "Après « al- », on prononce bien le l (il porte un soukoun) : al-ḥamdou, al-falaq.", answer: "dit" },
+  solaire: { title: "Lettre solaire", hint: "Après « al- », le l ne se prononce pas : la lettre suivante est doublée (chadda). On dit ar-raḥîm, an-nâs.", answer: "muet" },
+};
 export const ALL_LESSONS = UNITS.flatMap((u) => u.lessons.map((l) => ({ ...l, unit: u.id })));
 export const PLACEMENT = { id: "placement", kind: "placement", title: "Test de niveau", letters: [] };
 export const PLACEMENT_UNLOCKS = ALL_LESSONS.filter((l) => ["u1", "u2", "u3"].includes(l.unit)).map((l) => l.id);
@@ -165,13 +195,56 @@ function wordItems(list, n) {
   return pick(list, n).map(([ar, lat]) => ({ type: "read-syl", prompt: ar, answer: lat, word: true, options: shuffle([lat, ...pick(list.filter((w) => w[1] !== lat), 3).map((w) => w[1])]) }));
 }
 
+function wordsOf(set) { return [].concat(set).flatMap((k) => QURAN.words[k].map((w) => ({ ...w, set: k }))); }
+const uniqBy = (arr, f) => arr.filter((x, i, a) => a.findIndex((y) => f(y) === f(x)) === i);
+
+function qwordItems(lesson) {
+  const list = uniqBy(wordsOf(lesson.set), (w) => w.ar);
+  const all = uniqBy(wordsOf(["noms", "petits", "lunaires", "solaires"]), (w) => w.ar);
+  const target = lesson.review ? pick(list, 8) : list;
+  const items = [];
+  if (!lesson.review) {
+    if (lesson.rule) items.push({ type: "intro-rule", rule: lesson.rule, examples: pick(list, 3) });
+    target.forEach((w) => items.push({ type: "intro-word", w }));
+  }
+  const others = (w, f) => pick(uniqBy(all.filter((x) => f(x) !== f(w)), f), 3).map(f);
+  pick(target, Math.min(6, target.length)).forEach((w) => items.push({ type: "listen-word", audio: w.audio, say: w.ar, answer: w.ar, options: shuffle([w.ar, ...others(w, (x) => x.ar)]) }));
+  pick(target, Math.min(4, target.length)).forEach((w) => items.push({ type: "read-word", prompt: w.ar, answer: w.tr, options: shuffle([w.tr, ...others(w, (x) => x.tr)]) }));
+  pick(target, Math.min(4, target.length)).forEach((w) => items.push({ type: "meaning", prompt: w.ar, audio: w.audio, answer: w.fr, options: shuffle([w.fr, ...others(w, (x) => x.fr)]) }));
+  if (lesson.rule || lesson.review) {
+    const sl = uniqBy(wordsOf(["lunaires", "solaires"]), (w) => w.ar).filter((w) => w.id !== "1:7:2");
+    pick(sl, 3).forEach((w) => items.push({ type: "lam", prompt: w.ar, audio: w.audio, answer: w.set === "lunaires" ? "dit" : "muet", options: ["dit", "muet"], tr: w.tr }));
+  }
+  items.push({ type: "pairs", pairs: pick(target, 4).map((w) => [w.ar, w.ar, w.fr]), arBoth: false });
+  return items;
+}
+
+function verseItems(lesson) {
+  const keys = lesson.review ? pick(lesson.verses, 4) : lesson.verses;
+  const vs = keys.map((k) => VERSES[k]);
+  const pool = uniqBy(vs.flatMap((v) => v.words), (w) => w.ar);
+  const items = [];
+  if (!lesson.review) vs.forEach((v) => items.push({ type: "intro-verse", v }));
+  vs.forEach((v) => {
+    if (v.words.length >= 3) items.push({ type: "order", v, tiles: shuffle(v.words.map((w, i) => ({ i, ar: w.ar }))) });
+    if (v.words.length >= 2) {
+      const m = Math.floor(Math.random() * v.words.length), w = v.words[m];
+      const opts = pick(uniqBy(pool.filter((x) => x.ar !== w.ar), (x) => x.ar), 3).map((x) => x.ar);
+      if (opts.length >= 2) items.push({ type: "missing", v, missing: m, answer: w.ar, audio: v.audio, options: shuffle([w.ar, ...opts]) });
+    }
+  });
+  pick(pool, Math.min(4, pool.length)).forEach((w) => items.push({ type: "listen-word", audio: w.audio, say: w.ar, answer: w.ar, options: shuffle([w.ar, ...pick(pool.filter((x) => x.ar !== w.ar), 3).map((x) => x.ar)]) }));
+  pick(pool, Math.min(3, pool.length)).forEach((w) => items.push({ type: "read-word", prompt: w.ar, answer: w.tr, options: shuffle([w.tr, ...pick(uniqBy(pool.filter((x) => x.tr !== w.tr), (x) => x.tr), 3).map((x) => x.tr)]) }));
+  return items;
+}
+
 // ── Génération d'une leçon ─────────────────────────────────────
 export function buildLesson(lesson) {
   const before = lettersBefore(lesson);
-  const pool = [...new Set([...lesson.letters, ...before])];
+  const pool = [...new Set([...(lesson.letters || []), ...before])];
   const choicePool = pool.length >= 4 ? pool : ALL;
   const items = [];
-  const target = lesson.review ? pick(lesson.letters, 6) : lesson.letters;
+  const target = lesson.letters ? (lesson.review ? pick(lesson.letters, 6) : lesson.letters) : [];
 
   if (lesson.kind === "letters") {
     if (!lesson.review) target.forEach((id) => items.push({ type: "intro", letter: id }));
@@ -233,6 +306,9 @@ export function buildLesson(lesson) {
     items.push({ type: "pairs", pairs: pick(all, 4).map(([ar, lat]) => [ar, ar, lat]) });
   }
 
+  if (lesson.kind === "qwords") items.push(...qwordItems(lesson));
+  if (lesson.kind === "verses") items.push(...verseItems(lesson));
+
   if (lesson.kind === "placement") {
     pick(ALL, 4).forEach((id) => items.push({ type: "read", prompt: L[id].ar, answer: id, options: shuffle([id, ...distractors(id, ALL)]), show: "name" }));
     pick(NOALIF, 4).forEach((id) => { const p = pick(["ini", "med", "fin"], 1)[0]; items.push({ type: "form", prompt: formsOf(L[id])[p], answer: id, options: shuffle([id, ...distractors(id, ALL)]), show: "letter" }); });
@@ -244,6 +320,22 @@ export function buildLesson(lesson) {
   const intros = items.filter((x) => x.type.startsWith("intro"));
   const ex = items.filter((x) => !x.type.startsWith("intro"));
   // on garde les intros groupées avec leurs premiers exercices pour ne pas surcharger
+  if (["qwords", "verses"].includes(lesson.kind) && intros.length > 3) {
+    // on alterne : quelques découvertes, puis les exercices qui portent sur elles
+    const size = lesson.kind === "verses" ? 1 : 3;
+    const chunks = [];
+    for (let k = 0; k < intros.length; k += size) chunks.push({ intros: intros.slice(k, k + size), ex: [] });
+    const where = (x) => {
+      const ars = [x.answer, x.prompt, x.say].filter(Boolean);
+      for (let c = chunks.length - 1; c >= 0; c--) {
+        if (chunks[c].intros.some((it) => (it.w && ars.includes(it.w.ar)) || (it.v && (x.v?.key === it.v.key || it.v.words.some((w) => ars.includes(w.ar)))))) return c;
+      }
+      return chunks.length - 1;
+    };
+    const lastNeeded = (x) => x.type === "pairs" || x.type === "lam" ? chunks.length - 1 : where(x);
+    shuffle(ex).forEach((x) => chunks[lastNeeded(x)].ex.push(x));
+    return chunks.flatMap((c) => [...c.intros, ...c.ex]).map((x, i) => ({ ...x, key: `${lesson.id}-${i}` }));
+  }
   return [...intros, ...shuffle(ex)].map((x, i) => ({ ...x, key: `${lesson.id}-${i}` }));
 }
 
@@ -270,3 +362,16 @@ export function speak(text, rate = 0.75) {
   u.rate = rate;
   window.speechSynthesis.speak(u);
 }
+
+// Enregistrements réels (récitation mot à mot), voix de l'appareil en secours
+let player = null;
+export function playUrl(url, fallback) {
+  try {
+    window.speechSynthesis?.cancel();
+    if (!player) player = new Audio();
+    player.pause(); player.src = url; player.currentTime = 0;
+    const p = player.play();
+    if (p && p.catch) p.catch(() => fallback && speak(fallback));
+  } catch { if (fallback) speak(fallback); }
+}
+export function stopAudio() { try { player?.pause(); } catch { /* ignore */ } }
