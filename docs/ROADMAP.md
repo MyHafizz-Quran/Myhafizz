@@ -29,8 +29,8 @@ Retiré : 1to1 / StudyMatch (onglet, page, aide, mentions légales). Tables cons
 ## Phase 5 · Communauté et croissance
 11. Espace maître / madrasa : classes, leçons, validation des élèves.
 13. Khatma collective (famille, groupe).
-14. Mode enfant + suivi parent.
-15. Rappels intelligents aux heures de prière (notifications PWA + bot Telegram).
+14. ✅ Mode enfant : code parent à 4 chiffres (empreinte SHA-256 sur l'appareil), profil, réglages, classement et aide verrouillés, création, adhésion et départ de groupe masqués. Code oublié : mot de passe du compte.
+15. ✅ Rappels après la prière (Web Push) : table `prayer_reminders`, horaires calculés avec adhan (Ligue islamique mondiale), envoi par `scripts/prayer-reminders.mjs` (rôle `reminder_worker` limité à cette table). Reste : ajouter `.github/workflows/prayer-reminders.yml` (cron toutes les 5 min), qui demande la permission GitHub « workflow ».
 
 ## Données (Neon)
 - verse_reviews(user_id, surah_number, verse_number, interval_days, ease, reps, lapses, due_date, last_grade, last_reviewed)
