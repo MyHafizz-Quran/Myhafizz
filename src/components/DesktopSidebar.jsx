@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play } from "@phosphor-icons/react";
+import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play, MagnifyingGlass } from "@phosphor-icons/react";
 import { MhWordmark } from "@/components/MhLogo";
 import { useAuth } from "@/lib/AuthContext";
 import { useAudioManager, getReadingSession } from "@/lib/AudioManager";
@@ -38,10 +38,24 @@ export default function DesktopSidebar() {
   const surah = sn ? SURAHS.find((s) => s.number === Number(sn)) : null;
   const name = user?.user_metadata?.full_name || user?.email || "";
   const avatar = user?.user_metadata?.avatar_url;
+  const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "");
+  const openSearch = () => {
+    const input = document.querySelector('input[placeholder="Nom ou numéro de sourate"]');
+    if (input) { input.focus(); input.select(); } else navigate("/SurahList?search=1");
+  };
+  useEffect(() => {
+    const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openSearch(); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   return (
     <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[248px] z-[var(--z-bottom-nav)] flex-col border-r-2 border-border bg-card px-4 py-6">
       <NavLink to="/Dashboard" className="px-2 mb-6"><MhWordmark size={32} /></NavLink>
+      <button onClick={openSearch} className="h-11 mb-4 rounded-xl border-2 border-border px-3 flex items-center gap-2.5 text-muted-foreground font-bold hover:bg-muted">
+        <MagnifyingGlass weight="bold" className="w-5 h-5" /><span className="flex-1 text-left">Rechercher</span>
+        <kbd className="text-[11px] font-black px-1.5 py-0.5 rounded-md bg-muted">{mac ? "⌘" : "Ctrl"} K</kbd>
+      </button>
       <nav className="flex flex-col gap-1">
         {MAIN.map((t) => <Item key={t.to} {...t} on={t.match(p)} />)}
         <div className="h-0.5 bg-border my-3 mx-2" />
