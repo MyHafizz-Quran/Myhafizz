@@ -214,6 +214,12 @@ export default function SurahList() {
               ))}
             </div>
 
+            <button onClick={() => { haptic(); navigate("/Lire"); }} className="w-full mt-3 card-flat p-3.5 flex items-center gap-3 text-left press">
+              <span className="w-10 h-10 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0 font-arabic text-[22px] leading-none">أ ب</span>
+              <div className="flex-1 min-w-0"><p className="font-extrabold">Apprendre à lire l'arabe</p><p className="text-[12.5px] font-semibold text-muted-foreground">Pas encore à l'aise avec les lettres ? Commence ici.</p></div>
+              <ArrowRight weight="bold" className="text-primary shrink-0" />
+            </button>
+
             <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mt-5 mb-2 px-1">114 sourates</p>
             <div className="card-flat overflow-hidden divide-y-2 divide-border">{SURAHS.map((s) => <Row key={s.number} s={s} />)}</div>
           </>

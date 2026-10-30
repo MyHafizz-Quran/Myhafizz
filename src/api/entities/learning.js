@@ -59,3 +59,21 @@ export const ActivityDays = {
     return (data || []).map((r) => r.day);
   },
 };
+
+/** Apprendre à lire : progression des leçons (Qaida) */
+export const ReadingLessons = {
+  async list() {
+    const id = await uid();
+    const { data, error } = await supabase.from('reading_lessons').select('*').eq('user_id', id);
+    if (error) throw error;
+    return data || [];
+  },
+  async complete(lesson_id, score, xp, prev) {
+    const id = await uid();
+    const row = { user_id: id, lesson_id, best_score: Math.max(score, prev?.best_score || 0), xp: (prev?.xp || 0) + xp, attempts: (prev?.attempts || 0) + 1, updated_at: new Date().toISOString() };
+    if (!prev) row.completed_at = new Date().toISOString();
+    const { data, error } = await supabase.from('reading_lessons').upsert(row, { onConflict: 'user_id,lesson_id' }).select().single();
+    if (error) throw error;
+    return data;
+  },
+};

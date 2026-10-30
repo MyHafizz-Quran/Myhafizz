@@ -35,3 +35,10 @@ Retiré : 1to1 / StudyMatch (onglet, page, aide, mentions légales). Tables cons
 ## Données (Neon)
 - verse_reviews(user_id, surah_number, verse_number, interval_days, ease, reps, lapses, due_date, last_grade, last_reviewed)
 - hifz_plans(user_id, start_surah, direction, daily_new, manzil_daily, goal_date)
+
+## Apprendre à lire l'arabe (méthode Qaida Nourania, façon Duolingo, sans « vies »)
+
+- **Lot A (livré)** : parcours `/Lire` en 3 unités (les 28 lettres, les formes liées, les voyelles courtes + tanwîn), 23 leçons, lecteur `/Lecon` avec 9 types d'exercices (découverte, lire, écouter, formes, position, syllabes, assembler, paires, tracé au doigt). Une erreur fait revenir la question en fin de leçon. Points + précision en fin de leçon, progression enregistrée dans `reading_lessons` (Neon, `neon/004_reading.sql`), qui compte aussi pour la série. Entrées : Accueil, page Coran, barre latérale PC.
+- Voix : voix arabe de l'appareil en attendant des enregistrements (dossier prévu `/audio/qaida/`). Sans voix arabe, les exercices d'écoute sont remplacés par de la lecture.
+- **Lot B** : voyelles longues (madd), soukoun, chadda, test de placement « je connais déjà les lettres ».
+- **Lot C** : mots du Coran (audio mot à mot) puis premiers versets (Al-Fâtiḥa, Juz ʿAmma).

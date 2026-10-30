@@ -43,11 +43,13 @@ import Download from './pages/Download.jsx';
 import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import Welcome from './pages/Welcome.jsx';
+import Lire from './pages/Lire.jsx';
+import Lecon from './pages/Lecon.jsx';
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Bienvenue", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Bienvenue", "/Lecon", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -138,6 +140,8 @@ const AuthenticatedApp = () => {
           <Route path="/Help" element={<Help />} />
           <Route path="/Leaderboard" element={<Leaderboard />} />
           <Route path="/Bienvenue" element={<Welcome />} />
+          <Route path="/Lire" element={<Lire />} />
+          <Route path="/Lecon" element={<Lecon />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
         )}
