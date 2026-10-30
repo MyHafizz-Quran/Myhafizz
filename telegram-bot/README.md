@@ -62,8 +62,7 @@ Contenu du `.env` :
 ```env
 TELEGRAM_BOT_TOKEN=7123456789:AAHxxxxxxxxxxxxxxxxxx
 TELEGRAM_ADMIN_CHAT_ID=123456789
-SUPABASE_URL=https://votre-projet.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIs...
+DATABASE_URL=postgresql://neondb_owner:xxxx@ep-xxx-pooler.c-8.eu-central-1.aws.neon.tech/neondb?sslmode=require
 ```
 
 ```bash
@@ -74,7 +73,7 @@ npm start
 Le bot affichera :
 ```
 🕌 Démarrage du bot MyHafizz Admin...
-   Supabase URL : https://votre-projet.supabase.co
+   Base : Neon
    Admin Chat ID : 123456789
 🤖 MyHafizz Admin Bot démarré avec succès !
 ```

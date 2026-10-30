@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { createBot } from './bot.js';
 
 // Validate required environment variables
-const required = ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_ADMIN_CHAT_ID', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+const required = ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_ADMIN_CHAT_ID', 'DATABASE_URL'];
 const missing = required.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
@@ -12,7 +12,7 @@ if (missing.length > 0) {
 }
 
 console.log('🕌 Démarrage du bot MyHafizz Admin...');
-console.log(`   Supabase URL : ${process.env.SUPABASE_URL}`);
+console.log('   Base : Neon');
 console.log(`   Admin Chat ID : ${process.env.TELEGRAM_ADMIN_CHAT_ID}`);
 
 const bot = createBot();
