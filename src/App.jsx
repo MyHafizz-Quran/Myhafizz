@@ -164,8 +164,17 @@ const LandingOrDashboard = () => {
     return <Navigate to="/Dashboard" replace />;
   }
 
-  return <LandingPage />;
+  return <FullBleed><LandingPage /></FullBleed>;
 };
+
+/** Pages publiques : pleine largeur et défilement de la page (voir html.full-bleed dans index.css) */
+function FullBleed({ children }) {
+  useEffect(() => {
+    document.documentElement.classList.add("full-bleed");
+    return () => document.documentElement.classList.remove("full-bleed");
+  }, []);
+  return children;
+}
 
 function App() {
   return (
@@ -176,13 +185,13 @@ function App() {
             <Router>
               <Routes>
                 <Route path="/" element={<LandingOrDashboard />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/confirm" element={<ConfirmEmail />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/telecharger" element={<Download />} />
-                <Route path="/download" element={<Download />} />
+                <Route path="/login" element={<FullBleed><Login /></FullBleed>} />
+                <Route path="/reset-password" element={<FullBleed><ResetPassword /></FullBleed>} />
+                <Route path="/confirm" element={<FullBleed><ConfirmEmail /></FullBleed>} />
+                <Route path="/terms" element={<FullBleed><Terms /></FullBleed>} />
+                <Route path="/privacy" element={<FullBleed><Privacy /></FullBleed>} />
+                <Route path="/telecharger" element={<FullBleed><Download /></FullBleed>} />
+                <Route path="/download" element={<FullBleed><Download /></FullBleed>} />
                 <Route path="/*" element={<AuthenticatedApp />} />
               </Routes>
             </Router>

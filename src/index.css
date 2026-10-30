@@ -257,6 +257,12 @@
   .fixed.left-0.right-0, .fixed.inset-x-0 { left: var(--shell-x) !important; right: var(--shell-x) !important; }
 }
 
+/* Pages publiques (landing, connexion, téléchargement, légal) : pleine largeur, pas de cadre téléphone */
+html.full-bleed { scroll-padding-top: calc(5rem + env(safe-area-inset-top, 0px)); scroll-behavior: smooth; }
+html.full-bleed body { background: hsl(var(--card)); }
+html.full-bleed #root { max-width: none; box-shadow: none; height: auto; min-height: 100%; display: block; background: transparent; }
+html.full-bleed .fixed.left-0.right-0, html.full-bleed .fixed.inset-x-0 { left: 0 !important; right: 0 !important; }
+
 @layer components {
   /* Bouton en relief façon Duolingo : couleur + ombre portée nette de 4 px */
   .btn-relief {

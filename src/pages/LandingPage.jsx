@@ -17,11 +17,11 @@ const firstLetters = (t) => t.split(" ").map((w) => { const c = [...w]; let out 
 
 function Section({ id, eyebrow, title, intro, children, className = "" }) {
   return (
-    <section id={id} className={`px-5 py-16 lg:py-24 ${className}`}>
+    <section id={id} className={`px-4 sm:px-5 py-12 sm:py-16 lg:py-24 ${className}`}>
       <div className="max-w-5xl mx-auto">
         {eyebrow && <p className="text-sm font-black uppercase tracking-wider text-primary">{eyebrow}</p>}
-        {title && <h2 className="text-[28px] lg:text-[40px] font-black leading-[1.15] mt-2 max-w-3xl">{title}</h2>}
-        {intro && <p className="text-[17px] font-semibold text-muted-foreground mt-3 max-w-2xl leading-relaxed">{intro}</p>}
+        {title && <h2 className="text-[25px] sm:text-[28px] lg:text-[40px] font-black leading-[1.15] mt-2 max-w-3xl text-balance">{title}</h2>}
+        {intro && <p className="text-base sm:text-[17px] font-semibold text-muted-foreground mt-3 max-w-2xl leading-relaxed">{intro}</p>}
         {children}
       </div>
     </section>
@@ -95,7 +95,7 @@ export default function LandingPage() {
   const [faq, setFaq] = useState(0);
 
   const CTA = ({ className = "" }) => (
-    <Link to="/login?mode=signup" className={`btn-relief h-[56px] px-7 bg-primary text-primary-foreground text-[17px] ${className}`}>{t("Commencer ma première sourate", "Start my first surah")}</Link>
+    <Link to="/login?mode=signup" className={`btn-relief h-[56px] px-5 sm:px-7 bg-primary text-primary-foreground text-[15px] sm:text-[17px] text-center leading-tight ${className}`}>{t("Commencer ma première sourate", "Start my first surah")}</Link>
   );
 
   const problems = [
@@ -150,42 +150,44 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-card text-foreground overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-card text-foreground overflow-x-clip">
       {/* ─── Navigation ─── */}
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b-2 border-border pt-[env(safe-area-inset-top,0px)]">
-        <div className="max-w-5xl mx-auto px-5 h-16 flex items-center gap-4">
-          <Link to="/" aria-label="MyHafizz"><MhWordmark size={30} /></Link>
+      <header className="fixed top-0 inset-x-0 z-50 bg-card/95 backdrop-blur border-b-2 border-border pt-[env(safe-area-inset-top,0px)]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-5 h-16 flex items-center gap-2 sm:gap-4">
+          <Link to="/" aria-label="MyHafizz" className="shrink-0"><MhWordmark size={28} /></Link>
           <nav className="hidden md:flex items-center gap-6 ml-6 font-extrabold text-muted-foreground">
             <a href="#methode" className="hover:text-foreground">{t("La méthode", "The method")}</a>
             <a href="#outils" className="hover:text-foreground">{t("Les outils", "Features")}</a>
             <a href="#pour-qui" className="hover:text-foreground">{t("Familles et madrasas", "Families & madrasas")}</a>
             <a href="#faq" className="hover:text-foreground">FAQ</a>
           </nav>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="flex p-0.5 rounded-xl bg-muted text-xs font-black">
-              {["fr", "en"].map((l) => <button key={l} onClick={() => setLang(l)} className={`h-8 w-9 rounded-[10px] uppercase ${lang === l ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>{l}</button>)}
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} aria-label={lang === "fr" ? "English" : "Français"} className="min-[360px]:hidden h-9 w-9 rounded-xl bg-muted text-xs font-black uppercase text-muted-foreground">{lang === "fr" ? "en" : "fr"}</button>
+            <div className="hidden min-[360px]:flex p-0.5 rounded-xl bg-muted text-xs font-black">
+              {["fr", "en"].map((l) => <button key={l} onClick={() => setLang(l)} className={`h-8 w-8 sm:w-9 rounded-[10px] uppercase ${lang === l ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>{l}</button>)}
             </div>
             <Link to="/login" className="hidden sm:flex h-10 px-3 items-center font-extrabold text-primary">{t("Connexion", "Log in")}</Link>
-            <Link to="/login?mode=signup" className="btn-relief h-10 px-4 bg-primary text-primary-foreground text-sm">{t("Commencer", "Get started")}</Link>
+            <Link to="/login?mode=signup" className="btn-relief h-10 px-3 sm:px-4 bg-primary text-primary-foreground text-[13px] sm:text-sm">{t("Commencer", "Get started")}</Link>
           </div>
         </div>
       </header>
+      <div aria-hidden className="h-[calc(4rem+env(safe-area-inset-top,0px))]" />
 
       {/* ─── 1. Héros ─── */}
-      <section className="px-5 pt-10 pb-16 lg:pt-20 lg:pb-24">
+      <section className="px-4 sm:px-5 pt-8 sm:pt-10 pb-12 sm:pb-16 lg:pt-20 lg:pb-24">
         <div className="max-w-5xl mx-auto lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12 lg:items-center">
           <div>
             <p className="text-sm font-black uppercase tracking-wider text-primary">{t("Mémorisation du Coran · hifz", "Quran memorization · hifz")}</p>
-            <h1 className="text-[36px] lg:text-[56px] font-black leading-[1.08] mt-3">{t("Apprends une sourate cette semaine. Récite-la encore dans dix ans.", "Learn a surah this week. Still recite it ten years from now.")}</h1>
-            <p className="text-[17px] lg:text-lg font-semibold text-muted-foreground mt-4 leading-relaxed">{t("Chaque jour, MyHafizz prépare ta séance comme dans une madrasa : le nouveau (sabaq), le récent (sabqi) et l'ancien (manzil). Tu récites, l'app repère les versets qui glissent et te les redonne au bon moment.", "Every day, MyHafizz builds your session the way madrasas do: the new lesson (sabaq), the recent review (sabqi) and your older surahs (manzil). You recite, the app spots the verses that slip and brings them back at the right time.")}</p>
-            <div className="flex flex-wrap gap-3 mt-7">
-              <CTA />
-              <Link to="/telecharger" className="btn-relief h-[56px] px-6 bg-card border-2 border-border text-foreground [--relief-color:hsl(var(--border))]">{t("L'app", "Get the app")}</Link>
+            <h1 className="text-[30px] min-[380px]:text-[34px] sm:text-[40px] lg:text-[56px] font-black leading-[1.1] mt-3 text-balance">{t("Apprends une sourate cette semaine. Récite-la encore dans dix ans.", "Learn a surah this week. Still recite it ten years from now.")}</h1>
+            <p className="text-base sm:text-[17px] lg:text-lg font-semibold text-muted-foreground mt-4 leading-relaxed">{t("Chaque jour, MyHafizz prépare ta séance comme dans une madrasa : le nouveau (sabaq), le récent (sabqi) et l'ancien (manzil). Tu récites, l'app repère les versets qui glissent et te les redonne au bon moment.", "Every day, MyHafizz builds your session the way madrasas do: the new lesson (sabaq), the recent review (sabqi) and your older surahs (manzil). You recite, the app spots the verses that slip and brings them back at the right time.")}</p>
+            <div className="flex flex-col sm:flex-row gap-3 mt-7">
+              <CTA className="w-full sm:w-auto" />
+              <Link to="/telecharger" className="btn-relief w-full sm:w-auto h-[56px] px-6 bg-card border-2 border-border text-foreground [--relief-color:hsl(var(--border))]">{t("L'app", "Get the app")}</Link>
             </div>
             <p className="text-sm font-bold text-muted-foreground mt-4">{GOOGLE ? t("Compte en une minute avec Google · ", "One-minute sign-up with Google · ") : t("Compte en une minute · ", "One-minute sign-up · ")}{t("iPhone, Android et ordinateur", "iPhone, Android and desktop")}</p>
           </div>
 
-          <div className="card-flat p-5 mt-10 lg:mt-0 bg-background">
+          <div className="card-flat p-4 sm:p-5 mt-8 sm:mt-10 lg:mt-0 bg-background">
             <div className="flex items-center justify-between">
               <div><p className="font-black">Al-Ikhlas</p><p className="text-[13px] font-semibold text-muted-foreground">{t("Essaie : cache le texte, récite, vérifie.", "Try it: hide the text, recite, check.")}</p></div>
               <button onClick={listen} aria-label={t("Écouter", "Listen")} className="h-11 px-4 rounded-full bg-primary text-primary-foreground font-extrabold flex items-center gap-2 shadow-[0_3px_0_var(--primary-lip)]">
@@ -194,7 +196,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-4 space-y-2 min-h-[220px]" dir="rtl">
               {ikhlas.length ? ikhlas.map((a, i) => (
-                <p key={a.number} className={`font-arabic text-[26px] leading-[1.9] rounded-xl px-3 transition-colors ${cur === i ? "bg-accent" : ""}`}>
+                <p key={a.number} className={`font-arabic text-[22px] sm:text-[26px] leading-[1.9] rounded-xl px-2 sm:px-3 transition-colors ${cur === i ? "bg-accent" : ""}`}>
                   {mask === 0 ? a.text : mask === 1 ? firstLetters(a.text) : <span className="inline-block h-6 rounded-lg bg-muted align-middle" style={{ width: `${Math.min(100, a.text.length * 2.4)}%` }} />}
                   <span className="text-primary text-xl"> ﴿{(i + 1).toLocaleString("ar-EG")}﴾</span>
                 </p>
@@ -202,7 +204,7 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-3 gap-1 p-1 rounded-[14px] bg-muted mt-4">
               {[t("Texte", "Full text"), t("Initiales", "First letters"), t("Caché", "Hidden")].map((l, i) => (
-                <button key={l} onClick={() => setMask(i)} className={`h-10 rounded-[10px] text-sm font-extrabold ${mask === i ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>{l}</button>
+                <button key={l} onClick={() => setMask(i)} className={`h-10 rounded-[10px] text-[12.5px] min-[360px]:text-sm font-extrabold leading-tight px-1 ${mask === i ? "bg-card text-accent-foreground shadow-[0_2px_0_hsl(var(--border))]" : "text-muted-foreground"}`}>{l}</button>
               ))}
             </div>
           </div>
@@ -255,10 +257,10 @@ export default function LandingPage() {
         <div className="grid lg:grid-cols-3 gap-4 mt-8">
           {tools.map(([g, items]) => (
             <div key={g} className="card-flat overflow-hidden">
-              <p className="px-5 pt-4 pb-2 text-xs font-black uppercase tracking-wider text-muted-foreground">{g}</p>
+              <p className="px-4 sm:px-5 pt-4 pb-2 text-xs font-black uppercase tracking-wider text-muted-foreground">{g}</p>
               <div className="divide-y-2 divide-border">
                 {items.map(([I, h, d]) => (
-                  <div key={h} className="flex gap-3 px-5 py-3.5"><span className="w-10 h-10 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><I weight="fill" className="w-5 h-5" /></span><div><p className="font-extrabold">{h}</p><p className="text-[14px] font-semibold text-muted-foreground">{d}</p></div></div>
+                  <div key={h} className="flex gap-3 px-4 sm:px-5 py-3.5"><span className="w-10 h-10 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><I weight="fill" className="w-5 h-5" /></span><div><p className="font-extrabold">{h}</p><p className="text-[14px] font-semibold text-muted-foreground">{d}</p></div></div>
                 ))}
               </div>
             </div>
@@ -371,16 +373,16 @@ export default function LandingPage() {
       </Section>
 
       {/* ─── 10. Appel final ─── */}
-      <section className="px-5 py-16 lg:py-24 bg-accent">
+      <section className="px-4 sm:px-5 py-12 sm:py-16 lg:py-24 bg-accent">
         <div className="max-w-3xl mx-auto text-center">
           <CalendarCheck weight="fill" className="w-14 h-14 mx-auto text-primary" />
           <h2 className="text-[30px] lg:text-[44px] font-black leading-tight mt-3 text-accent-foreground">{t("Ta première séance est prête.", "Your first session is ready.")}</h2>
           <p className="text-lg font-semibold text-accent-foreground/80 mt-2">{t("Choisis une sourate, écoute-la, cache-la, récite-la. Demain, MyHafizz te dira quoi revoir.", "Pick a surah, listen, hide it, recite it. Tomorrow, MyHafizz will tell you what to review.")}</p>
-          <CTA className="mt-7" />
+          <CTA className="mt-7 w-full sm:w-auto" />
         </div>
       </section>
 
-      <footer className="px-5 py-8 border-t-2 border-border pb-[calc(env(safe-area-inset-bottom,0px)+32px)]">
+      <footer className="px-4 sm:px-5 py-8 border-t-2 border-border pb-[calc(env(safe-area-inset-bottom,0px)+32px)]">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-4 justify-between text-sm font-bold text-muted-foreground">
           <MhWordmark size={24} />
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
