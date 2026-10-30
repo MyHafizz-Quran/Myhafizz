@@ -48,6 +48,7 @@ import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import Welcome from './pages/Welcome.jsx';
 import Join from '@/pages/Join';
+import DesktopRail from '@/components/DesktopRail';
 import Lire from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
 import { KidLock } from './components/KidMode.jsx';
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
   const homeHeader = WITH_HOME_HEADER.some((p) => path.startsWith(p));
   const kid = useKidMode();
   const kidLocked = kid.on && !kid.unlocked && KID_LOCKED.some((p) => path.startsWith(p));
+  const rail = !immersive && !kidLocked && !["/", "/Dashboard"].includes(path);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -117,7 +119,7 @@ const AuthenticatedApp = () => {
       {/* Contenu principal : transition d'écran native (glissement iOS, fondu Android) */}
       <motion.div
         key={path}
-        className={`pb-nav pt-header min-h-full ${immersive ? "" : "lg:pl-[248px]"}`}
+        className={`pb-nav pt-header min-h-full ${immersive ? "" : "lg:pl-[248px]"} ${rail ? "xl:pr-[320px]" : ""}`}
         initial={platform === "android" ? { opacity: 0, y: 12 } : { opacity: 0, x: 24 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
@@ -152,6 +154,7 @@ const AuthenticatedApp = () => {
         )}
       </motion.div>
       {!immersive && <DesktopSidebar />}
+      {rail && <DesktopRail />}
       {!immersive && <div className="lg:hidden"><BottomNav /></div>}
     </>
   );
