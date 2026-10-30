@@ -8,7 +8,6 @@ import {
   Trophy,
   Users,
   ArrowRight,
-  Sparkles,
   Heart,
   WifiOff,
   Settings,
@@ -135,7 +134,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col flex-1 bg-surface font-body text-on-surface">
+    <div className="min-h-[100dvh] flex flex-col flex-1 bg-surface font-body text-on-surface overflow-x-clip">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-[var(--z-page-header)] bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
@@ -226,8 +225,6 @@ export default function LandingPage() {
         <section className="relative pt-16 sm:pt-32 pb-20 sm:pb-32 px-4 sm:px-6 overflow-hidden">
           {/* Decorative The Sanctuary Blurs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
-            <div className="absolute top-40 left-0 w-80 h-80 bg-tertiary/5 rounded-full blur-[80px]" />
           </div>
 
           <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -236,12 +233,6 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <div className="inline-flex items-center gap-2 bg-surface-container border border-outline-variant/20 rounded-full px-4 py-2 mb-8 sm:mb-10 shadow-sm">
-                <Sparkles className="w-4 h-4 text-tertiary" />
-                <span className="font-label text-xs sm:text-sm font-bold text-on-surface-variant tracking-wide uppercase">
-                  Votre sanctuaire de mémorisation
-                </span>
-              </div>
 
               <h1 className="font-headline text-5xl sm:text-6xl md:text-7xl font-extrabold text-primary leading-[1.1] tracking-tight mb-6 sm:mb-8">
                 Hifz le Saint Coran, <br className="hidden sm:block" />
@@ -260,7 +251,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   to="/login"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-on-primary font-bold px-8 py-4 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-base active:scale-95"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-on-primary font-extrabold h-[52px] px-8 rounded-2xl text-base [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75"
                 >
                   Entrer dans le Sanctuaire
                   <ArrowRight className="w-5 h-5" />
@@ -341,7 +332,6 @@ export default function LandingPage() {
 
         {/* How it works */}
         <section id="how-it-works" className="py-24 px-4 sm:px-6 relative">
-          <div className="absolute right-0 top-1/2 w-96 h-96 bg-secondary-container/30 rounded-full blur-[100px] pointer-events-none -z-10" />
 
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
@@ -384,12 +374,11 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}
-              className="bg-primary rounded-[3rem] p-10 sm:p-20 text-center relative overflow-hidden shadow-xl shadow-primary/10"
+              className="bg-primary rounded-3xl p-8 sm:p-16 text-center relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(to_bottom_right,rgba(255,255,255,0.1),transparent)] pointer-events-none" />
 
               <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-container rounded-2xl mb-8 shadow-inner shadow-primary-container">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-container rounded-2xl mb-8 ">
                   <BookOpen className="w-8 h-8 text-primary-fixed" />
                 </div>
                 <h2 className="font-headline text-3xl sm:text-5xl font-extrabold text-on-primary mb-6">
@@ -400,7 +389,7 @@ export default function LandingPage() {
                 </p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-3 bg-tertiary-fixed text-on-tertiary-fixed font-bold px-10 py-5 rounded-full shadow-lg shadow-tertiary-fixed/20 hover:bg-[#ffe6a0] transition-all text-lg active:scale-95"
+                  className="inline-flex items-center gap-3 bg-white text-primary font-extrabold h-14 px-10 rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75 text-lg"
                 >
                   Commencer l'aventure
                   <ArrowRight className="w-5 h-5" />

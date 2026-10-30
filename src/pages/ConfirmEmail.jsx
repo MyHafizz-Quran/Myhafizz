@@ -79,7 +79,7 @@ export default function ConfirmEmail() {
   }, [status, navigate]);
 
   return (
-    <div className="min-h-screen bg-emerald-950 to-[#071f18] flex items-center justify-center px-4">
+    <div className="min-h-[100dvh] bg-background flex items-center justify-center px-5 pt-safe pb-safe">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -89,16 +89,16 @@ export default function ConfirmEmail() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur rounded-2xl mb-4">
-              <BookOpen className="w-8 h-8 text-amber-300" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-accent rounded-2xl mb-4">
+              <BookOpen className="w-8 h-8 text-primary" />
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-white mb-1">MyHafizz</h1>
-          <p className="text-emerald-300/70 text-sm">Confirmation de votre compte</p>
+          <h1 className="text-[26px] font-black text-foreground mb-1">MyHafizz</h1>
+          <p className="text-primary font-bold text-sm">Confirmation de votre compte</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-8">
+        <div className="bg-card border-2 border-border rounded-3xl p-6">
           
           {/* État : Loading */}
           {status === "loading" && (
@@ -107,12 +107,12 @@ export default function ConfirmEmail() {
               animate={{ opacity: 1 }}
               className="flex flex-col items-center gap-4 py-8 text-center"
             >
-              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">Confirmation en cours...</p>
-                <p className="text-emerald-300/60 text-sm mt-1">Veuillez patienter quelques instants</p>
+                <p className="text-foreground font-extrabold text-lg">Confirmation en cours...</p>
+                <p className="text-primary font-bold text-sm mt-1">Veuillez patienter quelques instants</p>
               </div>
             </motion.div>
           )}
@@ -130,9 +130,9 @@ export default function ConfirmEmail() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-                className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center relative"
+                className="w-20 h-20 bg-accent rounded-full flex items-center justify-center relative"
               >
-                <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+                <CheckCircle2 className="w-10 h-10 text-primary" />
                 {/* Confettis emoji */}
                 <motion.span
                   initial={{ opacity: 0, y: 0 }}
@@ -162,7 +162,7 @@ export default function ConfirmEmail() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="text-white font-bold text-xl"
+                  className="text-foreground font-black text-xl"
                 >
                   Compte confirmé !
                 </motion.p>
@@ -170,7 +170,7 @@ export default function ConfirmEmail() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-emerald-300/70 text-sm mt-2 leading-relaxed"
+                  className="text-primary font-bold text-sm mt-2 leading-relaxed"
                 >
                   Bienvenue dans votre parcours de mémorisation du Saint Coran. 
                   Qu'Allah vous facilite !
@@ -184,15 +184,15 @@ export default function ConfirmEmail() {
                 transition={{ delay: 0.6 }}
                 className="w-full mt-2"
               >
-                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <motion.div
                     initial={{ width: "100%" }}
                     animate={{ width: "0%" }}
                     transition={{ duration: 5, ease: "linear" }}
-                    className="h-full bg-emerald-400 rounded-full"
+                    className="h-full bg-primary rounded-full"
                   />
                 </div>
-                <p className="text-emerald-300/50 text-xs mt-2">
+                <p className="text-primary font-bold text-xs mt-2">
                   Redirection dans {countdown}s...
                 </p>
               </motion.div>
@@ -203,7 +203,7 @@ export default function ConfirmEmail() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
                 onClick={() => navigate("/Dashboard", { replace: true })}
-                className="mt-2 inline-flex items-center gap-2 bg-amber-400 text-emerald-950 font-bold py-3 px-8 rounded-xl shadow-lg shadow-amber-400/20 transition-all text-sm"
+                className="mt-2 inline-flex items-center gap-2 h-12 px-8 text-[15px] bg-primary text-primary-foreground font-extrabold rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75"
               >
                 Accéder au tableau de bord
                 <ArrowRight className="w-4 h-4" />
@@ -218,26 +218,26 @@ export default function ConfirmEmail() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center gap-4 py-6 text-center"
             >
-              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
-                <XCircle className="w-8 h-8 text-red-400" />
+              <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
+                <XCircle className="w-8 h-8 text-destructive" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">Erreur de confirmation</p>
-                <p className="text-red-300/70 text-sm mt-2 leading-relaxed">
+                <p className="text-foreground font-extrabold text-lg">Erreur de confirmation</p>
+                <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
                   {errorMessage || "Le lien de confirmation est invalide ou a expiré."}
                 </p>
               </div>
               <div className="flex flex-col gap-2 w-full mt-2">
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center gap-2 bg-amber-400 text-emerald-950 font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-400/20 transition-all text-sm"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-6 text-[15px] bg-primary text-primary-foreground font-extrabold rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75"
                 >
                   Se connecter
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   to="/"
-                  className="text-emerald-300/60 text-sm hover:text-emerald-300 transition-colors"
+                  className="text-primary font-bold text-sm hover:text-primary font-bold transition-colors"
                 >
                   Retour à l'accueil
                 </Link>
@@ -248,7 +248,7 @@ export default function ConfirmEmail() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-emerald-300/30 text-xs mt-6">
+        <p className="text-center text-primary font-bold text-xs mt-6">
           بسم الله الرحمن الرحيم
         </p>
       </motion.div>

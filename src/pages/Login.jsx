@@ -99,7 +99,7 @@ export default function Login() {
   ];
 
   return (
-    <div className="min-h-screen bg-emerald-950 to-[#071f18] flex items-center justify-center px-4">
+    <div className="min-h-[100dvh] bg-background flex items-center justify-center px-5 pt-safe pb-safe">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -113,23 +113,23 @@ export default function Login() {
               <img src="/logo.svg" alt="MyHafizz" className="w-20 h-20" />
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-white mb-1">MyHafizz</h1>
-          <p className="text-emerald-300/70 text-sm">Mémorisation du Saint Coran</p>
+          <h1 className="text-[26px] font-black text-foreground mb-1">MyHafizz</h1>
+          <p className="text-primary font-bold text-sm">Mémorisation du Saint Coran</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-8">
+        <div className="bg-card border-2 border-border rounded-3xl p-6">
           {/* Mode tabs (login / signup) */}
           {mode !== "forgot" && (
-            <div className="flex gap-1 bg-white/10 rounded-xl p-1 mb-6">
+            <div className="flex gap-1 bg-muted rounded-xl p-1 mb-6">
               {tabs.map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => switchMode(key)}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex-1 h-10 text-sm font-extrabold rounded-lg transition-all ${
                     mode === key
-                      ? "bg-white text-emerald-900 shadow-sm"
-                      : "text-white/70 hover:text-white"
+                      ? "bg-card text-primary border-2 border-border"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {label}
@@ -143,13 +143,13 @@ export default function Login() {
             <div className="mb-6">
               <button
                 onClick={() => switchMode("login")}
-                className="flex items-center gap-1.5 text-emerald-300 text-sm hover:text-emerald-200 transition-colors mb-4"
+                className="flex items-center gap-1.5 text-primary font-bold text-sm  transition-colors mb-4"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Retour à la connexion
               </button>
-              <h2 className="text-lg font-bold text-white">Mot de passe oublié</h2>
-              <p className="text-emerald-300/70 text-sm mt-1">
+              <h2 className="text-xl font-black text-foreground">Mot de passe oublié</h2>
+              <p className="text-primary font-bold text-sm mt-1">
                 Entrez votre adresse email pour recevoir un lien de réinitialisation.
               </p>
             </div>
@@ -161,11 +161,11 @@ export default function Login() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center gap-3 py-6 text-center"
             >
-              <CheckCircle2 className="w-12 h-12 text-emerald-400" />
-              <p className="text-white font-semibold">{success}</p>
+              <CheckCircle2 className="w-12 h-12 text-primary" />
+              <p className="text-foreground font-extrabold">{success}</p>
               <button
                 onClick={() => switchMode("login")}
-                className="text-emerald-300 text-sm underline"
+                className="text-primary font-bold text-sm underline"
               >
                 Retour à la connexion
               </button>
@@ -175,17 +175,17 @@ export default function Login() {
               {/* Full Name (signup only) */}
               {mode === "signup" && (
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-200 mb-1.5">
-                    Nom complet <span className="text-white/30 font-normal">(optionnel)</span>
+                  <label className="block text-sm font-extrabold text-foreground mb-2">
+                    Nom complet <span className="text-muted-foreground font-semibold">(optionnel)</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Votre nom"
-                      className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-all"
+                      className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-4 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -193,18 +193,18 @@ export default function Login() {
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-semibold text-emerald-200 mb-1.5">
+                <label className="block text-sm font-extrabold text-foreground mb-2">
                   Adresse email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="votre@email.com"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-all"
+                    className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-4 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
@@ -212,11 +212,11 @@ export default function Login() {
               {/* Password (login & signup) */}
               {mode !== "forgot" && (
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-200 mb-1.5">
+                  <label className="block text-sm font-extrabold text-foreground mb-2">
                     Mot de passe
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
@@ -224,12 +224,12 @@ export default function Login() {
                       required
                       placeholder="••••••••"
                       minLength={6}
-                      className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-10 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-all"
+                      className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-11 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-muted-foreground"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -240,11 +240,11 @@ export default function Login() {
               {/* Confirm Password (signup only) */}
               {mode === "signup" && (
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-200 mb-1.5">
+                  <label className="block text-sm font-extrabold text-foreground mb-2">
                     Confirmer le mot de passe
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type={showPassword ? "text" : "password"}
                       value={confirmPassword}
@@ -252,7 +252,7 @@ export default function Login() {
                       required
                       placeholder="••••••••"
                       minLength={6}
-                      className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-all"
+                      className="w-full h-12 bg-card border-2 border-border rounded-xl pl-11 pr-4 text-foreground font-semibold placeholder:text-muted-foreground/70 text-[15px] focus:outline-none focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -264,7 +264,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => switchMode("forgot")}
-                    className="text-emerald-300/70 text-xs hover:text-emerald-300 transition-colors"
+                    className="text-primary font-bold text-xs hover:text-primary font-bold transition-colors"
                   >
                     Mot de passe oublié ?
                   </button>
@@ -272,7 +272,7 @@ export default function Login() {
               )}
 
               {error && (
-                <p className="text-red-300 text-xs bg-red-500/15 border border-red-500/30 rounded-xl px-4 py-2.5">
+                <p className="text-destructive text-sm font-semibold bg-destructive/10 border-2 border-destructive/20 rounded-xl px-4 py-3">
                   {error}
                 </p>
               )}
@@ -280,7 +280,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-amber-400 text-emerald-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full h-[52px] flex items-center justify-center gap-2 text-base disabled:opacity-60 disabled:cursor-not-allowed bg-primary text-primary-foreground font-extrabold rounded-2xl [--relief-color:var(--primary-lip)] shadow-relief active:translate-y-[4px] active:shadow-none transition-[transform,box-shadow] duration-75"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -295,17 +295,17 @@ export default function Login() {
 
               {/* Bottom links */}
               {mode === "login" && (
-                <p className="text-center text-white/50 text-xs mt-2">
+                <p className="text-center text-muted-foreground text-xs mt-2">
                   Pas encore de compte ?{" "}
-                  <button type="button" onClick={() => switchMode("signup")} className="text-emerald-300 hover:underline">
+                  <button type="button" onClick={() => switchMode("signup")} className="text-primary font-bold hover:underline">
                     S'inscrire
                   </button>
                 </p>
               )}
               {mode === "signup" && (
-                <p className="text-center text-white/50 text-xs mt-2">
+                <p className="text-center text-muted-foreground text-xs mt-2">
                   Déjà un compte ?{" "}
-                  <button type="button" onClick={() => switchMode("login")} className="text-emerald-300 hover:underline">
+                  <button type="button" onClick={() => switchMode("login")} className="text-primary font-bold hover:underline">
                     Se connecter
                   </button>
                 </p>
@@ -316,7 +316,7 @@ export default function Login() {
 
         {/* Back to landing */}
         <div className="text-center mt-6">
-          <Link to="/" className="text-emerald-300/50 text-xs hover:text-emerald-300 transition-colors">
+          <Link to="/" className="text-primary font-bold text-xs hover:text-primary font-bold transition-colors">
             ← Retour à l'accueil
           </Link>
         </div>
