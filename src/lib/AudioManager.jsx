@@ -326,6 +326,13 @@ export const AudioProvider = ({ children }) => {
   // Keep the surah reference in sync (called by Memorize on mount / surah change)
   const updateSurah = useCallback((surah) => {
     loopRef.current.surah = surah;
+    const n = typeof surah === "object" ? surah?.number : surah;
+    if (n) {
+      try {
+        const raw = JSON.parse(localStorage.getItem("mh_last_surah") || "null");
+        if (!raw || raw.number !== n) localStorage.setItem("mh_last_surah", JSON.stringify({ number: n, at: Date.now() }));
+      } catch { /* ignore */ }
+    }
   }, []);
 
   // Stop everything — called when the user logs out

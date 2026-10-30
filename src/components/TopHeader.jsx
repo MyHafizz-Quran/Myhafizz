@@ -1,19 +1,56 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { Trophy, MagnifyingGlass } from "@phosphor-icons/react";
+import usePlatform, { haptic } from "@/hooks/usePlatform";
+import { useAuth } from "@/lib/AuthContext";
+import { MhWordmark } from "@/components/MhLogo";
 
+function Avatar({ user, size = 40 }) {
+  const name = user?.user_metadata?.full_name || user?.name || user?.email || "";
+  const url = user?.user_metadata?.avatar_url || user?.image;
+  const initial = (name.trim()[0] || "M").toUpperCase();
+  return url ? (
+    <img src={url} alt="Profil" className="rounded-full object-cover" style={{ width: size, height: size }} />
+  ) : (
+    <span className="rounded-full bg-gold-tint text-gold-lip font-black flex items-center justify-center" style={{ width: size, height: size, fontSize: size * 0.42 }}>{initial}</span>
+  );
+}
+
+/** En-tête de l'écran d'accueil. iOS : boutons ronds en verre. Android : barre d'app Material 3. */
 export default function TopHeader() {
+  const platform = usePlatform();
+  const { user } = useAuth();
+
+  if (platform === "android") {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] bg-background flex items-center gap-1 pl-4 pr-2"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(var(--header-height) + env(safe-area-inset-top, 0px))" }}>
+        <MhWordmark size={28} className="flex-1" />
+        <Link to="/SurahList?search=1" aria-label="Rechercher" className="w-12 h-12 rounded-full flex items-center justify-center active:bg-black/5" onClick={() => haptic()}>
+          <MagnifyingGlass size={24} weight="bold" />
+        </Link>
+        <Link to="/Profile" aria-label="Profil" className="w-12 h-12 rounded-full flex items-center justify-center" onClick={() => haptic()}>
+          <Avatar user={user} size={34} />
+        </Link>
+      </header>
+    );
+  }
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] bg-surface flex justify-between items-center px-6 py-4 border-b-0 shadow-none" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}>
-      <div className="flex items-center gap-4">
-        <button className="text-primary hover:bg-surface-container transition-colors duration-300 p-2 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-        </button>
-        <h1 className="font-headline text-xl font-bold tracking-tight text-primary">MyHafizz</h1>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border-2 border-primary-fixed">
-          <img src="https://ui-avatars.com/api/?name=MH&background=a1d1b4&color=14422d&bold=true" alt="Profile" className="w-full h-full object-cover" />
+    <>
+      <div className="ios-scroll-edge" />
+      <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] flex items-center justify-between px-4 pointer-events-none"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)", height: "calc(var(--header-height) + env(safe-area-inset-top, 0px))" }}>
+        <span className="pointer-events-auto liquid-glass rounded-full h-11 pl-2 pr-3.5 flex items-center"><MhWordmark size={26} /></span>
+        <div className="flex gap-2.5 pointer-events-auto">
+          <Link to="/Leaderboard" aria-label="Classement" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
+            <Trophy size={21} weight="bold" />
+          </Link>
+          <Link to="/Profile" aria-label="Profil" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
+            <Avatar user={user} size={34} />
+          </Link>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

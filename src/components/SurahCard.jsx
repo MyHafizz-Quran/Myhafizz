@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "@/components/icons";
 
 const STATUS_STYLES = {
   completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50",
@@ -70,7 +70,7 @@ export default function SurahCard({ surah, progress, index }) {
               className={`h-full rounded-full transition-all duration-700 ${
                 isComplete
                   ? "bg-primary"
-                  : "bg-gradient-to-r from-primary-fixed-dim to-primary"
+                  : "bg-primary-fixed-dim "
               }`}
             />
           </div>

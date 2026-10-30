@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, RotateCcw, Repeat, Heart } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, RotateCcw, Repeat, Heart } from "@/components/icons";
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";

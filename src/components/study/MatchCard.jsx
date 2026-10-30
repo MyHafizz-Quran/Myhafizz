@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, CheckCircle2, XCircle, Hourglass } from "lucide-react";
+import { MessageCircle, CheckCircle2, XCircle, Hourglass } from "@/components/icons";
 
 const LEVEL_EMOJI = { "débutant": "🌱", "intermédiaire": "📖", "avancé": "🔥", "hafidh": "🏆" };
 const LEVEL_COLOR = {
@@ -11,11 +11,11 @@ const LEVEL_COLOR = {
 };
 
 const AVATAR_COLORS = [
-  "from-emerald-500 to-teal-600",
-  "from-amber-400 to-orange-500",
-  "from-violet-500 to-purple-600",
-  "from-sky-400 to-blue-500",
-  "from-rose-400 to-pink-500",
+  "bg-emerald-500",
+  "bg-amber-400",
+  "bg-violet-500",
+  "bg-sky-400",
+  "bg-rose-400",
 ];
 
 const SLOT_EMOJI = { "matin": "🌅", "après-midi": "☀️", "soir": "🌙", "week-end": "📅" };
@@ -68,7 +68,7 @@ export default function MatchCard({ profile, matchStatus, onRequest, onAccept, o
               className="w-12 h-12 rounded-2xl object-cover shadow-sm"
             />
           ) : (
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br ${avatarGrad} shadow-sm`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${avatarGrad} shadow-sm`}>
               <span className="text-white font-black text-sm">{initials}</span>
             </div>
           )}
@@ -127,7 +127,7 @@ export default function MatchCard({ profile, matchStatus, onRequest, onAccept, o
               initial={{ width: 0 }}
               animate={{ width: `${compatPercent}%` }}
               transition={{ delay: delay + 0.2, duration: 0.6, ease: "easeOut" }}
-              className={`h-full rounded-full ${compatPercent >= 70 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : compatPercent >= 40 ? "bg-gradient-to-r from-amber-400 to-amber-500" : "bg-gray-400"}`}
+              className={`h-full rounded-full ${compatPercent >= 70 ? "bg-emerald-400 " : compatPercent >= 40 ? "bg-amber-400 " : "bg-gray-400"}`}
             />
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function MatchCard({ profile, matchStatus, onRequest, onAccept, o
         <div className="mt-3 pt-3 border-t border-border space-y-2">
           {matchStatus === "none" && (
             <button onClick={onRequest}
-              className="w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md">
+              className="w-full py-2 rounded-xl text-xs font-bold bg-emerald-500 text-white flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md">
               <MessageCircle className="w-3.5 h-3.5" /> Demander à étudier ensemble
             </button>
           )}
@@ -150,7 +150,7 @@ export default function MatchCard({ profile, matchStatus, onRequest, onAccept, o
           {matchStatus === "pending_received" && (
             <div className="flex gap-2">
               <button onClick={onAccept}
-                className="flex-1 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white flex items-center justify-center gap-1.5 transition-all shadow-sm">
+                className="flex-1 py-2 rounded-xl text-xs font-black bg-emerald-500 text-white flex items-center justify-center gap-1.5 transition-all shadow-sm">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Accepter
               </button>
               <button onClick={onDecline}

@@ -4,7 +4,7 @@ import { MemorizationProgress } from "@/api/entities";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Star, Target, ArrowRight, Sparkles, ChevronRight, HelpCircle, ChevronDown, Volume2, Eye, CheckCircle2, Smartphone, X } from "lucide-react";
+import { BookOpen, Star, Target, ArrowRight, Sparkles, ChevronRight, HelpCircle, ChevronDown, Volume2, Eye, CheckCircle2, Smartphone, X } from "@/components/icons";
 import ProgressRing from "@/components/ProgressRing";
 import { SURAHS, TOTAL_VERSES } from "@/components/quranData";
 
@@ -360,7 +360,7 @@ export default function Dashboard() {
       <main className="max-w-5xl mx-auto px-6 space-y-12">
 
         {/* ─── NEW HERO (STITCH UI) ─── */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end pt-24">
+        <section className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end pt-6">
           <div className="md:col-span-8 space-y-2">
             <p className="font-label text-on-surface-variant tracking-wider uppercase text-xs">
               السلام عليكم, {firstName}

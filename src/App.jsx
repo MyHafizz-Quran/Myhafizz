@@ -1,4 +1,8 @@
 import React, { useRef, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import MhLogo from '@/components/MhLogo';
+import usePlatform from '@/hooks/usePlatform';
 import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -31,8 +35,27 @@ import Privacy from './pages/Privacy.jsx';
 import Help from './pages/Help.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 
+// Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
+const IMMERSIVE = ["/Memorize", "/Quiz"];
+const WITH_HOME_HEADER = ["/Dashboard"];
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const platform = usePlatform();
+  const path = location.pathname;
+  const immersive = IMMERSIVE.some((p) => path.startsWith(p));
+  const homeHeader = WITH_HOME_HEADER.some((p) => path.startsWith(p));
+
+  useEffect(() => {
+    const html = document.documentElement;
+    html.classList.toggle("no-global-header", !homeHeader);
+    html.classList.toggle("no-tabbar", immersive);
+    return () => { html.classList.remove("no-global-header", "no-tabbar"); };
+  }, [homeHeader, immersive]);
+
+  // Chaque changement d'écran repart en haut, comme une app native
+  useEffect(() => { window.scrollTo(0, 0); }, [path]);
   const { cleanup } = useAudioManager();
   // Auto-sync pending offline actions when back online
   useOfflineSync();
@@ -48,8 +71,9 @@ const AuthenticatedApp = () => {
 
   if (isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-emerald-50/50">
-        <div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-800 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-5 bg-background">
+        <MhLogo size={84} />
+        <div className="w-24 h-2.5 rounded-full bg-accent overflow-hidden"><div className="h-full w-1/2 rounded-full bg-primary" style={{ animation: 'mh-load 1.1s ease-in-out infinite' }} /></div>
       </div>
     );
   }
@@ -61,10 +85,16 @@ const AuthenticatedApp = () => {
   return (
     <>
       <OfflineBanner />
-      <TopHeader />
-      {/* Contenu principal avec padding bas pour ne pas être caché par la BottomNav */}
-      <div className="pb-nav pt-header">
-        <Routes>
+      {homeHeader && <TopHeader />}
+      {/* Contenu principal : transition d'écran native (glissement iOS, fondu Android) */}
+      <motion.div
+        key={path}
+        className="pb-nav pt-header min-h-full"
+        initial={platform === "android" ? { opacity: 0, y: 12 } : { opacity: 0, x: 24 }}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+      >
+        <Routes location={location}>
           <Route path="/" element={<Navigate to="/Dashboard" replace />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/SurahList" element={<SurahList />} />
@@ -79,9 +109,8 @@ const AuthenticatedApp = () => {
           <Route path="/Leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
-      </div>
-      {/* Bottom navigation bar (visible uniquement sur mobile) */}
-      <BottomNav />
+      </motion.div>
+      {!immersive && <BottomNav />}
       <InstallPrompt />
     </>
   );
@@ -92,8 +121,9 @@ const LandingOrDashboard = () => {
 
   if (isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-emerald-50/50">
-        <div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-800 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-5 bg-background">
+        <MhLogo size={84} />
+        <div className="w-24 h-2.5 rounded-full bg-accent overflow-hidden"><div className="h-full w-1/2 rounded-full bg-primary" style={{ animation: 'mh-load 1.1s ease-in-out infinite' }} /></div>
       </div>
     );
   }

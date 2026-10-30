@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { supabase } from "@/api/neonClient";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowLeft, Trophy } from "lucide-react";
+import { ArrowLeft, Trophy } from "@/components/icons";
 import { useNavigate } from "react-router-dom";
 import { TOTAL_VERSES } from "@/components/quranData";
 import { useAuth } from "@/lib/AuthContext";
@@ -114,7 +114,7 @@ export default function Leaderboard() {
     <div className="min-h-screen bg-background pb-28">
 
       {/* ─── HEADER ─── */}
-      <div className="hafiz-gradient-hero relative overflow-hidden">
+      <div className="hafiz-gradient-hero relative overflow-hidden pt-safe">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 pb-5 relative">
           <div className="flex items-center gap-3">
             <button

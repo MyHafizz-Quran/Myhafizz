@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { X, User, ChevronRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { X, User, ChevronRight, Loader2, Eye, EyeOff } from "@/components/icons";
 
 const LEVELS = [
   { value: "débutant", label: "Débutant", desc: "< 10 sourates mémorisées", emoji: "🌱" },
@@ -24,11 +24,11 @@ const MIN_PHONE_DIGITS = 7;
 const MAX_PHONE_DIGITS = 15;
 
 const AVATAR_COLORS = [
-  "from-emerald-500 to-teal-600",
-  "from-amber-400 to-orange-500",
-  "from-violet-500 to-purple-600",
-  "from-sky-400 to-blue-500",
-  "from-rose-400 to-pink-500",
+  "bg-emerald-500",
+  "bg-amber-400",
+  "bg-violet-500",
+  "bg-sky-400",
+  "bg-rose-400",
 ];
 
 const LEVEL_COLOR = {
@@ -106,7 +106,7 @@ export default function ProfileSetupModal({ onSave, onClose, initial, user, isSa
               {avatarUrl ? (
                 <img src={avatarUrl} alt={userName} className="w-11 h-11 rounded-xl object-cover flex-shrink-0 shadow-sm" />
               ) : (
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${avatarGrad} shadow-sm`}>
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${avatarGrad} shadow-sm`}>
                   <span className="text-white font-black text-xs">{initials}</span>
                 </div>
               )}
@@ -264,7 +264,7 @@ export default function ProfileSetupModal({ onSave, onClose, initial, user, isSa
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
+            className="w-full py-3 bg-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
           >
             {isSaving ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Enregistrement...</>

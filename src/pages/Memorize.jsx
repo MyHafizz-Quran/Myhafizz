@@ -3,7 +3,7 @@ import { MemorizationProgress } from "@/api/entities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff, Play, Pause } from "@/components/icons";
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
@@ -489,9 +489,9 @@ export default function Memorize() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="mb-6 flex items-center gap-4 bg-gradient-to-r from-emerald-50 via-emerald-50/80 to-white dark:from-emerald-950/40 dark:via-emerald-950/30 dark:to-gray-900 border-2 border-emerald-200 dark:border-emerald-800 rounded-3xl p-5 shadow-sm"
+                className="mb-6 flex items-center gap-4 bg-emerald-50 border-2 border-emerald-200 dark:border-emerald-800 rounded-3xl p-5 shadow-sm"
               >
-                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-md shadow-emerald-200 dark:shadow-emerald-900/40">
+                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-200 dark:shadow-emerald-900/40">
                   <CheckCircle2 className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">

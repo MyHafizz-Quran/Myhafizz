@@ -143,7 +143,7 @@ export default function InstallPrompt() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleInstall}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm shadow-lg shadow-emerald-500/30 active:opacity-90 transition-opacity"
+                className="w-full py-3.5 rounded-2xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/30 active:opacity-90 transition-opacity"
               >
                 Installer l'application
               </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WifiOff, Wifi } from "lucide-react";
+import { WifiOff, Wifi } from "@/components/icons";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export default function OfflineBanner() {

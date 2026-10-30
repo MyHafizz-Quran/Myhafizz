@@ -10,8 +10,6 @@ import {
   ArrowRight,
   Sparkles,
   Heart,
-  Target,
-  ChevronRight,
   WifiOff,
   Settings,
   Play,
@@ -19,7 +17,7 @@ import {
   CheckCircle,
   Menu,
   X,
-} from "lucide-react";
+} from "@/components/icons";
 
 const features = [
   {
@@ -143,9 +141,7 @@ export default function LandingPage() {
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 group">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300">
-              <img src="/logo.svg" alt="MyHafizz" className="w-6 h-6 invert" />
-            </div>
+            <img src="/icons/icon.svg" alt="MyHafizz" className="w-10 h-10 flex-shrink-0" />
             <span className="font-headline font-bold text-lg sm:text-xl text-primary tracking-tight">MyHafizz</span>
           </Link>
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Mic2, Type, CheckCircle2, Moon, Sun, LogOut } from "lucide-react";
+import { Mic2, Type, CheckCircle2, Moon, Sun, LogOut } from "@/components/icons";
 import { RECITERS } from "@/components/ReciterSelector";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -18,7 +18,7 @@ export default function ProfileSection({ user, reciter, setReciter, showPhonetic
     >
       {/* User header */}
       <div className="hafiz-gradient-hero p-5 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-400/30">
+        <div className="w-12 h-12 rounded-2xl bg-amber-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-400/30">
           <span className="text-emerald-950 font-black text-sm">{initials}</span>
         </div>
         <div className="min-w-0">

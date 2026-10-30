@@ -7,7 +7,7 @@ import {
   ArrowLeft, Brain, Trophy, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Lightbulb, Zap, Target, BookOpen, Loader2,
   Mic, MicOff, Keyboard
-} from "lucide-react";
+} from "@/components/icons";
 import { SURAHS } from "@/components/quranData";
 
 // ── Normalisation arabe ──────────────────────────────────────────────────────
@@ -274,7 +274,7 @@ export default function Quiz() {
         <QuizHeader />
         <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 space-y-5">
           {/* Hero */}
-          <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-3xl p-7 text-center">
+          <div className="bg-emerald-900 rounded-3xl p-7 text-center">
             <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Brain className="w-8 h-8 text-white" />
             </div>
@@ -341,7 +341,7 @@ export default function Quiz() {
               whileTap={{ scale: 0.98 }}
               onClick={startQuiz}
               disabled={phase === "loading"}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-base shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-bold text-base shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-70"
             >
               {phase === "loading" ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Chargement des versets...</>
@@ -366,7 +366,7 @@ export default function Quiz() {
         <QuizHeader />
         <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 space-y-5">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <div className={`rounded-3xl p-8 text-center mb-5 ${avg >= 80 ? "bg-gradient-to-br from-emerald-900 to-emerald-700" : avg >= 50 ? "bg-gradient-to-br from-amber-700 to-amber-600" : "bg-gradient-to-br from-gray-800 to-gray-700"}`}>
+            <div className={`rounded-3xl p-8 text-center mb-5 ${avg >= 80 ? "bg-emerald-900 " : avg >= 50 ? "bg-amber-700 " : "bg-gray-800 "}`}>
               <Trophy className="w-12 h-12 text-amber-300 mx-auto mb-4" />
               <p className="text-white/70 text-sm mb-1">Score final</p>
               <p className="text-6xl font-black text-white">{avg}<span className="text-3xl text-white/60">%</span></p>
@@ -407,7 +407,7 @@ export default function Quiz() {
 
             <div className="flex gap-3">
               <motion.button whileTap={{ scale: 0.97 }} onClick={startQuiz}
-                className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20">
+                className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20">
                 <RefreshCw className="w-4 h-4" /> Rejouer
               </motion.button>
               <Link to="/Dashboard" className="flex-1">
@@ -437,7 +437,7 @@ export default function Quiz() {
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 bg-gray-200 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
             <div
-              className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-500"
+              className="h-2 rounded-full bg-emerald-400 transition-all duration-500"
               style={{ width: `${(qIndex / questions.length) * 100}%` }}
             />
           </div>
@@ -597,7 +597,7 @@ export default function Quiz() {
                     <Lightbulb className="w-4 h-4" /> Indice
                   </button>
                   <motion.button whileTap={{ scale: 0.97 }} onClick={submitAnswer} disabled={!answer.trim()}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20">
+                    className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20">
                     Valider <ChevronRight className="w-4 h-4" />
                   </motion.button>
                 </div>
@@ -658,7 +658,7 @@ export default function Quiz() {
                   </motion.div>
 
                   <motion.button whileTap={{ scale: 0.97 }} onClick={nextQuestion}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                    className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
                     {qIndex + 1 >= questions.length
                       ? <><Trophy className="w-4 h-4" /> Voir les résultats</>
                       : <>Question suivante <ChevronRight className="w-4 h-4" /></>

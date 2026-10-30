@@ -9,7 +9,7 @@ import {
   AlignJustify, Wifi, HardDrive, Sliders, MessageCircle,
   UserPlus, CheckCheck, Download, BarChart2,
   Bookmark, Clock, Repeat, Award,
-} from "lucide-react";
+} from "@/components/icons";
 
 // ─── Accordion section wrapper ───────────────────────────────────────────────
 function Section({ icon: Icon, title, color = "emerald", children, defaultOpen = false }) {
@@ -141,7 +141,7 @@ export default function Help() {
       </div>
 
       {/* ─── HERO ─── */}
-      <div className="hafiz-gradient-hero relative overflow-hidden">
+      <div className="hafiz-gradient-hero relative overflow-hidden pt-safe">
         <div className="absolute inset-0 opacity-[0.035]" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M30 0l8.66 15H21.34L30 0zm0 60l8.66-15H21.34L30 60zM0 30l15-8.66v17.32L0 30zm60 0L45 21.34v17.32L60 30zM30 22.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />

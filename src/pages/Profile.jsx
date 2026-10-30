@@ -7,7 +7,7 @@ import {
   Settings, LogOut, AlertTriangle, Loader2,
   Camera, Check, Edit3, HelpCircle, Share2, Copy,
   Gift,
-} from "lucide-react";
+} from "@/components/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { TOTAL_VERSES, SURAHS } from "@/components/quranData";
 import { useAuth } from "@/lib/AuthContext";
@@ -169,12 +169,12 @@ export default function Profile() {
 
   // ── Level config ─────────────────────────────────────────────────────────
   const levelConfig = completedSurahs >= 114
-    ? { label: "Hafidh", gradient: "from-amber-400 via-yellow-400 to-amber-500", ring: "#f59e0b" }
+    ? { label: "Hafidh", gradient: "bg-amber-400", ring: "#f59e0b" }
     : completedSurahs >= 30
-    ? { label: "Avancé", gradient: "from-violet-500 via-purple-500 to-violet-600", ring: "#8b5cf6" }
+    ? { label: "Avancé", gradient: "bg-violet-500", ring: "#8b5cf6" }
     : completedSurahs >= 5
-    ? { label: "Intermédiaire", gradient: "from-blue-500 via-sky-500 to-blue-600", ring: "#3b82f6" }
-    : { label: "Débutant", gradient: "from-emerald-500 via-emerald-400 to-teal-500", ring: "#10b981" };
+    ? { label: "Intermédiaire", gradient: "bg-blue-500", ring: "#3b82f6" }
+    : { label: "Débutant", gradient: "bg-emerald-500", ring: "#10b981" };
 
   const avatarUrl = user?.user_metadata?.avatar_url;
 
@@ -206,7 +206,7 @@ export default function Profile() {
     <div className="min-h-screen bg-background pb-28 flex flex-col">
 
       {/* ─── HEADER ─── */}
-      <div className="hafiz-gradient-hero relative overflow-hidden">
+      <div className="hafiz-gradient-hero relative overflow-hidden pt-safe">
         <div className="absolute inset-0 opacity-[0.035]" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M30 0l8.66 15H21.34L30 0zm0 60l8.66-15H21.34L30 60zM0 30l15-8.66v17.32L0 30zm60 0L45 21.34v17.32L60 30zM30 22.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
@@ -227,7 +227,7 @@ export default function Profile() {
                   className="w-20 h-20 rounded-full object-cover shadow-xl ring-4 ring-amber-400/50"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center shadow-xl ring-4 ring-amber-400/50">
+                <div className="w-20 h-20 rounded-full bg-amber-400 flex items-center justify-center shadow-xl ring-4 ring-amber-400/50">
                   <span className="text-emerald-950 font-black text-2xl">{initials}</span>
                 </div>
               )}
@@ -440,7 +440,7 @@ export default function Profile() {
                 {(avatarPreview || avatarUrl) ? (
                   <img src={avatarPreview || avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                 ) : (
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${levelConfig.gradient}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${levelConfig.gradient}`}>
                     <span className="text-white font-bold text-[10px]">{initials}</span>
                   </div>
                 )}

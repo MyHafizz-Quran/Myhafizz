@@ -11,6 +11,13 @@ export const AuthProvider = ({ children }) => {
   const isRefreshing = useRef(false);
 
   useEffect(() => {
+    // Build d'aperçu UI uniquement (VITE_UI_PREVIEW=1) : faux utilisateur, jamais en production
+    if (import.meta.env.VITE_UI_PREVIEW === '1') {
+      setUser({ id: 'preview', email: 'amina@exemple.fr', user_metadata: { full_name: 'Amina Diallo' } });
+      setIsAuthenticated(true);
+      setIsLoadingAuth(false);
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsAuthenticated(!!session?.user);

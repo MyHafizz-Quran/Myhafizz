@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/api/neonClient";
 import { motion } from "framer-motion";
-import { Lock, Loader2, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Lock, Loader2, CheckCircle2, Eye, EyeOff } from "@/components/icons";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function ResetPassword() {
@@ -40,7 +40,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-emerald-900 to-[#071f18] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-emerald-950 to-[#071f18] flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export default function ResetPassword() {
               </p>
               <button
                 onClick={() => navigate("/Dashboard", { replace: true })}
-                className="mt-2 bg-gradient-to-r from-amber-400 to-amber-300 text-emerald-950 font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-amber-400/20 hover:from-amber-300 hover:to-amber-200 transition-all text-sm"
+                className="mt-2 bg-amber-400 text-emerald-950 font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-amber-400/20 transition-all text-sm"
               >
                 Accéder au tableau de bord
               </button>
@@ -141,7 +141,7 @@ export default function ResetPassword() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-amber-400 to-amber-300 text-emerald-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 hover:from-amber-300 hover:to-amber-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-amber-400 text-emerald-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

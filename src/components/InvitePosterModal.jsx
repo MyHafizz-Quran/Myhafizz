@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Link2, Share2 } from "lucide-react";
+import { X, Link2, Share2 } from "@/components/icons";
 import { QRCodeCanvas } from "qrcode.react";
 
 // ─── InvitePosterModal ────────────────────────────────────────────────────────
@@ -154,9 +154,9 @@ export default function InvitePosterModal({
                     </p>
                     {/* Decorative line */}
                     <div className="flex items-center justify-center gap-2 mt-3">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+                      <div className="h-px flex-1 " />
                       <span className="text-amber-400 text-[10px]">✦</span>
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+                      <div className="h-px flex-1 " />
                     </div>
                   </div>
                 </div>

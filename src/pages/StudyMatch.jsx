@@ -2,9 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/api/neonClient";
 import { StudyProfile, StudyMatchEntity, MemorizationProgress } from "@/api/entities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Search, SlidersHorizontal, UserCheck, Bell, Sparkles } from "lucide-react";
+import { Users, Search, SlidersHorizontal, UserCheck, Bell, Sparkles } from "@/components/icons";
 import ProfileSetupModal from "@/components/study/ProfileSetupModal";
 import MatchCard from "@/components/study/MatchCard";
 import { useToast } from "@/components/ui/use-toast";
@@ -138,11 +137,6 @@ export default function StudyMatch() {
       {/* Header */}
       <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
         <div className="max-w-3xl mx-auto px-4 py-3.5 flex items-center gap-3">
-          <Link to="/Dashboard">
-            <button className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          </Link>
           <Users className="w-5 h-5 text-emerald-600" />
           <h1 className="text-base font-bold text-gray-900 dark:text-white flex-1">Partenaires d'étude</h1>
           {pendingReceived.length > 0 && (
@@ -198,7 +192,7 @@ export default function StudyMatch() {
         {/* No profile banner */}
         {!myProfile && activeTab === "discover" && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-4 flex items-center gap-3"
+            className="bg-emerald-50 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-4 flex items-center gap-3"
           >
             <span className="text-2xl">👤</span>
             <div className="flex-1">
@@ -222,7 +216,7 @@ export default function StudyMatch() {
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-lg"
+                className="bg-emerald-500 rounded-2xl p-5 text-white shadow-lg"
               >
                 <div className="flex items-start justify-between">
                   <div>

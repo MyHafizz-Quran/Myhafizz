@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect as useEffectSL } from "react";
 import { MemorizationProgress } from "@/api/entities";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import SurahCard from "@/components/SurahCard";
 import { SURAHS } from "@/components/quranData";
@@ -17,6 +17,11 @@ const FILTERS = [
 
 export default function SurahList() {
   const [search, setSearch] = useState("");
+  const searchRef = useRef(null);
+  const [params] = useSearchParams();
+  useEffectSL(() => {
+    if (params.get("search") === "1") setTimeout(() => searchRef.current?.focus(), 250);
+  }, [params]);
   const [filter, setFilter] = useState("all");
 
   const { data: progressList = [] } = useQuery({
@@ -48,14 +53,9 @@ export default function SurahList() {
     <div className="min-h-screen bg-surface">
       {/* ─── HEADER OPAQUE ─── */}
       <div className="bg-surface/95 backdrop-blur-xl sticky top-0 z-[var(--z-page-header)] pb-4">
-        <div className="max-w-4xl mx-auto px-6 pt-12">
+        <div className="max-w-4xl mx-auto px-5 pt-6">
           {/* Top row */}
           <div className="flex items-center gap-3 mb-6">
-            <Link to="/Dashboard">
-              <button className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-surface-container-high transition-all">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            </Link>
             <div className="flex-1">
               <h1 className="font-headline text-3xl font-extrabold text-primary tracking-tight">Bibliothèque</h1>
               <p className="font-body text-on-surface-variant text-sm mt-1">Poursuivez votre voyage à travers le Saint Coran.</p>
@@ -66,6 +66,9 @@ export default function SurahList() {
           <div className="relative mb-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant/50 pointer-events-none" />
             <Input
+              ref={searchRef}
+              type="search"
+              enterKeyHint="search"
               placeholder="Rechercher une sourate..."
               value={search}
               onChange={e => setSearch(e.target.value)}

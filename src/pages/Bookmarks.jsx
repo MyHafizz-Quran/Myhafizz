@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Heart, MapPin, Trash2, Play, BookOpen } from "lucide-react";
+import { Heart, MapPin, Trash2, Play, BookOpen } from "@/components/icons";
 import { SURAHS } from "@/components/quranData";
 
 const FAV_KEY = "quran_favorites";
@@ -64,11 +64,6 @@ export default function Bookmarks() {
       <div className="bg-white/[0.97] dark:bg-gray-950/[0.97] backdrop-blur-xl border-b border-border/60 sticky top-0 z-[var(--z-page-header)] shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-none">
         <div className="max-w-2xl mx-auto px-4 py-3.5">
           <div className="flex items-center gap-3 mb-3">
-            <Link to="/Dashboard">
-              <button className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-            </Link>
             <h1 className="text-base font-black text-foreground">Favoris & Marqueurs</h1>
           </div>
           {/* Tabs */}

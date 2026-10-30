@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Settings2, ChevronDown, Eye, EyeOff, BookOpen } from "lucide-react";
+import { Settings2, ChevronDown, Eye, EyeOff, BookOpen } from "@/components/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { RECITERS } from "@/components/ReciterSelector";
 

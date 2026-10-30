@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, Mic } from "lucide-react";
+import { ChevronDown, Mic } from "@/components/icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const RECITERS = [

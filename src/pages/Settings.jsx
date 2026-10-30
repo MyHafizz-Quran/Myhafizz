@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Type, Languages, CheckCircle2, Download, Trash2, HardDrive, Loader2, AlignJustify, Contrast, ToggleLeft, ToggleRight, AlignVerticalSpaceAround, Play, Square } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Type, Languages, CheckCircle2, Download, Trash2, HardDrive, Loader2, AlignJustify, Contrast, ToggleLeft, ToggleRight, AlignVerticalSpaceAround, Play, Square } from "@/components/icons";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -424,7 +424,7 @@ export default function Settings() {
                   بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
                 </p>
                 {showVerseNumbers && (
-                  <div className="mt-3 inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-xs font-bold shadow-sm">
+                  <div className="mt-3 inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 text-white text-xs font-bold shadow-sm">
                     1
                   </div>
                 )}

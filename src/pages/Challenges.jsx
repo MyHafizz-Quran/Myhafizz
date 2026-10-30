@@ -4,7 +4,7 @@ import { Challenge, ChallengeParticipant, MemorizationProgress } from "@/api/ent
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Trophy, Users, Calendar, CheckCircle2, Zap, Medal, Crown, Star, Lock } from "lucide-react";
+import { ArrowLeft, Trophy, Users, Calendar, CheckCircle2, Zap, Medal, Crown, Star, Lock } from "@/components/icons";
 import { SURAHS } from "@/components/quranData";
 
 function daysDiff(dateStr) {
@@ -21,10 +21,10 @@ const RANK_COLORS = ["text-amber-400", "text-gray-400", "text-amber-600"];
 const RANK_ICONS = [Crown, Medal, Star];
 
 const LEVEL_BADGES = [
-  { min: 0, max: 24, label: "Bronze", color: "from-amber-700 to-amber-600", emoji: "🥉" },
-  { min: 25, max: 49, label: "Argent", color: "from-gray-400 to-gray-300", emoji: "🥈" },
-  { min: 50, max: 74, label: "Or", color: "from-amber-400 to-amber-300", emoji: "🥇" },
-  { min: 75, max: 100, label: "Hafidh", color: "from-emerald-500 to-emerald-400", emoji: "🌟" },
+  { min: 0, max: 24, label: "Bronze", color: "bg-amber-700", emoji: "🥉" },
+  { min: 25, max: 49, label: "Argent", color: "bg-gray-400", emoji: "🥈" },
+  { min: 50, max: 74, label: "Or", color: "bg-amber-400", emoji: "🥇" },
+  { min: 75, max: 100, label: "Hafidh", color: "bg-emerald-500", emoji: "🌟" },
 ];
 
 function getLevelBadge(pct) {
@@ -153,7 +153,7 @@ export default function Challenges() {
                   className="glass-card overflow-hidden"
                 >
                   {/* Challenge header */}
-                  <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 dark:from-emerald-800 dark:to-emerald-950 p-5">
+                  <div className="bg-emerald-700 p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -191,7 +191,7 @@ export default function Challenges() {
                     {isJoined && (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r ${level.color} text-white text-xs font-black shadow-sm`}>
+                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${level.color} text-white text-xs font-black shadow-sm`}>
                             <span>{level.emoji}</span> Niveau {level.label}
                           </div>
                           <div className="flex items-center gap-2">
@@ -217,7 +217,7 @@ export default function Challenges() {
                           <motion.div
                             animate={{ width: `${myPct}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
-                            className={`h-3 rounded-full ${myEntry.completed ? "bg-gradient-to-r from-emerald-400 to-emerald-600" : "bg-gradient-to-r from-amber-400 to-amber-500"}`}
+                            className={`h-3 rounded-full ${myEntry.completed ? "bg-emerald-400 " : "bg-amber-400 "}`}
                           />
                         </div>
                       </div>
@@ -245,7 +245,7 @@ export default function Challenges() {
                                     <span className="text-xs font-bold text-muted-foreground">#{rank + 1}</span>
                                   )}
                                 </div>
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center flex-shrink-0">
+                                <div className="w-7 h-7 rounded-full bg-emerald-400 flex items-center justify-center flex-shrink-0">
                                   <span className="text-white text-[10px] font-black">{initials}</span>
                                 </div>
                                 <span className={`flex-1 text-sm font-medium truncate ${isMe ? "text-primary dark:text-emerald-300 font-bold" : "text-foreground"}`}>
