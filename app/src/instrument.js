@@ -29,7 +29,7 @@ Sentry.init({
   // 100 % en dev, 20 % en production
   tracesSampleRate: isProd ? 0.2 : 1.0,
   // En-têtes de trace uniquement vers notre propre domaine (évite les erreurs CORS côté Neon)
-  tracePropagationTargets: [/^\//, /^https:\/\/(www\.)?myhafizz\.com/],
+  tracePropagationTargets: [/^\/(?!\/)/, /^https:\/\/(www\.)?myhafizz\.com(\/|$)/],
 });
 
 export default Sentry;

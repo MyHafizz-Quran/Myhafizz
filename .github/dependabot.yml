@@ -7,6 +7,10 @@ updates:
     groups:
       securite-et-mineures:
         update-types: [minor, patch]
+    ignore:
+      # versions majeures : migration manuelle (les correctifs de sécurité arrivent quand même)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /myhafizz-admin
     schedule: { interval: weekly, day: monday }
@@ -14,6 +18,10 @@ updates:
     groups:
       securite-et-mineures:
         update-types: [minor, patch]
+    ignore:
+      # versions majeures : migration manuelle (les correctifs de sécurité arrivent quand même)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
