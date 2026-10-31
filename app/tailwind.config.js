@@ -111,7 +111,6 @@ module.exports = {
   			"on-secondary-fixed-variant": "#00666A",
   			"primary-container": "#007C80",
   			"on-tertiary-fixed-variant": "#7A5600",
-  			"stitch-bg": "#EFF9F9",
   			/* Palette Lagon : remplace les verts/teals codés en dur */
   			emerald: {50:'#EFF9F9',100:'#D5F3F3',200:'#ABE7E8',300:'#74D6D8',400:'#33BFC2',500:'#00A3A8',600:'#008C91',700:'#007C80',800:'#00666A',900:'#0B5457',950:'#053A3D'},
   			teal: {50:'#EFF9F9',100:'#D5F3F3',200:'#ABE7E8',300:'#74D6D8',400:'#33BFC2',500:'#00A3A8',600:'#008C91',700:'#007C80',800:'#00666A',900:'#0B5457',950:'#053A3D'},

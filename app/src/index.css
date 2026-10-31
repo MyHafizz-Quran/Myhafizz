@@ -224,7 +224,7 @@
     display: none;
   }
 
-  /* ─── Stitch UI Utility Classes ─── */
+  /* ─── Classes utilitaires de l'interface ─── */
   .glass-effect {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
