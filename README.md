@@ -10,6 +10,25 @@
 
 ---
 
+## 📁 Organisation du repo
+
+```
+Myhafizz/
+├── app/             → l'application client (React + Vite), déployée sur Vercel (projet « myhafizz », myhafizz.com)
+├── myhafizz-admin/  → l'administration, déployée à part sur son propre projet Vercel
+├── telegram-bot/    → bot Telegram (Render)
+├── vercel.json      → build du client depuis app/
+└── render.yaml
+```
+
+Le client et l'admin ne partagent ni code, ni base, ni connexion :
+- client : base Neon « MyHafizz Client », Neon Auth du client ;
+- admin : base Neon « MyHafizz Admin » (équipe, journal, notes), Neon Auth de l'admin, et lecture/modération de la base client côté serveur uniquement.
+
+Chaque projet Vercel ne se reconstruit que si son dossier change.
+
+---
+
 ## ✨ Fonctionnalités
 
 - 📊 **Tableau de bord** — Vue d'ensemble de la progression avec statistiques et révisions récentes
