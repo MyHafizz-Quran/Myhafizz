@@ -1,7 +1,7 @@
-import { supabase } from '@/api/neonClient';
+import { db } from '@/api/neonClient';
 
 async function uid() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) throw new Error('Non authentifié');
   return user.id;
 }
@@ -9,7 +9,7 @@ async function uid() {
 export const VerseReview = {
   async list() {
     const id = await uid();
-    const { data, error } = await supabase.from('verse_reviews').select('*').eq('user_id', id);
+    const { data, error } = await db.from('verse_reviews').select('*').eq('user_id', id);
     if (error) throw error;
     return data || [];
   },
@@ -17,7 +17,7 @@ export const VerseReview = {
   async upsert(rows) {
     if (!rows.length) return [];
     const id = await uid();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('verse_reviews')
       .upsert(rows.map((r) => ({ ...r, user_id: id })), { onConflict: 'user_id,surah_number,verse_number' })
       .select();
@@ -27,7 +27,7 @@ export const VerseReview = {
   async remove(surah_number, verse_numbers) {
     if (!verse_numbers.length) return;
     const id = await uid();
-    const { error } = await supabase.from('verse_reviews').delete()
+    const { error } = await db.from('verse_reviews').delete()
       .eq('user_id', id).eq('surah_number', surah_number).in('verse_number', verse_numbers);
     if (error) throw error;
   },
@@ -36,13 +36,13 @@ export const VerseReview = {
 export const HifzPlan = {
   async get() {
     const id = await uid();
-    const { data, error } = await supabase.from('hifz_plans').select('*').eq('user_id', id).maybeSingle();
+    const { data, error } = await db.from('hifz_plans').select('*').eq('user_id', id).maybeSingle();
     if (error) throw error;
     return data;
   },
   async save(plan) {
     const id = await uid();
-    const { data, error } = await supabase.from('hifz_plans')
+    const { data, error } = await db.from('hifz_plans')
       .upsert({ ...plan, user_id: id, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
       .select().single();
     if (error) throw error;
@@ -54,7 +54,7 @@ export const HifzPlan = {
 export const ActivityDays = {
   async list(limit = 400) {
     const id = await uid();
-    const { data, error } = await supabase.from('activity_days').select('day').eq('user_id', id).order('day', { ascending: false }).limit(limit);
+    const { data, error } = await db.from('activity_days').select('day').eq('user_id', id).order('day', { ascending: false }).limit(limit);
     if (error) throw error;
     return (data || []).map((r) => r.day);
   },
@@ -64,7 +64,7 @@ export const ActivityDays = {
 export const ReadingLessons = {
   async list() {
     const id = await uid();
-    const { data, error } = await supabase.from('reading_lessons').select('*').eq('user_id', id);
+    const { data, error } = await db.from('reading_lessons').select('*').eq('user_id', id);
     if (error) throw error;
     return data || [];
   },
@@ -72,7 +72,7 @@ export const ReadingLessons = {
     if (!ids.length) return [];
     const id = await uid();
     const now = new Date().toISOString();
-    const { error } = await supabase.from('reading_lessons').upsert(ids.map((lesson_id) => ({ user_id: id, lesson_id, best_score: 100, xp: 0, attempts: 0, completed_at: now, updated_at: now })), { onConflict: 'user_id,lesson_id' });
+    const { error } = await db.from('reading_lessons').upsert(ids.map((lesson_id) => ({ user_id: id, lesson_id, best_score: 100, xp: 0, attempts: 0, completed_at: now, updated_at: now })), { onConflict: 'user_id,lesson_id' });
     if (error) throw error;
     return ids;
   },
@@ -80,10 +80,10 @@ export const ReadingLessons = {
     const id = await uid();
     const row = { user_id: id, lesson_id, best_score: Math.max(score, prev?.best_score || 0), xp: (prev?.xp || 0) + xp, attempts: (prev?.attempts || 0) + 1, updated_at: new Date().toISOString() };
     if (!prev) row.completed_at = new Date().toISOString();
-    const { data, error } = await supabase.from('reading_lessons').upsert(row, { onConflict: 'user_id,lesson_id' }).select().single();
+    const { data, error } = await db.from('reading_lessons').upsert(row, { onConflict: 'user_id,lesson_id' }).select().single();
     if (error) throw error;
     // journal (objectif du jour, défis, classement) : ne bloque pas la sauvegarde
-    await supabase.from('reading_sessions').insert({ user_id: id, lesson_id, score, xp }).then(() => {}, () => {});
+    await db.from('reading_sessions').insert({ user_id: id, lesson_id, score, xp }).then(() => {}, () => {});
     return data;
   },
 };
@@ -92,12 +92,12 @@ export const ReadingSessions = {
   /** sessions depuis une date (ISO) */
   async since(iso) {
     const id = await uid();
-    const { data, error } = await supabase.from('reading_sessions').select('lesson_id, score, xp, created_at').eq('user_id', id).gte('created_at', iso).order('created_at', { ascending: false });
+    const { data, error } = await db.from('reading_sessions').select('lesson_id, score, xp, created_at').eq('user_id', id).gte('created_at', iso).order('created_at', { ascending: false });
     if (error) throw error;
     return data || [];
   },
   async leaderboard(iso) {
-    const { data, error } = await supabase.rpc('get_reading_leaderboard', { since: iso });
+    const { data, error } = await db.rpc('get_reading_leaderboard', { since: iso });
     if (error) throw error;
     return data || [];
   },

@@ -1,5 +1,5 @@
 import React from "react";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { Challenge, ChallengeParticipant, MemorizationProgress } from "@/api/entities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -24,7 +24,7 @@ function progressPercent(memorized, target) {
 export default function Challenges() {
   const queryClient = useQueryClient();
   const [user, setUser] = React.useState(null);
-  React.useEffect(() => { supabase.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
+  React.useEffect(() => { db.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
 
   const { data: challenges = [] } = useQuery({
     queryKey: ["challenges"],

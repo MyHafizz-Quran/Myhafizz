@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LockSimple, Backspace, SpinnerGap } from "@phosphor-icons/react";
 import { checkPin, disableKidMode } from "@/lib/kidMode";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { useAuth } from "@/lib/AuthContext";
 import { haptic } from "@/hooks/usePlatform";
 
@@ -59,7 +59,7 @@ export function KidLock() {
   };
   const reset = async (e) => {
     e.preventDefault(); setBusy(true); setError(null);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: user?.email, password: pw });
+    const { error: err } = await db.auth.signInWithPassword({ email: user?.email, password: pw });
     setBusy(false);
     if (err) { setError("Mot de passe incorrect."); return; }
     disableKidMode();

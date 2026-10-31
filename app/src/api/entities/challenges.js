@@ -1,8 +1,8 @@
-import { supabase } from '@/api/neonClient';
+import { db } from '@/api/neonClient';
 
 export const Challenge = {
   async filter(filters = {}, orderBy = '-created_at') {
-    let query = supabase.from('challenges').select('*');
+    let query = db.from('challenges').select('*');
 
     if (filters.is_active !== undefined) {
       query = query.eq('is_active', filters.is_active);
@@ -20,7 +20,7 @@ export const Challenge = {
 
 export const ChallengeParticipant = {
   async list() {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('challenge_participants')
       .select('*');
     if (error) throw error;
@@ -28,9 +28,9 @@ export const ChallengeParticipant = {
   },
 
   async create(payload) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await db.auth.getUser();
     if (!user) throw new Error('Non authentifié');
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('challenge_participants')
       .insert({ ...payload, user_id: user.id })
       .select()
@@ -40,7 +40,7 @@ export const ChallengeParticipant = {
   },
 
   async update(id, payload) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('challenge_participants')
       .update(payload)
       .eq('id', id)

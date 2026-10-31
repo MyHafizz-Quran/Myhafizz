@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
-import { supabase } from '@/api/neonClient';
+import { db } from '@/api/neonClient';
 
 const AuthContext = createContext();
 
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       return;
     }
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    db.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsAuthenticated(!!session?.user);
       setIsLoadingAuth(false);
@@ -28,11 +28,11 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = db.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' && !isManualLogout.current) {
         if (isRefreshing.current) return;
         isRefreshing.current = true;
-        supabase.auth.refreshSession().then(({ data: { session: refreshed } }) => {
+        db.auth.refreshSession().then(({ data: { session: refreshed } }) => {
           if (refreshed) {
             setUser(refreshed.user);
             setIsAuthenticated(true);
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     isManualLogout.current = true;
-    await supabase.auth.signOut();
+    await db.auth.signOut();
     isManualLogout.current = false;
     setUser(null);
     setIsAuthenticated(false);
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   // Synchronise l'état après une connexion réussie, avant de quitter /login
   const syncSession = async () => {
     for (let i = 0; i < 5; i++) {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await db.auth.getSession();
       if (session?.user) {
         setUser(session.user);
         setIsAuthenticated(true);

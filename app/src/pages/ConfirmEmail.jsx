@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from "@/components/icons";
 import { useNavigate, Link } from "react-router-dom";
@@ -11,9 +11,9 @@ export default function ConfirmEmail() {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    // Supabase gère automatiquement le token dans le hash fragment
+    // Neon Auth traite le jeton présent dans l'adresse
     // On écoute le changement d'état d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = db.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setStatus("success");
       }
@@ -21,10 +21,10 @@ export default function ConfirmEmail() {
 
     // Vérifier si on a déjà une session (le token a été traité)
     const checkSession = async () => {
-      // Petit délai pour laisser Supabase traiter le hash
+      // Petit délai pour laisser Neon Auth traiter le jeton
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: { session }, error } = await db.auth.getSession();
       
       if (error) {
         setStatus("error");
@@ -44,7 +44,7 @@ export default function ConfirmEmail() {
         } else {
           // Attendre encore un peu
           await new Promise(resolve => setTimeout(resolve, 2000));
-          const { data: { session: retrySession } } = await supabase.auth.getSession();
+          const { data: { session: retrySession } } = await db.auth.getSession();
           if (retrySession) {
             setStatus("success");
           } else {
