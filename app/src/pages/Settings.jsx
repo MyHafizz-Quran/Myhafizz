@@ -53,9 +53,9 @@ const initials = (n) => n.split(/[\s-]+/).filter((w) => /^[A-Z]/.test(w)).slice(
 export default function Settings() {
   const [fb, setFb] = React.useState(getFeedback());
   const {
-    reciter, showPhonetic, showTranslation, darkMode, theme, setTheme, showTajweed, setShowTajweed,
+    reciter, showPhonetic, showTranslation, theme, setTheme, showTajweed, setShowTajweed,
     arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers,
-    setReciter, setShowPhonetic, setShowTranslation, setDarkMode,
+    setReciter, setShowPhonetic, setShowTranslation,
     setArabicTextSize, setArabicFont, setTextContrast, setLineSpacing, setShowVerseNumbers,
   } = usePreferences();
   const { toast } = useToast();

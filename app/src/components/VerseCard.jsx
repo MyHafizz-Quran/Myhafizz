@@ -8,13 +8,6 @@ import { WordSheet, SimilarVerses, tajweedHtml } from "@/components/verseExtras"
 
 const REPEAT_OPTIONS = [1, 2, 3, 5, 10, Infinity];
 
-const SPEED_OPTIONS = [
-  { value: 0.5, label: '0.5x', icon: '🐢' },
-  { value: 0.75, label: '0.75x', icon: '🔽' },
-  { value: 1, label: '1x', icon: '⏺' },
-  { value: 1.25, label: '1.25x', icon: '🔼' },
-  { value: 1.5, label: '1.5x', icon: '⚡' },
-];
 
 const STOP_KEY = "quran_stop_markers";
 const FAV_KEY = "quran_favorites";
@@ -30,17 +23,15 @@ function getFavorites() { try { return JSON.parse(localStorage.getItem(FAV_KEY) 
  * - Audio controls: play/pause, restart, repeat, speed
  * - Bottom action row: favorite, stop marker, hide, memorized (with text labels)
  */
-export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, index, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", textContrast = "normal", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0, showTajweed = false, similar = null }) {
+export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0, showTajweed = false, similar = null }) {
   const [selectedWord, setSelectedWord] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
   const [currentRepeat, setCurrentRepeat] = useState(0);
   const [repeatMenuOpen, setRepeatMenuOpen] = useState(false);
-  const [customInput, setCustomInput] = useState("");
   const [hasStopMarker, setHasStopMarker] = useState(() => !!getStopMarkers()[verse.number]);
   const [isFavorite, setIsFavorite] = useState(() => getFavorites().includes(verse.number));
   const [activeWordIndex, setActiveWordIndex] = useState(-1);
-  const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef(null);
   const repeatRef = useRef({ count: 1, current: 0 });
   const savedTimeRef = useRef(getStopMarkers()[verse.number] || 0);
@@ -126,11 +117,6 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
     });
   };
 
-  const changeSpeed = (speed) => {
-    setPlaybackRate(speed);
-    playbackRateRef.current = speed;
-    if (audioRef.current) audioRef.current.playbackRate = speed;
-  };
 
   const handlePlay = (overrideStartTime = null) => {
     if (!audioRef.current) {
@@ -182,17 +168,6 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
     }
   };
 
-  const handleRestart = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    clearStopMarker();
-    setIsPlaying(false);
-    setCurrentRepeat(0);
-    setActiveWordIndex(-1);
-    repeatRef.current.current = 0;
-  };
 
   const seekToWord = (idx) => {
     if (!wordTimingsRef.current || !wordTimingsRef.current[idx]) return;

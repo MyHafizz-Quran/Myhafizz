@@ -13,7 +13,7 @@ export default function ConfirmEmail() {
   useEffect(() => {
     // Neon Auth traite le jeton présent dans l'adresse
     // On écoute le changement d'état d'auth
-    const { data: { subscription } } = db.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setStatus("success");
       }

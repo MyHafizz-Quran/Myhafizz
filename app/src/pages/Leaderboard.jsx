@@ -33,9 +33,8 @@ export default function Leaderboard() {
   const { data: allProgress = [], isLoading } = useQuery({
     queryKey: ["leaderboard-progress"],
     queryFn: async () => {
-      const { data, error } = await db
-        .from("memorization_progress")
-        .select("user_id, memorized_verses");
+      // totaux seulement : le détail des versets de chacun reste privé
+      const { data, error } = await db.rpc("get_memorization_leaderboard");
       if (error) throw error;
       return data;
     },
@@ -88,7 +87,7 @@ export default function Leaderboard() {
     const totals = {};
     if (tab === "lecture") readingBoard.forEach(r => { totals[r.user_id] = Number(r.xp) || 0; });
     else allProgress.forEach(p => {
-      totals[p.user_id] = (totals[p.user_id] || 0) + (p.memorized_verses?.length || 0);
+      totals[p.user_id] = Number(p.total) || 0;
     });
     const max = Math.max(1, ...Object.values(totals));
     return Object.entries(totals)

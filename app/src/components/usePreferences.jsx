@@ -31,7 +31,7 @@ function load() {
 function save(data) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {}
+  } catch { /* stockage indisponible (navigation privée) */ }
 }
 
 const mq = () => (typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null);

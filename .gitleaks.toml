@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+[allowlist]
+regexTarget = "match"
+description = "Exemples factices dans la documentation et clé publique Sentry (publique par conception)"
+regexes = ['''eyJhbGciOiJIUzI1NiIs\.\.\.''', '''ep-xxx''', '''sentry_key=[0-9a-f]{32}''']

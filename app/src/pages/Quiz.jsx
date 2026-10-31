@@ -157,7 +157,7 @@ export default function Quiz() {
       setResult(null);
       setShowHint(false);
       setPhase("question");
-    } catch (err) {
+    } catch {
       setLoadError("Erreur de chargement des versets. Vérifiez votre connexion.");
       setPhase("intro");
     }

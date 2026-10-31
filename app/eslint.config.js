@@ -6,12 +6,8 @@ import pluginUnusedImports from "eslint-plugin-unused-imports";
 
 export default [
   {
-    files: [
-      "src/components/**/*.{js,mjs,cjs,jsx}",
-      "src/pages/**/*.{js,mjs,cjs,jsx}",
-      "src/Layout.jsx",
-    ],
-    ignores: ["src/lib/**/*", "src/components/ui/**/*"],
+    files: ["src/**/*.{js,mjs,cjs,jsx}"],
+    ignores: ["src/components/ui/**/*"],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
     languageOptions: {
@@ -35,6 +31,8 @@ export default [
       "unused-imports": pluginUnusedImports,
     },
     rules: {
+      // les règles recommandées (no-undef, etc.) doivent rester actives
+      ...pluginJs.configs.recommended.rules,
       "no-unused-vars": "off",
       "react/jsx-uses-vars": "error",
       "react/jsx-uses-react": "error",
