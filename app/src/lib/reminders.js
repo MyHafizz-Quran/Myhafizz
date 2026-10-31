@@ -1,5 +1,5 @@
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 
 /**
  * Rappels après la prière : abonnement Web Push + ligne dans public.prayer_reminders.
@@ -59,7 +59,7 @@ export async function getReminder() {
   if (pushSupport() !== "ok" || Notification.permission !== "granted") return null;
   const sub = await currentSub();
   if (!sub) return null;
-  const { data } = await supabase.from("prayer_reminders").select("prayers, offset_min, lat, lng, tz").eq("endpoint", sub.endpoint).maybeSingle();
+  const { data } = await db.from("prayer_reminders").select("prayers, offset_min, lat, lng, tz").eq("endpoint", sub.endpoint).maybeSingle();
   return data || null;
 }
 
@@ -78,7 +78,7 @@ export async function saveReminder({ prayers, offset_min = 15, position }) {
     prayers, offset_min,
     updated_at: new Date().toISOString(),
   };
-  const { error } = await supabase.from("prayer_reminders").upsert(row, { onConflict: "endpoint" });
+  const { error } = await db.from("prayer_reminders").upsert(row, { onConflict: "endpoint" });
   if (error) throw error;
   return row;
 }
@@ -86,6 +86,6 @@ export async function saveReminder({ prayers, offset_min = 15, position }) {
 export async function removeReminder() {
   const sub = await currentSub();
   if (!sub) return;
-  await supabase.from("prayer_reminders").delete().eq("endpoint", sub.endpoint);
+  await db.from("prayer_reminders").delete().eq("endpoint", sub.endpoint);
   await sub.unsubscribe().catch(() => {});
 }

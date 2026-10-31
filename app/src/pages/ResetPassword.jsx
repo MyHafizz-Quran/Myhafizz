@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { motion } from "framer-motion";
 import { Lock, Loader2, CheckCircle2, Eye, EyeOff } from "@/components/icons";
 import { useNavigate, Link } from "react-router-dom";
@@ -30,7 +30,7 @@ export default function ResetPassword() {
       return;
     }
 
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await db.auth.updateUser({ password });
     if (error) {
       setError(error.message);
     } else {

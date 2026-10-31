@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, UsersThree, Target, House } from "@phosphor-icons/react";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { MemorizationProgress, VerseReview, HifzPlan, ActivityDays, Groups, Assignments, KIND_LABEL } from "@/api/entities";
 import { buildSession, key, todayStr, currentStreak } from "@/lib/srs";
 import { ReadingSessions } from "@/api/entities/learning";
@@ -36,7 +36,7 @@ function Card({ className = "", children, ...p }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
+  useEffect(() => { db.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
 
   const { data: progress = [] } = useQuery({ queryKey: ["memorization-progress"], queryFn: () => MemorizationProgress.list() });
   const { data: reviews = [] } = useQuery({ queryKey: ["verse-reviews"], queryFn: () => VerseReview.list() });

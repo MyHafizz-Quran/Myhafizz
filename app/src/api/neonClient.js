@@ -1,7 +1,7 @@
 import { createClient, SupabaseAuthAdapter } from '@neondatabase/neon-js';
 
 // Neon (Managed Better Auth + Data API). Supabase-compatible API, exported as
-// `supabase` so the rest of the app keeps the same call sites.
+// `db` so the rest of the app keeps the same call sites.
 const neonUrl = import.meta.env.VITE_NEON_URL;
 
 if (!neonUrl) {
@@ -20,7 +20,7 @@ const client = createClient(neonUrl, {
 const rawAuth = client.auth;
 
 // ---- Compatibility layer: Better Auth stores name/image, the app reads
-// user.user_metadata.full_name / avatar_url (Supabase style). Avatars live in
+// user.user_metadata.full_name / avatar_url. Avatars live in
 // public.profiles.avatar_url (kept out of the auth token).
 let avatarCache = { id: null, url: null, name: null };
 
@@ -134,13 +134,13 @@ const storage = {
   },
 };
 
-export const supabase = {
+export const db = {
   auth,
   storage,
   from: (...a) => client.from(...a),
   rpc: (...a) => client.rpc(...a),
 };
-export default supabase;
+export default db;
 
 
 /** Traduit les erreurs d'authentification (Better Auth / Neon) en français clair. */

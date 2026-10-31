@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { GearSix, Camera, PencilSimple, Fire, Medal, BookOpenText, Crown, Star, UsersThree, Ranking, BookmarkSimple, DownloadSimple, Question, Gift, CaretRight, Check, X } from "@phosphor-icons/react";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { MemorizationProgress, ActivityDays } from "@/api/entities";
 import { currentStreak, longestStreak } from "@/lib/srs";
 import { useAuth } from "@/lib/AuthContext";
@@ -39,11 +39,11 @@ export default function Profile() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const fileRef = useRef(null);
 
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
+  useEffect(() => { db.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
   useEffect(() => {
     if (!user) return;
     setName(user.user_metadata?.full_name || "");
-    supabase.from("profiles").upsert({ id: user.id, full_name: user.user_metadata?.full_name || "", avatar_url: user.user_metadata?.avatar_url || "" }, { onConflict: "id" }).then(() => {}, () => {});
+    db.from("profiles").upsert({ id: user.id, full_name: user.user_metadata?.full_name || "", avatar_url: user.user_metadata?.avatar_url || "" }, { onConflict: "id" }).then(() => {}, () => {});
   }, [user]);
 
   const { data: progress = [] } = useQuery({ queryKey: ["memorization-progress"], queryFn: () => MemorizationProgress.list() });
@@ -67,11 +67,11 @@ export default function Profile() {
   const initial = (fullName || user?.email || "?")[0].toUpperCase();
   const since = user?.created_at ? new Date(user.created_at).toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) : null;
 
-  const refresh = async () => { const { data } = await supabase.auth.getUser(); setUser(data.user); };
+  const refresh = async () => { const { data } = await db.auth.getUser(); setUser(data.user); };
   const saveName = async () => {
     if (!name.trim()) return;
     setBusy(true); setError(null);
-    const { error: e } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+    const { error: e } = await db.auth.updateUser({ data: { full_name: name.trim() } });
     if (e) setError("Impossible d'enregistrer le nom. Réessaie."); else { await refresh(); setEditing(false); }
     setBusy(false);
   };
@@ -88,10 +88,10 @@ export default function Profile() {
     try {
       const ext = { "image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp" }[avatarFile.type];
       const path = `${user.id}/avatar.${ext}`;
-      const { error: up } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
+      const { error: up } = await db.storage.from("avatars").upload(path, avatarFile, { upsert: true });
       if (up) throw up;
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      await supabase.auth.updateUser({ data: { avatar_url: data.publicUrl } });
+      const { data } = db.storage.from("avatars").getPublicUrl(path);
+      await db.auth.updateUser({ data: { avatar_url: data.publicUrl } });
       await refresh(); setAvatarFile(null); setAvatarPreview(null);
     } catch { setError("La photo n'a pas pu être enregistrée."); }
     setBusy(false);

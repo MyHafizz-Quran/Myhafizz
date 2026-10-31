@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { supabase } from "@/api/neonClient";
+import { db } from "@/api/neonClient";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy } from "@phosphor-icons/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -33,7 +33,7 @@ export default function Leaderboard() {
   const { data: allProgress = [], isLoading } = useQuery({
     queryKey: ["leaderboard-progress"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("memorization_progress")
         .select("user_id, memorized_verses");
       if (error) throw error;
@@ -53,7 +53,7 @@ export default function Leaderboard() {
       if (userIds.length === 0) return [];
 
       try {
-        const { data, error } = await supabase.rpc("get_leaderboard_users", {
+        const { data, error } = await db.rpc("get_leaderboard_users", {
           user_ids: userIds,
         });
         if (error) throw error;
@@ -61,7 +61,7 @@ export default function Leaderboard() {
       } catch (err) {
         console.warn("Failed to fetch user display names via RPC, falling back to profiles table:", err);
         try {
-          const { data, error } = await supabase
+          const { data, error } = await db
             .from("profiles")
             .select("id, full_name, avatar_url");
           if (error) return [];

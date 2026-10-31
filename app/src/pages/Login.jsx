@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Eye, EyeSlash, SpinnerGap, CheckCircle, CaretLeft, Check } from "@phosphor-icons/react";
-import { supabase, frAuthError } from "@/api/neonClient";
+import { db, frAuthError } from "@/api/neonClient";
 import { useAuth } from "@/lib/AuthContext";
 import MhLogo, { MhWordmark } from "@/components/MhLogo";
 
@@ -45,7 +45,7 @@ export default function Login() {
   const google = async () => {
     setError(null);
     const redirectTo = `${window.location.origin}/Dashboard`;
-    const { error: e } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+    const { error: e } = await db.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
     if (e) setError(frAuthError(e));
   };
 
@@ -56,18 +56,18 @@ export default function Login() {
     setLoading(true);
     try {
       if (mode === "login") {
-        const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { error: err } = await db.auth.signInWithPassword({ email: email.trim(), password });
         if (err) { setError(frAuthError(err)); return; }
         const ok = await syncSession();
         if (ok) navigate("/Dashboard", { replace: true }); else window.location.replace("/Dashboard");
       } else if (mode === "signup") {
-        const { error: err } = await supabase.auth.signUp({ email: email.trim(), password, options: { data: { full_name: name.trim() } } });
+        const { error: err } = await db.auth.signUp({ email: email.trim(), password, options: { data: { full_name: name.trim() } } });
         if (err) { setError(frAuthError(err)); return; }
         const ok = await syncSession();
         if (ok) navigate("/Bienvenue", { replace: true });
         else setSuccess("Compte créé. Ouvre le lien reçu par email pour confirmer ton inscription.");
       } else {
-        const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+        const { error: err } = await db.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
         if (err) { setError(frAuthError(err)); return; }
         setSuccess("Si un compte existe avec cet email, tu vas recevoir un lien pour choisir un nouveau mot de passe.");
       }
