@@ -2,6 +2,7 @@ services:
   - type: web
     name: myhafizz
     env: static
+    rootDir: app
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     headers:
