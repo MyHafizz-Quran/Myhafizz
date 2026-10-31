@@ -10,7 +10,8 @@ Site : https://www.myhafizz.com
 Myhafizz/
 ├── app/             → l'application client (React + Vite), projet Vercel « myhafizz »
 ├── .github/         → vérifications, scans de sécurité, Dependabot
-├── scripts/         → tâche des rappels après la prière (GitHub Actions, toutes les 5 min)
+├── reminders/       → rappels après la prière (Neon Function, toutes les 5 min)
+├── scripts/         → lancement manuel de secours des rappels (GitHub Actions)
 └── vercel.json      → build du client depuis app/
 ```
 
@@ -60,5 +61,9 @@ npm run dev
 - `VITE_GOOGLE_AUTH=1` : affiche la connexion Google
 - `SENTRY_AUTH_TOKEN` : envoi des source maps (facultatif)
 
-## Rappels après la prière (`scripts/`)
-`prayer-reminders.mjs` calcule les heures de prière de chaque abonné et envoie la notification. Secrets GitHub : `REMINDER_DATABASE_URL`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`.
+## Rappels après la prière (`reminders/`)
+La Neon Function `rappels` (projet Neon « MyHafizz Client », branche production) est appelée toutes les 5 minutes par le déclencheur `rappels-5min`. `src/core.mjs` calcule les heures de prière de chaque abonné et envoie la notification (une seule fois par prière et par jour).
+
+Déploiement : `cd reminders && npm ci && neon deploy --env .env.local` avec `REMINDER_DATABASE_URL`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` dans `.env.local` (jamais commité). Journaux : `neon logs query --branch production --source function --since 1h`.
+
+Secours : le workflow GitHub « Rappels après la prière (secours manuel) » lance la même logique à la demande (secrets GitHub identiques).

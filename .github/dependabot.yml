@@ -11,6 +11,16 @@ updates:
       # versions majeures : migration manuelle (les correctifs de sécurité arrivent quand même)
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+  - package-ecosystem: npm
+    directory: /reminders
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 3
+    groups:
+      rappels:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
