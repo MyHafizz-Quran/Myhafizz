@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { hadithOfDay, SOURCES } from "@/lib/daily";
 import { haptic } from "@/hooks/usePlatform";
+import { ShareNetwork } from "@phosphor-icons/react";
+import { shareCard } from "@/lib/shareImage";
 
 /** Carte « Hadith du jour » : arabe, français et référence exacte. */
 export default function HadithOfDay({ className = "" }) {
@@ -21,7 +23,10 @@ export default function HadithOfDay({ className = "" }) {
       {long && (
         <button onClick={() => { haptic(); setOpen(!open); }} className="text-sm font-extrabold text-primary mt-1">{open ? "Réduire" : "Lire la suite"}</button>
       )}
-      <p className="text-[12.5px] font-extrabold text-muted-foreground mt-2.5 pt-2.5 border-t-2 border-border">{SOURCES[h.src]}, n° {h.n}</p>
+      <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t-2 border-border">
+        <p className="flex-1 text-[12.5px] font-extrabold text-muted-foreground">{SOURCES[h.src]}, n° {h.n}</p>
+        <button onClick={() => { haptic(); shareCard({ arabic: h.ar, french: h.fr, reference: `${SOURCES[h.src]}, n° ${h.n}`, kind: "Hadith du jour", quran: false }); }} aria-label="Partager en image" className="w-9 h-9 rounded-lg flex items-center justify-center text-primary"><ShareNetwork weight="bold" className="w-5 h-5" /></button>
+      </div>
     </div>
   );
 }

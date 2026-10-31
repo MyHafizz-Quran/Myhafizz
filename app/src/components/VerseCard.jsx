@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { maskWords } from "@/lib/srs";
 import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, Repeat, Heart, Eraser } from "@/components/icons";
 import { haptic } from "@/hooks/usePlatform";
+import { tafsirMuyassar } from "@/lib/tafsir";
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";
@@ -36,6 +37,7 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   // Cache-mots progressif : nombre de mots effacés en partant de la fin du verset (null = désactivé)
   const [erased, setErased] = useState(null);
   const [peek, setPeek] = useState(-1);
+  const [tafsir, setTafsir] = useState(null); // null fermé · "loading" · texte · "error"
   const audioRef = useRef(null);
   const repeatRef = useRef({ count: 1, current: 0 });
   const savedTimeRef = useRef(getStopMarkers()[verse.number] || 0);
@@ -226,6 +228,12 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   const blank = (text, i) => (
     <span key={i} onClick={(e) => { e.stopPropagation(); peekWord(i); }} className="inline-block rounded-lg bg-muted text-transparent select-none cursor-pointer mx-[2px] leading-[1.3]" aria-label="Mot effacé, touche pour le voir">{text}</span>
   );
+  const toggleTafsir = () => {
+    haptic();
+    if (tafsir && tafsir !== "loading") { setTafsir(null); return; }
+    setTafsir("loading");
+    tafsirMuyassar(verse.number).then((t) => setTafsir(t || "error"), () => setTafsir("error"));
+  };
   const arNum = String(verse.numberInSurah).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
   const iconBtn = "w-9 h-9 rounded-full flex items-center justify-center transition-colors press";
   const endMark = (
@@ -320,7 +328,20 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
           {showPhonetic && verse.transliteration && <p className="text-[14px] italic font-semibold text-muted-foreground leading-relaxed">{verse.transliteration}</p>}
           {showTranslation && verse.translation && <p className="text-[15px] font-semibold text-foreground/80 leading-relaxed">{verse.translation}</p>}
         </div>
-      ) : <div className="pb-3" />}
+      ) : null}
+      {!isHidden && (
+        <div className="px-4 pb-3">
+          <button onClick={toggleTafsir} className="text-[13px] font-extrabold text-primary">{tafsir && tafsir !== "loading" ? "Masquer l'explication" : tafsir === "loading" ? "Chargement…" : "Explication (tafsir)"}</button>
+          {tafsir && tafsir !== "loading" && (
+            tafsir === "error"
+              ? <p className="text-[13px] font-semibold text-muted-foreground mt-1">Explication indisponible pour le moment. Vérifie ta connexion.</p>
+              : <div className="mt-2 rounded-xl bg-muted p-3">
+                  <p dir="rtl" lang="ar" className="font-arabic text-[19px] leading-[1.95] text-right text-foreground">{tafsir}</p>
+                  <p className="text-[11.5px] font-bold text-muted-foreground mt-1.5">Tafsir al-Muyassar (arabe simplifié, Complexe du roi Fahd)</p>
+                </div>
+          )}
+        </div>
+      )}
     </div>
   );
 })

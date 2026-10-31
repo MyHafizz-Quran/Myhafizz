@@ -37,6 +37,11 @@ import Exercises from './pages/Exercises.jsx';
 import Strength from './pages/Strength.jsx';
 import Qibla from './pages/Qibla.jsx';
 import Bilan from './pages/Bilan.jsx';
+import Adhkar from './pages/Adhkar.jsx';
+import Tasbih from './pages/Tasbih.jsx';
+import Calendrier from './pages/Calendrier.jsx';
+import Qiyam from './pages/Qiyam.jsx';
+import Objectif from './pages/Objectif.jsx';
 import Recite from './pages/Recite.jsx';
 import Groups from './pages/Groups.jsx';
 import Group from './pages/Group.jsx';
@@ -57,7 +62,7 @@ import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Bienvenue", "/Lecon", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -134,6 +139,11 @@ const AuthenticatedApp = () => {
           <Route path="/Memorize" element={<Memorize />} />
           <Route path="/Qibla" element={<Qibla />} />
           <Route path="/Bilan" element={<Bilan />} />
+          <Route path="/Adhkar" element={<Adhkar />} />
+          <Route path="/Tasbih" element={<Tasbih />} />
+          <Route path="/Calendrier" element={<Calendrier />} />
+          <Route path="/Qiyam" element={<Qiyam />} />
+          <Route path="/Objectif" element={<Objectif />} />
           <Route path="/Quiz" element={<Quiz />} />
           <Route path="/Bookmarks" element={<Bookmarks />} />
           <Route path="/Challenges" element={<Challenges />} />

@@ -14,6 +14,8 @@ import PrayerCard from "@/components/daily/PrayerCard";
 import VerseOfDay from "@/components/daily/VerseOfDay";
 import HadithOfDay from "@/components/daily/HadithOfDay";
 import FridayCard from "@/components/daily/FridayCard";
+import { DailyTools, RamadanCard, SeasonCard } from "@/components/daily/DailyExtras";
+import { hijriLabel } from "@/lib/hijri";
 import { weekStats } from "@/lib/weekly";
 
 const PARTS = [
@@ -111,7 +113,7 @@ export default function Dashboard() {
         {/* En-tête */}
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-muted-foreground first-letter:uppercase">{dateLabel}</p>
+            <p className="text-sm font-semibold text-muted-foreground first-letter:uppercase truncate">{dateLabel} · <Link to="/Calendrier" className="hover:text-primary">{hijriLabel()}</Link></p>
             <h1 className="text-[28px] leading-tight font-black truncate">{firstName ? `Salam, ${firstName}` : "Salam"}</h1>
           </div>
           <span className={`h-9 px-3 rounded-full flex items-center gap-1 font-black ${streak ? "bg-gold-tint text-[#9A6A00]" : "bg-muted text-muted-foreground"}`} aria-label={`Série de ${streak} jours`}>
@@ -165,11 +167,20 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Ramadan */}
+        <RamadanCard className="mt-3" />
+
         {/* Veille et jour de Jumu'a */}
         <FridayCard className="mt-3" learned={last7.learned} active={last7.active} />
 
         {/* Heures de prière */}
         <PrayerCard className="mt-3" />
+
+        {/* Adhkar, tasbih, calendrier, Qiyam */}
+        <DailyTools className="mt-3" />
+
+        {/* Objectif de saison */}
+        <SeasonCard className="mt-3" progress={progress} />
 
         {/* Reprendre */}
         {resume && (

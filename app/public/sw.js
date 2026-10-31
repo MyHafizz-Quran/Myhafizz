@@ -6,7 +6,7 @@
 //   • Neon Auth / Data API              → Network Only (auth/data, pass-through)
 
 // Version timestamp — update this on each deployment to bust stale caches.
-const SW_VERSION = "20261031-quotidien";
+const SW_VERSION = "20261031-outils";
 
 const CACHE_STATIC = `myhafizz-static-v${SW_VERSION}`;
 const CACHE_API = `myhafizz-api-v${SW_VERSION}`;
