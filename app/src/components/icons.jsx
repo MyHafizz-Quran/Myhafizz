@@ -12,6 +12,7 @@ import {
   CheckCircle as PhCheckCircle,
   Circle as PhCircle,
   CircleNotch as PhCircleNotch,
+  Eraser as PhEraser,
   Eye as PhEye,
   EyeSlash as PhEyeSlash,
   Heart as PhHeart,
@@ -40,6 +41,7 @@ export const ArrowRight = wrap(PhArrowRight, "ArrowRight");
 export const CheckCircle2 = wrap(PhCheckCircle, "CheckCircle2");
 export const ChevronDown = wrap(PhCaretDown, "ChevronDown");
 export const Circle = wrap(PhCircle, "Circle");
+export const Eraser = wrap(PhEraser, "Eraser");
 export const Eye = wrap(PhEye, "Eye");
 export const EyeOff = wrap(PhEyeSlash, "EyeOff");
 export const Heart = wrap(PhHeart, "Heart");

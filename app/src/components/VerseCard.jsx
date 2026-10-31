@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { maskWords } from "@/lib/srs";
-import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, Repeat, Heart } from "@/components/icons";
+import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, Repeat, Heart, Eraser } from "@/components/icons";
+import { haptic } from "@/hooks/usePlatform";
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";
@@ -32,6 +33,9 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   const [hasStopMarker, setHasStopMarker] = useState(() => !!getStopMarkers()[verse.number]);
   const [isFavorite, setIsFavorite] = useState(() => getFavorites().includes(verse.number));
   const [activeWordIndex, setActiveWordIndex] = useState(-1);
+  // Cache-mots progressif : nombre de mots effacés en partant de la fin du verset (null = désactivé)
+  const [erased, setErased] = useState(null);
+  const [peek, setPeek] = useState(-1);
   const audioRef = useRef(null);
   const repeatRef = useRef({ count: 1, current: 0 });
   const savedTimeRef = useRef(getStopMarkers()[verse.number] || 0);
@@ -213,6 +217,15 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   const displayWords = words ? words.filter(w => (w.char_type_name || w.char_type) !== 'end') : null;
   const SIZE = { small: "text-[26px]", medium: "text-[31px]", large: "text-[37px]", xlarge: "text-[44px]" };
   const LEAD = { compact: "leading-[1.9]", normal: "leading-[2.15]", airy: "leading-[2.5]" };
+  const plainWords = displayWords && displayWords.length ? null : verse.text.split(/\s+/).filter(Boolean);
+  const wordCount = displayWords && displayWords.length ? displayWords.length : plainWords.length;
+  const eraseOn = erased !== null && !isHidden;
+  const isErased = (i) => eraseOn && i >= wordCount - erased && i !== peek;
+  const stepErase = (d) => { haptic(); setPeek(-1); setErased((e) => Math.max(0, Math.min(wordCount, (e ?? 0) + d))); };
+  const peekWord = (i) => { haptic(); setPeek(i); setTimeout(() => setPeek((p) => (p === i ? -1 : p)), 1500); };
+  const blank = (text, i) => (
+    <span key={i} onClick={(e) => { e.stopPropagation(); peekWord(i); }} className="inline-block rounded-lg bg-muted text-transparent select-none cursor-pointer mx-[2px] leading-[1.3]" aria-label="Mot effacé, touche pour le voir">{text}</span>
+  );
   const arNum = String(verse.numberInSurah).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
   const iconBtn = "w-9 h-9 rounded-full flex items-center justify-center transition-colors press";
   const endMark = (
@@ -235,6 +248,9 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
         </button>
         <button onClick={() => setRepeatMenuOpen(!repeatMenuOpen)} aria-label="Répéter ce verset" className={`${iconBtn} ${repeatMenuOpen || repeatCount > 1 ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"}`}>
           <Repeat className="w-[18px] h-[18px]" />
+        </button>
+        <button onClick={() => { haptic(); setPeek(-1); setErased(erased === null ? 1 : null); }} aria-label={erased === null ? "Effacer mot par mot" : "Arrêter d'effacer"} aria-pressed={erased !== null} className={`${iconBtn} ${erased !== null ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"}`}>
+          <Eraser className="w-[18px] h-[18px]" />
         </button>
         <button onClick={onToggleHidden} aria-label={isHidden ? "Afficher" : "Masquer"} className={`${iconBtn} ${isHidden ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"}`}>
           {isHidden ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
@@ -267,11 +283,11 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
       >
         {displayWords && displayWords.length > 0 ? (
           <>
-            {displayWords.map((word, i) => (
+            {displayWords.map((word, i) => isErased(i) ? <React.Fragment key={i}>{blank(word.text_uthmani, i)}{" "}</React.Fragment> : (
               <span key={i}
                 onClick={(e) => { if (isHidden) return; e.stopPropagation(); setSelectedWord(i); }}
                 className={`inline rounded-lg px-[3px] transition-colors duration-200 cursor-pointer ${i === activeWordIndex ? "text-primary bg-accent" : "hover:text-primary"}`}>
-                {maskLevel === 1 && !isHidden ? maskWords(word.text_uthmani, 1)
+                {maskLevel === 1 && !isHidden && !eraseOn ? maskWords(word.text_uthmani, 1)
                   : showTajweed && word.text_uthmani_tajweed && i !== activeWordIndex ? <span dangerouslySetInnerHTML={{ __html: tajweedHtml(word.text_uthmani_tajweed) }} />
                   : word.text_uthmani}{" "}
               </span>
@@ -279,12 +295,23 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
             {endMark}
           </>
         ) : (
-          <>{maskLevel === 1 && !isHidden ? maskWords(verse.text, 1) : verse.text} {endMark}</>
+          eraseOn
+            ? <>{plainWords.map((w, i) => isErased(i) ? <React.Fragment key={i}>{blank(w, i)}{" "}</React.Fragment> : <span key={i}>{w} </span>)}{endMark}</>
+            : <>{maskLevel === 1 && !isHidden ? maskWords(verse.text, 1) : verse.text} {endMark}</>
         )}
       </div>
       {isHidden && <p className="text-center text-[12px] font-bold text-muted-foreground -mt-1 pb-2">Touche pour révéler</p>}
+      {eraseOn && (
+        <div className="mx-3 mb-2 p-1.5 rounded-xl bg-muted flex items-center gap-1.5">
+          <button onClick={() => stepErase(-1)} disabled={erased === 0} aria-label="Remettre un mot" className="h-9 w-10 rounded-lg bg-card text-foreground font-black text-lg disabled:opacity-40">−</button>
+          <p className="flex-1 text-center text-[12.5px] font-extrabold text-muted-foreground">
+            {erased >= wordCount ? "Tout est effacé : récite de tête" : `${erased} mot${erased > 1 ? "s" : ""} effacé${erased > 1 ? "s" : ""} sur ${wordCount}`}
+          </p>
+          <button onClick={() => stepErase(1)} disabled={erased >= wordCount} aria-label="Effacer un mot de plus" className="btn-relief h-9 px-3 bg-primary text-primary-foreground text-[13px] disabled:opacity-40">Effacer</button>
+        </div>
+      )}
 
-      {!isHidden && maskLevel === 0 && <div className="px-4"><SimilarVerses verseText={verse.text} similar={similar} /></div>}
+      {!isHidden && maskLevel === 0 && !eraseOn && <div className="px-4"><SimilarVerses verseText={verse.text} similar={similar} /></div>}
       <WordSheet word={selectedWord != null ? displayWords?.[selectedWord] : null} onClose={() => setSelectedWord(null)}
         canPlay={!!wordTimings?.[selectedWord]} onPlayFrom={() => seekToWord(selectedWord)} />
 

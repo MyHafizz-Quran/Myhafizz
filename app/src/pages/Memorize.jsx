@@ -615,7 +615,7 @@ export default function Memorize() {
           <div className="absolute inset-0 bg-foreground/30" />
           <div className="relative card-flat p-6 w-[420px]" onClick={(e) => e.stopPropagation()}>
             <p className="text-lg font-black mb-3">Raccourcis clavier</p>
-            {[["Espace", "Lecture / pause"], ["↓  ↑", "Verset suivant / précédent"], ["→  ←", "Écouter le verset suivant / précédent"], ["M", "Marquer le verset comme mémorisé"], ["H", "Masquer le texte (texte, initiales, caché)"], ["Échap", "Retour à la liste"], ["?", "Afficher cette aide"]].map(([key, label]) => (
+            {[["Espace", "Lecture / pause"], ["↓  ↑", "Verset suivant / précédent"], ["→  ←", "Écouter le verset suivant / précédent"], ["M", "Marquer le verset comme mémorisé"], ["H", "Masquer le texte (texte, initiales, caché)"], ["Gomme", "Effacer le verset mot par mot"], ["Échap", "Retour à la liste"], ["?", "Afficher cette aide"]].map(([key, label]) => (
               <div key={key} className="flex items-center justify-between py-2 border-b-2 border-border last:border-0">
                 <span className="font-bold text-muted-foreground">{label}</span>
                 <kbd className="min-w-[44px] text-center px-2 py-1 rounded-lg border-2 border-border border-b-4 font-black text-sm bg-card">{key}</kbd>
