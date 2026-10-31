@@ -12,6 +12,7 @@ import { getArabicFontClass, getArabicSizeClass, getLineSpacingClass, getTextCon
 import { haptic } from "@/hooks/usePlatform";
 import { useKidMode, enableKidMode, disableKidMode, relockKidMode } from "@/lib/kidMode";
 import { PinPad } from "@/components/KidMode";
+import KidFamilyLink from "@/components/KidFamilyLink";
 import { PRAYERS, pushSupport, getReminder, saveReminder, removeReminder, prayerTimes } from "@/lib/reminders";
 import { METHODS, getMethod, setMethod as savePrayerMethod, methodLabel, getLocation, setLocation, requestLocation, onPrayerChange } from "@/lib/prayer";
 import PageHeader from "@/components/PageHeader";
@@ -379,6 +380,7 @@ export default function Settings() {
               <div className="flex-1 min-w-0"><p className="font-extrabold">Rendre l'appareil à l'enfant</p><p className="text-[12.5px] font-semibold text-muted-foreground">Verrouille tout de suite l'espace parent</p></div>
             </button>
           )}
+          {kid.on && <KidFamilyLink />}
         </Card>
 
         <Label>Hors ligne</Label>
