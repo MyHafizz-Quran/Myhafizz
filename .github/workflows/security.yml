@@ -43,7 +43,7 @@ jobs:
         dir: [app, myhafizz-admin]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
       - name: npm audit (production, niveau élevé)
