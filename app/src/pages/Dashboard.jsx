@@ -13,6 +13,8 @@ import { haptic } from "@/hooks/usePlatform";
 import PrayerCard from "@/components/daily/PrayerCard";
 import VerseOfDay from "@/components/daily/VerseOfDay";
 import HadithOfDay from "@/components/daily/HadithOfDay";
+import FridayCard from "@/components/daily/FridayCard";
+import { weekStats } from "@/lib/weekly";
 
 const PARTS = [
   { part: "sabaq", title: "Sabaq · nouveau" },
@@ -76,6 +78,7 @@ export default function Dashboard() {
     });
   }, [days]);
   const weekDone = week.filter((d) => d.done).length;
+  const last7 = useMemo(() => weekStats({ reviews, days }), [reviews, days]);
 
   const blocks = PARTS.map((b) => ({ ...b, items: session[b.part] }));
   const doneCount = plan ? blocks.filter((b) => !b.items.length).length : 0;
@@ -162,6 +165,9 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Veille et jour de Jumu'a */}
+        <FridayCard className="mt-3" learned={last7.learned} active={last7.active} />
+
         {/* Heures de prière */}
         <PrayerCard className="mt-3" />
 
@@ -208,8 +214,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Semaine */}
-        <Card className="px-4 py-3.5 mt-3">
-          <div className="flex justify-between font-black"><span>Cette semaine</span><span className="text-sm font-extrabold text-muted-foreground">{weekDone} jour{weekDone > 1 ? "s" : ""} sur 7</span></div>
+        <Card className="px-4 py-3.5 mt-3 cursor-pointer active:bg-muted" role="link" tabIndex={0} aria-label="Voir le bilan de la semaine"
+          onClick={() => { haptic(); navigate("/Bilan"); }} onKeyDown={(e) => { if (e.key === "Enter") navigate("/Bilan"); }}>
+          <div className="flex justify-between items-center font-black"><span>Cette semaine</span><span className="text-sm font-extrabold text-muted-foreground flex items-center gap-1">{weekDone} jour{weekDone > 1 ? "s" : ""} sur 7<CaretRight weight="bold" className="w-4 h-4" /></span></div>
           <div className="flex justify-between mt-2.5">
             {week.map((d, i) => (
               <div key={i} className="text-center text-xs font-extrabold text-muted-foreground">

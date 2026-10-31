@@ -36,6 +36,7 @@ import Repeat from './pages/Repeat.jsx';
 import Exercises from './pages/Exercises.jsx';
 import Strength from './pages/Strength.jsx';
 import Qibla from './pages/Qibla.jsx';
+import Bilan from './pages/Bilan.jsx';
 import Recite from './pages/Recite.jsx';
 import Groups from './pages/Groups.jsx';
 import Group from './pages/Group.jsx';
@@ -132,6 +133,7 @@ const AuthenticatedApp = () => {
           <Route path="/SurahList" element={<SurahList />} />
           <Route path="/Memorize" element={<Memorize />} />
           <Route path="/Qibla" element={<Qibla />} />
+          <Route path="/Bilan" element={<Bilan />} />
           <Route path="/Quiz" element={<Quiz />} />
           <Route path="/Bookmarks" element={<Bookmarks />} />
           <Route path="/Challenges" element={<Challenges />} />
