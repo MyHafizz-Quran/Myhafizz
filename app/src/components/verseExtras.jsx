@@ -5,14 +5,29 @@ import { loadSurah } from "@/lib/learningData";
 import { diffWords } from "@/lib/similar";
 import { SURAHS } from "@/components/quranData";
 
-/** HTML tajwîd de quran.com → spans à classes connues uniquement */
+const escapeHtml = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * HTML tajwîd de quran.com → texte + <span class="tj-…"> uniquement.
+ * Analyse par DOMParser puis reconstruction : aucune balise ni attribut d'origine n'est recopié.
+ */
 export function tajweedHtml(raw) {
   if (!raw) return "";
-  return raw
-    .replace(/<(rule|tajweed)\s+class=["']?([\w-]+)["']?\s*>/g, (_, __, c) => `<span class="tj-${c.replace(/[^\w-]/g, "")}">`)
-    .replace(/<\/(rule|tajweed)>/g, "</span>")
-    .replace(/<span class=["']?end["']?>[^<]*<\/span>/g, "")
-    .replace(/<(?!\/?span\b)[^>]*>/g, "");
+  const root = new DOMParser().parseFromString(`<div>${raw}</div>`, "text/html").body.firstChild;
+  const walk = (node) => {
+    let out = "";
+    node.childNodes.forEach((n) => {
+      if (n.nodeType === 3) { out += escapeHtml(n.nodeValue); return; }
+      if (n.nodeType !== 1) return;
+      const tag = n.tagName.toLowerCase();
+      const cls = (n.getAttribute("class") || "").replace(/[^\w-]/g, "");
+      if (tag === "span" && cls === "end") return; // numéro de verset : affiché ailleurs
+      if ((tag === "rule" || tag === "tajweed") && cls) out += `<span class="tj-${cls}">${walk(n)}</span>`;
+      else out += walk(n);
+    });
+    return out;
+  };
+  return walk(root);
 }
 
 export const TAJWEED_LEGEND = [
