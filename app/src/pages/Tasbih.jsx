@@ -34,7 +34,7 @@ export default function Tasbih() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav flex flex-col">
-      <PageHeader title="Tasbih" back="/Dashboard" />
+      <div className="px-4"><PageHeader title="Tasbih" back="/Dashboard" /></div>
       <div className="max-w-md w-full mx-auto px-4 pt-3 flex-1 flex flex-col">
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
           {DHIKRS.map((x, i) => (

@@ -21,7 +21,7 @@ export default function Calendrier() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <PageHeader title="Calendrier" back="/Dashboard" />
+      <div className="px-4"><PageHeader title="Calendrier" back="/Dashboard" /></div>
       <div className="max-w-md lg:max-w-2xl mx-auto px-4 pt-4">
         <div className="card-flat p-5">
           <p className="text-[13px] font-extrabold text-muted-foreground first-letter:uppercase">{fmt(new Date())}</p>
@@ -40,7 +40,7 @@ export default function Calendrier() {
                 <p className="text-[11px] font-extrabold text-muted-foreground uppercase">{e.date.toLocaleDateString("fr-FR", { month: "short" })}</p>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-extrabold truncate">{e.name}</p>
+                <p className="font-extrabold leading-snug">{e.name}</p>
                 <p className="text-[12.5px] font-semibold text-muted-foreground">{e.note || `${e.h.d} ${MONTHS[e.h.m - 1]} ${e.h.y}`}</p>
               </div>
               <span className={`text-[12px] font-extrabold shrink-0 ${e.inDays <= 1 ? "text-primary" : "text-muted-foreground"}`}>{inDaysLabel(e.inDays)}</span>

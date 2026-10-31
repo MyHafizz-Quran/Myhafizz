@@ -40,7 +40,7 @@ export default function Bilan() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <PageHeader title="Bilan de la semaine" back="/Dashboard" />
+      <div className="px-4"><PageHeader title="Bilan de la semaine" back="/Dashboard" /></div>
       <div className="max-w-md lg:max-w-2xl mx-auto px-4 pt-4">
         <p className="text-[13px] font-bold text-muted-foreground">7 derniers jours</p>
         <p className="font-black text-[19px] leading-snug mt-1">{isLoading ? " " : summaryLine(s)}</p>

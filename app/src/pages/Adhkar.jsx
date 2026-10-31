@@ -28,7 +28,7 @@ export default function Adhkar() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <PageHeader title="Adhkar" back="/Dashboard" />
+      <div className="px-4"><PageHeader title="Adhkar" back="/Dashboard" /></div>
       <div className="max-w-md lg:max-w-2xl mx-auto px-4 pt-3">
         <div className="flex p-1 rounded-xl bg-muted" role="tablist" aria-label="Moment">
           {[["matin", "Matin"], ["soir", "Soir"]].map(([v, l]) => (

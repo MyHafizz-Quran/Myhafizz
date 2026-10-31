@@ -35,7 +35,7 @@ export default function Qibla() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <PageHeader title="Qibla" back="/Dashboard" />
+      <div className="px-4"><PageHeader title="Qibla" back="/Dashboard" /></div>
       <div className="max-w-md mx-auto px-4 pt-4">
         {!loc ? (
           <div className="card-flat p-5 text-center">

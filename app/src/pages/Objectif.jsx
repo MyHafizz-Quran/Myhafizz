@@ -22,7 +22,7 @@ export default function Objectif() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">
-      <PageHeader title="Objectif de saison" back="/Dashboard" />
+      <div className="px-4"><PageHeader title="Objectif de saison" back="/Dashboard" /></div>
       <div className="max-w-md lg:max-w-2xl mx-auto px-4 pt-4">
         <p className="text-[13px] font-extrabold text-muted-foreground mb-2">Quoi</p>
         <div className="card-flat divide-y-2 divide-border">
