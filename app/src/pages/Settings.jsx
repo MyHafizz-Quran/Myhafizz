@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { getFeedback, setFeedback, vibrate } from "@/lib/feedback";
-import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin } from "@phosphor-icons/react";
+import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin, BookOpen } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -82,7 +82,7 @@ export default function Settings() {
   const updateRem = async (patch) => {
     setRemBusy(true);
     try {
-      const next = { prayers: rem?.prayers || ["fajr", "maghrib"], offset_min: rem?.offset_min ?? 15, ...patch };
+      const next = { prayers: rem?.prayers || ["fajr", "maghrib", "kahf"], offset_min: rem?.offset_min ?? 15, ...patch };
       if (!next.prayers.length) { await removeReminder(); setRem(null); }
       else {
         const row = await saveReminder({ ...next, position: rem ? { lat: rem.lat, lng: rem.lng } : undefined });
@@ -353,6 +353,8 @@ export default function Settings() {
                       })}
                     </div>
                   </div>
+                  <ToggleRow icon={BookOpen} label="Sourate Al-Kahf le vendredi" sub="Un rappel le vendredi matin, environ 2 h après le lever du soleil"
+                    value={rem.prayers.includes("kahf")} onChange={() => { if (remBusy) return; haptic(); updateRem({ prayers: rem.prayers.includes("kahf") ? rem.prayers.filter((x) => x !== "kahf") : [...rem.prayers, "kahf"] }); }} />
                   <SegRow label="Délai après la prière" value={rem.offset_min} onChange={(v) => updateRem({ offset_min: v })} options={[{ label: "10 min", value: 10 }, { label: "15 min", value: 15 }, { label: "30 min", value: 30 }]} />
                   <p className="px-3.5 py-3 text-[12.5px] font-semibold text-muted-foreground">Horaires calculés pour ta position (méthode {methodLabel(method)}). Ta position n'est utilisée que pour ce calcul.</p>
                 </>

@@ -24,9 +24,13 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
       const [y, m, d] = today.split("-").map(Number);
       const times = new PrayerTimes(new Coordinates(r.lat, r.lng), new Date(y, m - 1, d), (CalculationMethod[r.method] || CalculationMethod.MuslimWorldLeague)());
       const last = r.last_sent || {};
+      // Vendredi : rappel de la sourate Al-Kahf 2 h après le lever du soleil (heure locale).
+      const weekday = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).format(new Date(now));
       for (const p of r.prayers || []) {
-        if (!times[p] || last[p] === today) continue;
-        const target = times[p].getTime() + (r.offset_min ?? 15) * 60000;
+        if (last[p] === today) continue;
+        const isKahf = p === "kahf";
+        if (isKahf ? weekday !== "Fri" : !times[p]) continue;
+        const target = isKahf ? times.sunrise.getTime() + 120 * 60000 : times[p].getTime() + (r.offset_min ?? 15) * 60000;
         if (now < target || now > target + WINDOW_MIN * 60000) continue;
         // Réserve l'envoi avant de pousser : évite un doublon si deux passages se chevauchent.
         const claim = await db.query(
@@ -34,7 +38,12 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
           [p, today, r.endpoint]
         );
         if (!claim.rowCount) continue;
-        const payload = JSON.stringify({
+        const payload = JSON.stringify(isKahf ? {
+          title: "Vendredi : sourate Al-Kahf",
+          body: "C'est Jumu'a. Prends un moment pour lire la sourate Al-Kahf.",
+          url: "/Memorize?surah=18",
+          tag: "mh-kahf",
+        } : {
           title: "C'est l'heure de ta révision",
           body: `${NAMES[p]} est passée. Ta séance du jour t'attend.`,
           url: "/Revision",

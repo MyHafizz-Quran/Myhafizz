@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { db } from "@/api/neonClient";
 import { CheckCircle, ArrowCounterClockwise } from "@phosphor-icons/react";
 import PageHeader from "@/components/PageHeader";
 import { loadAdhkar, defaultPeriod, getCounts, setCounts, itemsFor } from "@/lib/adhkar";
@@ -17,6 +18,19 @@ export default function Adhkar() {
   const { data, isLoading, isError } = useQuery({ queryKey: ["adhkar"], queryFn: loadAdhkar, staleTime: Infinity });
   const list = useMemo(() => (data ? itemsFor(data.items, period) : []), [data, period]);
   const done = list.filter((x) => (counts[x.id] || 0) >= x.repeat).length;
+  const qc = useQueryClient();
+  // Adhkar terminés : la journée compte pour la série (une fois par période et par jour).
+  useEffect(() => {
+    if (!list.length || done < list.length) return;
+    const key = `mh_adhkar_logged_${period}`;
+    const today = new Date().toDateString();
+    if (localStorage.getItem(key) === today) return;
+    db.rpc("log_adhkar_day").then(({ error }) => {
+      if (error) return;
+      localStorage.setItem(key, today);
+      qc.invalidateQueries({ queryKey: ["activity-days"] });
+    });
+  }, [done, list.length, period, qc]);
 
   const tap = (x) => {
     const n = counts[x.id] || 0; if (n >= x.repeat) return;
@@ -43,6 +57,12 @@ export default function Adhkar() {
           <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${list.length ? (done / list.length) * 100 : 0}%` }} /></div>
           <span className="text-[13px] font-extrabold text-muted-foreground">{done} / {list.length}</span>
         </div>
+        {list.length > 0 && done === list.length && (
+          <div className="card-flat p-3.5 mt-3 flex items-center gap-3">
+            <CheckCircle weight="fill" className="w-7 h-7 text-primary shrink-0" />
+            <p className="font-extrabold text-[14.5px]">Adhkar {period === "matin" ? "du matin" : "du soir"} terminés. Ta journée compte pour ta série.</p>
+          </div>
+        )}
 
         {isError && <p className="mt-6 text-center font-semibold text-muted-foreground">Impossible de charger les adhkar. Vérifie ta connexion.</p>}
         {isLoading && <div className="h-64 rounded-2xl bg-muted animate-pulse mt-4" />}
