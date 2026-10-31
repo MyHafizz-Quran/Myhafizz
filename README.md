@@ -17,6 +17,7 @@ Myhafizz/
 ├── app/             → l'application client (React + Vite), déployée sur Vercel (projet « myhafizz », myhafizz.com)
 ├── myhafizz-admin/  → l'administration, déployée à part sur son propre projet Vercel
 ├── telegram-bot/    → bot Telegram (Render)
+├── scripts/         → tâche planifiée des rappels après la prière (GitHub Actions)
 ├── vercel.json      → build du client depuis app/
 └── render.yaml
 ```
