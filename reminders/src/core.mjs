@@ -22,7 +22,7 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
       try { localDate(tz); } catch { tz = "UTC"; }
       const today = localDate(tz, new Date(now));
       const [y, m, d] = today.split("-").map(Number);
-      const times = new PrayerTimes(new Coordinates(r.lat, r.lng), new Date(y, m - 1, d), CalculationMethod.MuslimWorldLeague());
+      const times = new PrayerTimes(new Coordinates(r.lat, r.lng), new Date(y, m - 1, d), (CalculationMethod[r.method] || CalculationMethod.MuslimWorldLeague)());
       const last = r.last_sent || {};
       for (const p of r.prayers || []) {
         if (!times[p] || last[p] === today) continue;

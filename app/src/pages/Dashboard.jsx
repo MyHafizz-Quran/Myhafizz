@@ -10,6 +10,9 @@ import { getGoal, todayCount, weekStart } from "@/lib/readingGame";
 import { level } from "@/pages/Strength";
 import { SURAHS } from "@/components/quranData";
 import { haptic } from "@/hooks/usePlatform";
+import PrayerCard from "@/components/daily/PrayerCard";
+import VerseOfDay from "@/components/daily/VerseOfDay";
+import HadithOfDay from "@/components/daily/HadithOfDay";
 
 const PARTS = [
   { part: "sabaq", title: "Sabaq · nouveau" },
@@ -159,6 +162,9 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Heures de prière */}
+        <PrayerCard className="mt-3" />
+
         {/* Reprendre */}
         {resume && (
           <button onClick={() => { haptic(); navigate(`/Memorize?surah=${resume.s.number}`); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
@@ -187,9 +193,13 @@ export default function Dashboard() {
         </button>
 
         </div>
-        <div className="min-w-0 lg:sticky lg:top-8">
+        <div className="min-w-0">
+        {/* Verset et hadith du jour */}
+        <VerseOfDay className="mt-3 lg:mt-4" />
+        <HadithOfDay className="mt-3" />
+
         {/* Chiffres */}
-        <Card className="flex mt-3 lg:mt-4">
+        <Card className="flex mt-3">
           <div className="flex-1 p-3 text-center"><p className="text-[22px] font-black">{session.totalMemorized}</p><p className="text-[11.5px] font-bold text-muted-foreground leading-tight">versets<br />mémorisés</p></div>
           <div className="flex-1 p-3 text-center border-l-2 border-border"><p className="text-[22px] font-black">{completed}</p><p className="text-[11.5px] font-bold text-muted-foreground leading-tight">sourates<br />complètes</p></div>
           <button disabled={!fragile} onClick={() => { haptic(); navigate("/ReviewSession?part=weak"); }} className="flex-1 p-3 text-center border-l-2 border-border">

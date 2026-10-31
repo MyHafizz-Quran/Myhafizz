@@ -1,9 +1,10 @@
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
+import { getMethod, setLocation } from "@/lib/prayer";
 import { db } from "@/api/neonClient";
 
 /**
  * Rappels après la prière : abonnement Web Push + ligne dans public.prayer_reminders.
- * L'envoi est fait toutes les 5 minutes par .github/workflows/prayer-reminders.yml.
+ * L'envoi est fait toutes les 5 minutes par la Neon Function « rappels » (dossier reminders/ du dépôt).
  * La position est arrondie à 2 décimales (environ 1 km) : elle sert uniquement au calcul des horaires.
  */
 export const VAPID_PUBLIC_KEY = "BLXbavajA87sH8AwdYzis_eYfF5k0KQsmQLx_7oQiM1D_6_CXqrq7g269T_aKpKkhrbvXVM6dvLx7h7stTX4qF8";
@@ -44,8 +45,8 @@ export function getPosition() {
   });
 }
 
-export function prayerTimes(lat, lng, date = new Date()) {
-  const t = new PrayerTimes(new Coordinates(lat, lng), date, CalculationMethod.MuslimWorldLeague());
+export function prayerTimes(lat, lng, date = new Date(), method = getMethod()) {
+  const t = new PrayerTimes(new Coordinates(lat, lng), date, (CalculationMethod[method] || CalculationMethod.MuslimWorldLeague)());
   return Object.fromEntries(PRAYERS.map((p) => [p.key, t[p.key]]));
 }
 
@@ -59,7 +60,7 @@ export async function getReminder() {
   if (pushSupport() !== "ok" || Notification.permission !== "granted") return null;
   const sub = await currentSub();
   if (!sub) return null;
-  const { data } = await db.from("prayer_reminders").select("prayers, offset_min, lat, lng, tz").eq("endpoint", sub.endpoint).maybeSingle();
+  const { data } = await db.from("prayer_reminders").select("prayers, offset_min, lat, lng, tz, method").eq("endpoint", sub.endpoint).maybeSingle();
   return data || null;
 }
 
@@ -67,6 +68,7 @@ export async function saveReminder({ prayers, offset_min = 15, position }) {
   const perm = await Notification.requestPermission();
   if (perm !== "granted") throw new Error("permission");
   const pos = position || (await getPosition());
+  setLocation(pos);
   const reg = await navigator.serviceWorker.ready;
   const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(VAPID_PUBLIC_KEY) }));
   const row = {
@@ -76,6 +78,7 @@ export async function saveReminder({ prayers, offset_min = 15, position }) {
     lat: pos.lat, lng: pos.lng,
     tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     prayers, offset_min,
+    method: getMethod(),
     updated_at: new Date().toISOString(),
   };
   const { error } = await db.from("prayer_reminders").upsert(row, { onConflict: "endpoint" });

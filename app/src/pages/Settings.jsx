@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { getFeedback, setFeedback, vibrate } from "@/lib/feedback";
-import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate } from "@phosphor-icons/react";
+import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -13,6 +13,7 @@ import { haptic } from "@/hooks/usePlatform";
 import { useKidMode, enableKidMode, disableKidMode, relockKidMode } from "@/lib/kidMode";
 import { PinPad } from "@/components/KidMode";
 import { PRAYERS, pushSupport, getReminder, saveReminder, removeReminder, prayerTimes } from "@/lib/reminders";
+import { METHODS, getMethod, setMethod as savePrayerMethod, methodLabel, getLocation, setLocation, requestLocation, onPrayerChange } from "@/lib/prayer";
 import PageHeader from "@/components/PageHeader";
 
 function Seg({ options, value, onChange }) {
@@ -63,7 +64,14 @@ export default function Settings() {
   const support = pushSupport();
   const [rem, setRem] = useState(null);
   const [remBusy, setRemBusy] = useState(false);
-  useEffect(() => { getReminder().then(setRem).catch(() => {}); }, []);
+  useEffect(() => {
+    getReminder().then((r) => {
+      setRem(r);
+      // Appareil déjà abonné : on reprend sa position et sa méthode si rien n'est enregistré localement
+      if (r && !getLocation()) setLocation({ lat: r.lat, lng: r.lng });
+      if (r?.method && !localStorage.getItem("mh_prayer_method")) savePrayerMethod(r.method);
+    }).catch(() => {});
+  }, []);
   const remError = (e) => {
     const m = e?.message === "permission" ? "Les notifications sont bloquées. Autorise-les dans les réglages du navigateur."
       : e?.message === "geo" ? "Autorise la localisation : elle sert seulement à calculer les heures de prière."
@@ -86,7 +94,22 @@ export default function Settings() {
     if (rem) { setRemBusy(true); await removeReminder().catch(() => {}); setRem(null); setRemBusy(false); }
     else await updateRem({});
   };
-  const times = rem ? prayerTimes(rem.lat, rem.lng) : null;
+  const [method, setMethodState] = useState(getMethod);
+  const [loc, setLoc] = useState(getLocation);
+  useEffect(() => onPrayerChange(() => { setMethodState(getMethod()); setLoc(getLocation()); }), []);
+  const changeMethod = async (m) => {
+    haptic(); savePrayerMethod(m); setMethodState(m);
+    if (rem) await updateRem({});
+  };
+  const relocate = async () => {
+    haptic();
+    try {
+      const l = await requestLocation(); setLoc(l);
+      if (rem) { setRemBusy(true); try { setRem(await saveReminder({ prayers: rem.prayers, offset_min: rem.offset_min, position: l })); } catch (e) { remError(e); } setRemBusy(false); }
+      toast({ title: "Position mise à jour" });
+    } catch { toast({ title: "Localisation refusée", description: "Autorise-la dans les réglages du navigateur.", variant: "destructive" }); }
+  };
+  const times = rem ? prayerTimes(rem.lat, rem.lng, new Date(), method) : null;
   const hhmm = (d) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   const [pinSheet, setPinSheet] = useState(false);
   const [firstPin, setFirstPin] = useState(null);
@@ -285,6 +308,28 @@ export default function Settings() {
           <SegRow label="Apparence" value={theme} onChange={setTheme} options={[{ label: "Comme l'appareil", value: "system" }, { label: "Clair", value: "light" }, { label: "Nuit", value: "dark" }]} />
         </Card>
 
+        <Label>Heures de prière</Label>
+        <Card>
+          <label className="flex items-center gap-3 p-3.5">
+            <Ico icon={Clock} />
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold">Méthode de calcul</p>
+              <p className="text-[12.5px] font-semibold text-muted-foreground truncate">{methodLabel(method)}</p>
+            </div>
+            <select value={method} onChange={(e) => changeMethod(e.target.value)} disabled={remBusy} aria-label="Méthode de calcul"
+              className="h-10 max-w-[44%] rounded-xl border-2 border-border bg-card px-2 text-sm font-extrabold">
+              {METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </label>
+          <button onClick={relocate} className="w-full flex items-center gap-3 p-3.5 text-left active:bg-muted">
+            <Ico icon={MapPin} />
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold">{loc ? "Mettre à jour ma position" : "Activer la localisation"}</p>
+              <p className="text-[12.5px] font-semibold text-muted-foreground">À faire après un voyage. Elle sert uniquement au calcul des horaires et de la qibla.</p>
+            </div>
+          </button>
+        </Card>
+
         <Label>Rappels</Label>
         <Card>
           {support === "ok" ? (
@@ -308,7 +353,7 @@ export default function Settings() {
                     </div>
                   </div>
                   <SegRow label="Délai après la prière" value={rem.offset_min} onChange={(v) => updateRem({ offset_min: v })} options={[{ label: "10 min", value: 10 }, { label: "15 min", value: 15 }, { label: "30 min", value: 30 }]} />
-                  <p className="px-3.5 py-3 text-[12.5px] font-semibold text-muted-foreground">Horaires calculés pour ta position (méthode Ligue islamique mondiale). Ta position n'est utilisée que pour ce calcul.</p>
+                  <p className="px-3.5 py-3 text-[12.5px] font-semibold text-muted-foreground">Horaires calculés pour ta position (méthode {methodLabel(method)}). Ta position n'est utilisée que pour ce calcul.</p>
                 </>
               )}
             </>
