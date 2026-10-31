@@ -74,7 +74,6 @@ export default function Memorize() {
   const [wordsMap, setWordsMap] = useState({});
   useEffect(() => { if (surahNumber) loadSimilar(surahNumber).then(setSimilarMap); }, [surahNumber]);
   const [timingsMap, setTimingsMap] = useState({});
-  const [allHidden, setAllHidden] = useState(false);
   const [maskLevel, setMaskLevel] = useState(0); // 0 texte, 1 initiales, 2 masqué
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef(null);
@@ -389,22 +388,9 @@ export default function Memorize() {
     setMaskLevel(next);
     if (next === 2) setHiddenVerses(new Set(verses.map(v => v.numberInSurah)));
     else setHiddenVerses(new Set());
-    setAllHidden(next === 2);
   };
   const toggleAllHidden = () => setMask((maskLevel + 1) % 3);
 
-  const cycleLoopMode = () => {
-    if (loopPlaying) {
-      stopLoop();
-      setLoopMode("off");
-      saveReadingSession({ loopMode: "off", wasPlaying: false });
-      return;
-    }
-    const next = loopMode === "off" ? "once" : loopMode === "once" ? "infinite" : "off";
-    setLoopMode(next);
-    saveReadingSession({ loopMode: next, wasPlaying: next !== "off" });
-    if (next !== "off") startLoop(next, verses, reciter, surah);
-  };
 
   const loopRepeat = loopMode === "infinite";
   const togglePlayer = () => {

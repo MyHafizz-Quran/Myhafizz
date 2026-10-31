@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { CaretDown, MagnifyingGlass, RocketLaunch, CalendarCheck, Toolbox, UsersThree, DeviceMobile, UserCircle, EnvelopeSimple } from "@phosphor-icons/react";
 import PageHeader from "@/components/PageHeader";
 
@@ -39,7 +39,6 @@ const SECTIONS = [
 ];
 
 export default function Help() {
-  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(null);
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");

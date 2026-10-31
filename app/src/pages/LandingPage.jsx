@@ -88,7 +88,7 @@ export default function LandingPage() {
   const endDate = new Date(Date.now() + Math.ceil(totalV / perDay) * 86400000).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { month: "long", year: "numeric" });
 
   // ─── Khatma démo ───
-  const [taken, setTaken] = useState(() => new Set([1, 2, 3, 5, 8, 9, 12, 15, 18, 22, 27, 30]));
+  const [taken] = useState(() => new Set([1, 2, 3, 5, 8, 9, 12, 15, 18, 22, 27, 30]));
   const [done] = useState(() => new Set([1, 2, 5, 9, 15]));
   const [mine, setMine] = useState(null);
 

@@ -62,15 +62,6 @@ function txPut(db, storeName, value) {
   });
 }
 
-function txDelete(db, storeName, key) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const req = tx.objectStore(storeName).delete(key);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-
 function txGetAll(db, storeName) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, "readonly");
