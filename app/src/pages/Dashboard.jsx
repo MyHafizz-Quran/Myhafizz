@@ -15,6 +15,7 @@ import VerseOfDay from "@/components/daily/VerseOfDay";
 import HadithOfDay from "@/components/daily/HadithOfDay";
 import FridayCard from "@/components/daily/FridayCard";
 import { DailyTools, RamadanCard, SeasonCard } from "@/components/daily/DailyExtras";
+import DuoPanel, { DuoNudges } from "@/components/community/DuoPanel";
 import { hijriLabel } from "@/lib/hijri";
 import { weekStats } from "@/lib/weekly";
 
@@ -167,6 +168,9 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Encouragements du binôme */}
+        <DuoNudges groups={groups} className="mt-3" />
+
         {/* Ramadan */}
         <RamadanCard className="mt-3" />
 
@@ -178,6 +182,9 @@ export default function Dashboard() {
 
         {/* Adhkar, tasbih, calendrier, Qiyam */}
         <DailyTools className="mt-3" />
+
+        {/* Binôme */}
+        {groups.filter((g) => g.kind === "duo").slice(0, 1).map((g) => <DuoPanel key={g.id} group={g} compact className="mt-3" />)}
 
         {/* Objectif de saison */}
         <SeasonCard className="mt-3" progress={progress} />

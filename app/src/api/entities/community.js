@@ -9,7 +9,7 @@ const ok = ({ data, error }) => { if (error) throw error; return data; };
 export const displayName = (u) => u?.user_metadata?.full_name || u?.email?.split('@')[0] || 'Moi';
 
 export const ROLE_LABEL = { teacher: 'Maître', student: 'Élève', parent: 'Parent', child: 'Enfant', member: 'Membre' };
-export const KIND_LABEL = { class: 'Classe / madrasa', family: 'Famille', circle: 'Cercle' };
+export const KIND_LABEL = { class: 'Classe / madrasa', family: 'Famille', circle: 'Cercle', duo: 'Binôme' };
 export const isStaff = (role) => role === 'teacher' || role === 'parent';
 
 export const Groups = {
@@ -97,4 +97,15 @@ export const Khatmas = {
     ok(await db.from('khatma_parts').update({ status: done ? 'done' : 'reserved', updated_at: new Date().toISOString() }).eq('khatma_id', khatma_id).eq('juz', juz));
   },
   async release(khatma_id, juz) { ok(await db.from('khatma_parts').delete().eq('khatma_id', khatma_id).eq('juz', juz)); },
+};
+
+/** Binôme de révision : régularité des deux membres et encouragements */
+export const Duo = {
+  async status(groupId) { return ok(await db.rpc('duo_status', { p_group: groupId })) || []; },
+  async nudge(groupId) { return ok(await db.rpc('duo_nudge', { p_group: groupId })); },
+  async received() {
+    const u = await me();
+    return ok(await db.from('duo_nudges').select('id, group_id, from_user, created_at').eq('to_user', u.id).eq('seen', false).order('created_at', { ascending: false }).limit(5)) || [];
+  },
+  async markSeen(ids) { if (ids.length) ok(await db.from('duo_nudges').update({ seen: true }).in('id', ids)); },
 };

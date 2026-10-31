@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, BookOpen, Microphone, CheckCircle, ArrowCounterClockwise, Trash, SignOut, CaretDown, CaretRight, UserPlus } from "@phosphor-icons/react";
 import { Groups as G, Assignments, Khatmas, ROLE_LABEL, KIND_LABEL, isStaff } from "@/api/entities";
+import DuoPanel from "@/components/community/DuoPanel";
 import { SURAHS } from "@/components/quranData";
 import Sheet, { Field, inputCls, JUZ_START } from "@/components/community/Sheet";
 import { todayStr } from "@/lib/srs";
@@ -332,8 +333,10 @@ export default function Group() {
   const id = new URLSearchParams(window.location.search).get("id");
   const { data: group, isLoading } = useQuery({ queryKey: ["group", id], queryFn: () => G.get(id), enabled: !!id });
   const staff = isStaff(group?.role);
-  const tabs = useMemo(() => [["track", staff ? "Suivi" : "Membres"], ["lessons", "Leçons"], ["khatma", "Khatma"]], [staff]);
-  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get("tab") || "lessons");
+  const duo = group?.kind === "duo";
+  const tabs = useMemo(() => (duo ? [["track", "Binôme"], ["khatma", "Khatma"]] : [["track", staff ? "Suivi" : "Membres"], ["lessons", "Leçons"], ["khatma", "Khatma"]]), [staff, duo]);
+  const [tabPref, setTab] = useState(() => new URLSearchParams(window.location.search).get("tab") || "");
+  const tab = tabs.some(([k]) => k === tabPref) ? tabPref : duo ? "track" : "lessons";
   const [inviteOpen, setInviteOpen] = useState(false);
   const myName = (group?.members?.find((m) => m.user_id === group?.me)?.display_name || "").trim().split(/\s+/)[0];
   const leave = async () => {
@@ -351,11 +354,11 @@ export default function Group() {
       <PageHeader title={group.name} back="/Groups" />
       <p className="text-sm font-semibold text-muted-foreground mt-0.5">{KIND_LABEL[group.kind]} · {group.members.length} membre{group.members.length > 1 ? "s" : ""} · {ROLE_LABEL[group.role]}</p>
 
-      {!kid.on && (
+      {!kid.on && !(duo && group.members.length >= 2) && (
         <button onClick={() => { haptic(); setInviteOpen(true); }} className="card-flat w-full p-3.5 mt-4 flex items-center gap-3 text-left lg:max-w-md active:translate-y-[1px]">
           <span className="w-11 h-11 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><UserPlus weight="fill" className="w-6 h-6" /></span>
           <span className="flex-1 min-w-0">
-            <span className="block font-extrabold">{group.kind === "class" ? "Inviter des élèves" : group.kind === "family" ? "Inviter la famille" : "Inviter des amis"}</span>
+            <span className="block font-extrabold">{group.kind === "class" ? "Inviter des élèves" : group.kind === "family" ? "Inviter la famille" : duo ? "Inviter ton binôme" : "Inviter des amis"}</span>
             <span className="block text-sm font-semibold text-muted-foreground">Lien, QR code ou WhatsApp · code <span className="font-black tracking-widest text-accent-foreground">{group.invite_code}</span></span>
           </span>
           <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
@@ -363,14 +366,14 @@ export default function Group() {
       )}
       <InviteSheet open={inviteOpen} onClose={() => setInviteOpen(false)} kind="group" group={group} name={myName} />
 
-      <div className="grid grid-cols-3 gap-1 p-1 mt-4 rounded-2xl bg-muted lg:max-w-md">
+      <div className={`grid ${duo ? "grid-cols-2" : "grid-cols-3"} gap-1 p-1 mt-4 rounded-2xl bg-muted lg:max-w-md`}>
         {tabs.map(([k, l]) => (
           <button key={k} onClick={() => { haptic(); setTab(k); }} className={`h-10 rounded-xl font-extrabold text-sm ${tab === k ? "bg-card text-primary shadow-sm" : "text-muted-foreground"}`}>{l}</button>
         ))}
       </div>
 
       <div className="mt-4">
-        {tab === "track" ? (staff ? <Tracking group={group} /> : <Members group={group} />)
+        {tab === "track" ? (duo ? <DuoPanel group={group} /> : staff ? <Tracking group={group} /> : <Members group={group} />)
           : tab === "lessons" ? <Lessons group={group} /> : <Khatma group={group} />}
       </div>
 

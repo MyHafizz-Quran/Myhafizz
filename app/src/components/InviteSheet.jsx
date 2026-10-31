@@ -17,7 +17,7 @@ export function inviteData({ kind, group, stats, name }) {
     // nom, type et hôte dans le lien : la page d'invitation s'affiche même sans compte
     const q = new URLSearchParams({ g: group.name, k: group.kind, ...(name ? { de: name } : {}) });
     const url = `${origin}/rejoindre/${group.invite_code}?${q.toString()}`;
-    const where = group.kind === "class" ? "ma classe" : group.kind === "family" ? "notre famille" : "notre cercle";
+    const where = group.kind === "class" ? "ma classe" : group.kind === "family" ? "notre famille" : group.kind === "duo" ? "mon binôme de révision" : "notre cercle";
     return {
       url,
       title: `Rejoins « ${group.name} »`,

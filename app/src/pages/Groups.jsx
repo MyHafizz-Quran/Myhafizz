@@ -2,7 +2,7 @@ import { useKidMode } from "@/lib/kidMode";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { UsersThree, Plus, SignIn, CaretRight, GraduationCap, House, Users } from "@phosphor-icons/react";
+import { UsersThree, Plus, SignIn, CaretRight, GraduationCap, House, Users, Handshake } from "@phosphor-icons/react";
 import { Groups as G, KIND_LABEL, ROLE_LABEL } from "@/api/entities";
 import PageHeader from "@/components/PageHeader";
 import Sheet, { Field, inputCls } from "@/components/community/Sheet";
@@ -12,6 +12,7 @@ const KINDS = [
   { k: "class", icon: GraduationCap, t: "Classe / madrasa", d: "Tu es le maître : leçons, suivi et validation des élèves" },
   { k: "family", icon: House, t: "Famille", d: "Suis la progression de tes enfants, khatma familiale" },
   { k: "circle", icon: Users, t: "Cercle", d: "Entre amis : khatma collective, motivation" },
+  { k: "duo", icon: Handshake, t: "Binôme", d: "À deux : chacun voit la régularité de l'autre et peut l'encourager" },
 ];
 
 export default function Groups() {
@@ -41,7 +42,7 @@ export default function Groups() {
   const doJoin = async () => {
     setBusy(true); setErr("");
     try { const id = await G.join(join, role); localStorage.removeItem("mh_pending_join"); qc.invalidateQueries({ queryKey: ["groups"] }); haptic(); navigate(`/Group?id=${id}`, { replace: true }); }
-    catch { setErr("Impossible de rejoindre ce groupe."); } finally { setBusy(false); }
+    catch (e) { setErr(/duo full/.test(e?.message || "") ? "Ce binôme a déjà deux membres." : "Impossible de rejoindre ce groupe."); } finally { setBusy(false); }
   };
 
   return (

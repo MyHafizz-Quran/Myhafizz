@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { GraduationCap, House, Users, CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { GraduationCap, House, Users, CheckCircle, WarningCircle, Handshake } from "@phosphor-icons/react";
 import { Groups as G, KIND_LABEL } from "@/api/entities";
 import { useAuth } from "@/lib/AuthContext";
 import MhLogo from "@/components/MhLogo";
 
-const ICON = { class: GraduationCap, family: House, circle: Users };
+const ICON = { class: GraduationCap, family: House, circle: Users, duo: Handshake };
 const PROMISE = {
   class: ["Les leçons de ton maître arrivent directement dans l'app", "Il voit ta progression et valide tes récitations", "Révisions préparées chaque jour"],
   family: ["Toute la famille au même endroit", "Les parents suivent la progression des enfants", "Khatma familiale partagée"],
   circle: ["Khatma collective entre amis", "On se motive les uns les autres", "Révisions préparées chaque jour"],
+  duo: ["Révisez à deux, sans classement", "Chacun voit la régularité de l'autre", "Un encouragement par jour"],
 };
 
 /** Page publique d'invitation : /rejoindre/CODE */
@@ -28,7 +29,7 @@ export default function Join() {
   // Sans compte, la base n'est pas lisible : on affiche ce que contient le lien, puis les vraies infos une fois connecté
   const hint = useMemo(() => {
     const q = new URLSearchParams(window.location.search);
-    return { name: q.get("g") || "", kind: ["class", "family", "circle"].includes(q.get("k")) ? q.get("k") : "circle", owner_name: q.get("de") || "", members: null };
+    return { name: q.get("g") || "", kind: ["class", "family", "circle", "duo"].includes(q.get("k")) ? q.get("k") : "circle", owner_name: q.get("de") || "", members: null };
   }, []);
   useEffect(() => {
     if (code.length !== 6) { setInfo(null); return; }
