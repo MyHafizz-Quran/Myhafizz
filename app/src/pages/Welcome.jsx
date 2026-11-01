@@ -7,6 +7,7 @@ import { GOALS, goalSurahs } from "@/lib/learningData";
 import { useAuth } from "@/lib/AuthContext";
 import { haptic } from "@/hooks/usePlatform";
 import { PRAYERS, pushSupport, saveReminder } from "@/lib/reminders";
+import NotifPreview from "@/components/NotifPreview";
 
 /**
  * Onboarding modèle 1 « Questions rapides » : objectif, niveau d'arabe, rythme, récap + rappels.
@@ -94,7 +95,7 @@ export default function Welcome() {
   const push = pushSupport();
 
   // Étapes : [nom d'utilisateur], objectif, niveau, rythme, récap
-  const steps = [...(needUser ? ["user"] : []), "goal", "level", "pace", "recap"];
+  const steps = [...(needUser ? ["user"] : []), "goal", "level", "pace", "recap", ...(push === "ok" ? ["notif"] : [])];
   const cur = steps[Math.min(step, steps.length - 1)];
   const next = () => { haptic(); setError(null); setStep((s) => s + 1); window.scrollTo(0, 0); };
 
@@ -119,7 +120,7 @@ export default function Welcome() {
       setError("Impossible d'enregistrer ton programme pour le moment. Vérifie ta connexion et réessaie.");
       setBusy(false); return;
     }
-    if (withReminders && prayers.length && push === "ok") {
+    if (withReminders && push === "ok") {
       try { await saveReminder({ prayers: [...prayers, "kahf", "verset", "bravo", "hebdo", "tafsir", "arabe", "dates"], offset_min: 15 }); }
       catch (e) {
         setBusy(false);
@@ -133,6 +134,11 @@ export default function Welcome() {
   };
 
   const userHint = { checking: ["Vérification…", "text-muted-foreground"], free: ["Disponible", "text-primary"], taken: ["Déjà pris", "text-destructive"], format: ["3 à 20 caractères : a-z, 0-9, point ou tiret bas", "text-muted-foreground"] }[userState];
+
+  if (cur === "notif") {
+    const pr = PRAYERS.find((p) => p.key === prayers[0])?.label || "la prière";
+    return <NotifPreview prayerLabel={pr} pace={pace} busy={busy} error={error} onEnable={() => finish(true)} onLater={() => finish(false)} />;
+  }
 
   return (
     <div className="min-h-[100dvh] bg-background">
@@ -234,8 +240,8 @@ export default function Welcome() {
                 </div>
               )}
               {error && <p className="mt-3 text-sm font-bold text-destructive">{error}</p>}
-              {push === "ok" && prayers.length
-                ? <Footer label="Activer les rappels et commencer" busy={busy} onNext={() => finish(true)} secondary="Commencer sans rappel" onSecondary={() => finish(false)} />
+              {push === "ok"
+                ? <Footer label="Continuer" onNext={next} />
                 : <Footer label="Commencer" busy={busy} onNext={() => finish(false)} />}
             </>
           )}

@@ -1,3 +1,5 @@
+import VoiceSplash from './components/VoiceSplash.jsx';
+import { isStandalone } from '@/hooks/usePlatform';
 import React, { useRef, useEffect } from "react";
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -228,6 +230,9 @@ const LandingOrDashboard = () => {
   if (isAuthenticated) {
     return <Navigate to="/Dashboard" replace />;
   }
+
+  // App installée : écran de bienvenue « La voix devient écriture » au lieu de la page de présentation.
+  if (isStandalone()) return <VoiceSplash />;
 
   return <FullBleed><LandingPage /></FullBleed>;
 };
