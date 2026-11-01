@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { GearSix, Camera, PencilSimple, Fire, Medal, BookOpenText, Crown, Star, UsersThree, Ranking, BookmarkSimple, DownloadSimple, Question, Gift, CaretRight, Check, X } from "@phosphor-icons/react";
+import { GearSix, Camera, At, IdentificationCard, PencilSimple, Fire, Medal, BookOpenText, Crown, Star, UsersThree, Ranking, BookmarkSimple, DownloadSimple, Question, Gift, CaretRight, Check, X } from "@phosphor-icons/react";
 import { db } from "@/api/neonClient";
 import { MemorizationProgress, ActivityDays } from "@/api/entities";
 import { currentStreak, longestStreak } from "@/lib/srs";
@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 import InviteSheet from "@/components/InviteSheet";
 import { haptic } from "@/hooks/usePlatform";
 import PageHeader from "@/components/PageHeader";
+import UsernameSheet from "@/components/UsernameSheet";
+import { forgetAvatar } from "@/lib/avatars";
 
 const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
@@ -28,6 +30,8 @@ function Row({ icon: Icon, title, sub, onClick, to, right }) {
 export default function Profile() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [nameSheet, setNameSheet] = useState(false);
+  const { data: uinfo, refetch: refetchU } = useQuery({ queryKey: ["username-info"], queryFn: async () => { const { data, error } = await db.rpc("username_info"); if (error) throw error; return data; }, staleTime: 30_000 });
   const [user, setUser] = useState(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [invite, setInvite] = useState(false);
@@ -92,6 +96,8 @@ export default function Profile() {
       if (up) throw up;
       const { data } = db.storage.from("avatars").getPublicUrl(path);
       await db.auth.updateUser({ data: { avatar_url: data.publicUrl } });
+      await db.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
+      forgetAvatar(user.id);
       await refresh(); setAvatarFile(null); setAvatarPreview(null);
     } catch { setError("La photo n'a pas pu être enregistrée."); }
     setBusy(false);
@@ -129,6 +135,7 @@ export default function Profile() {
               <span className="text-2xl font-black">{fullName || "Ajoute ton prénom"}</span><PencilSimple weight="bold" className="w-4 h-4 text-muted-foreground" />
             </button>
           )}
+          {uinfo?.username && <p className="text-[15px] font-extrabold text-accent-foreground">@{uinfo.username}</p>}
           <p className="text-sm font-semibold text-muted-foreground">{since ? `Membre depuis ${since}` : user?.email}</p>
           {error && <p className="text-sm font-bold text-destructive mt-2">{error}</p>}
         </div>
@@ -147,6 +154,12 @@ export default function Profile() {
               <p className={`text-[10.5px] font-extrabold mt-1 leading-tight ${on ? "" : "text-muted-foreground"}`}>{t}</p>
             </div>
           ))}
+        </div>
+
+        <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-5 mb-2 ml-1">Identité</p>
+        <div className="card-flat overflow-hidden divide-y-2 divide-border">
+          <Row icon={IdentificationCard} title="Nom complet" sub={fullName || "À ajouter"} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setEditing(true); }} />
+          <Row icon={At} title="Nom d'utilisateur" sub={uinfo?.username ? `@${uinfo.username} · tes amis te trouvent avec` : "À choisir"} onClick={() => setNameSheet(true)} />
         </div>
 
         <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-5 mb-2 ml-1">Mon espace</p>
@@ -169,6 +182,8 @@ export default function Profile() {
       </div>
 
       <InviteSheet open={invite} onClose={() => setInvite(false)} kind="app" name={fullName.trim().split(/\s+/)[0] || ""} stats={{ verses: total, streak, surahs: completed.size }} />
+
+      <AnimatePresence>{nameSheet && <UsernameSheet info={uinfo} onClose={() => setNameSheet(false)} onSaved={() => { setNameSheet(false); refetchU(); }} />}</AnimatePresence>
 
       <AnimatePresence>
         {logoutOpen && (

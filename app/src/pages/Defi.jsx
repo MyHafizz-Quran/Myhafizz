@@ -5,6 +5,7 @@ import { ArrowLeft, CalendarCheck, Fire, CheckCircle, XCircle } from "@phosphor-
 import { loadDefi, dcBoard, loadSettings } from "@/lib/games";
 import { PlayerPic } from "@/pages/Partie";
 import { haptic } from "@/hooks/usePlatform";
+import ShareResult from "@/components/ShareResult";
 
 const secs = (ms) => `${Math.max(1, Math.round((ms || 0) / 1000))} s`;
 const QUESTION = (it) => it.kind === "ilm" ? it.question : it.kind === "suite" ? "Quel est le verset suivant ?" : it.kind === "sourate" ? "À quelle sourate appartient ce verset ?" : it.kind === "ordre" ? "Remets les versets dans l'ordre" : it.kind === "hadith" ? `« ${it.statement} »` : "Quelle est cette lettre ?";
@@ -65,6 +66,11 @@ export default function Defi() {
       <div className="card-flat p-3 text-center"><p className="text-[20px] font-black">{secs(r.ms)}</p><p className="text-[12px] font-bold text-muted-foreground">temps</p></div>
       <div className="card-flat p-3 text-center"><p className="text-[20px] font-black">{r.rank}e</p><p className="text-[12px] font-bold text-muted-foreground">sur {d.players}</p></div>
     </div>
+    <ShareResult className="mt-3" build={(me) => ({
+      card: { kicker: `Défi du jour · ${new Date(d.now).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`, big: `${r.score} / ${r.total}`, sub: me.grade, rows: [
+        ["Temps", secs(r.ms)], ["Classement du jour", `${r.rank}e sur ${d.players}`], ...(r.streak > 1 ? [["Série", `${r.streak} jours`]] : []), ["Points", `+${r.points}`]] },
+      text: `Défi du jour MyHafizz : ${r.score}/${r.total} en ${secs(r.ms)}, ${r.rank}e sur ${d.players} joueur${d.players > 1 ? "s" : ""}.\nLes mêmes ${r.total} questions pour tout le monde. Tu fais mieux ?\nmyhafizz.com/Defi`,
+    })} />
     <div className="card-flat p-4 mt-3 font-extrabold">
       <p className="flex justify-between"><span>Bonnes réponses</span><span>+{r.score * (cfg.per_good ?? 5)}</span></p>
       {streakPts > 0 && <p className="flex justify-between mt-1.5"><span>Série de {r.streak} jours</span><span>+{streakPts}</span></p>}

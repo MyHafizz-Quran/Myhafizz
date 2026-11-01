@@ -5,6 +5,7 @@ import { ArrowLeft, Trophy, Crown, Flag, CaretRight, Plus, UsersThree } from "@p
 import { tnList, tnState, tnJoin, tnCreate, tnCancel, roundName, buildDuelPool, loadSettings, playScope } from "@/lib/games";
 import { PlayerPic } from "@/pages/Partie";
 import { haptic } from "@/hooks/usePlatform";
+import ShareResult from "@/components/ShareResult";
 
 const pad = (x) => String(x).padStart(2, "0");
 function left(ms) {
@@ -152,6 +153,11 @@ function Detail({ id }) {
           : me ? big(<Flag weight="fill" className="w-12 h-12" />, me.place === 2 ? "Finaliste, bravo" : me.place === 3 ? "Demi-finaliste" : `Fin du parcours en ${roundName(me.out_round, t.rounds).toLowerCase()}`, me.points ? `Tu gagnes +${me.points} pts.` : "Être éliminé ne retire aucun point. Rendez-vous au prochain tournoi.")
             : big(<Crown weight="fill" className="w-12 h-12" />, "Tournoi terminé", t.champion ? `Vainqueur : @${t.champion.username}` : null)}
         {!champ && t.champion && me && <p className="text-center font-bold text-muted-foreground mt-2">Vainqueur : @{t.champion.username}</p>}
+        {me && me.place <= 3 && me.points > 0 && <ShareResult className="mt-4" label={champ ? "Partager ma victoire" : "Partager"} build={() => {
+          const big = champ ? "Champion" : me.place === 2 ? "Finaliste" : "Demi-finale";
+          return { card: { kicker: title, big, sub: `${t.players} joueurs`, rows: [["Points", `+${me.points}`], ...(champ ? [["Badge", "Champion de tournoi"]] : me.place === 2 ? [["Badge", "Finaliste"]] : [])] },
+            text: `${champ ? "J'ai remporté" : me.place === 2 ? "Finaliste du" : "Demi-finaliste du"} ${title} sur MyHafizz (${t.players} joueurs).\nProchain tournoi : inscris-toi et viens jouer.\nmyhafizz.com/Tournoi` };
+        }} />}
         <Bracket t={t} />
       </Shell>
     );

@@ -5,6 +5,7 @@ import { X, ArrowLeft, Sword, MagnifyingGlass, Trophy, ArrowsClockwise, Hourglas
 import { ldSearch, ldInvite, ldState, ldCancel, playerProfile, gradeOf } from "@/lib/games";
 import { PlayerPic } from "@/pages/Partie";
 import { haptic } from "@/hooks/usePlatform";
+import ShareResult from "@/components/ShareResult";
 
 const Section = ({ children }) => <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mt-5 mb-2">{children}</p>;
 const Screen = ({ children, footer }) => (
@@ -158,6 +159,11 @@ function Result({ id }) {
       {rm?.status === "invited" && rm.mine ? <Btn secondary disabled><Hourglass weight="bold" className="w-5 h-5" />Revanche demandée, en attente…</Btn>
         : rm?.status === "invited" && !rm.mine ? <p className="text-center font-extrabold text-muted-foreground">@{s.them?.username} demande une revanche : réponds dans la fenêtre qui s'affiche.</p>
         : <Btn gold disabled={busy} onClick={askRematch}><ArrowsClockwise weight="bold" className="w-5 h-5" />{rm?.status === "declined" ? "Revanche refusée, redemander" : rm?.status === "expired" ? "Pas de réponse, redemander" : "Revanche"}</Btn>}
+      {(iWon || draw) && s.quit !== "me" && <ShareResult label={iWon ? "Partager ma victoire" : "Partager"} build={(me) => ({
+        card: { kicker: s.tournament ? "Match de tournoi" : "Duel en direct", big: iWon ? "Victoire" : "Égalité", sub: `contre @${s.them?.username}`, rows: [
+          ["Score", `${s.my_score} – ${s.their_score}`], ...(s.tournament ? [] : [["Points", signed(s.my_points)]]), ...(me.grade ? [["Grade", me.grade]] : [])] },
+        text: `${iWon ? "Victoire" : "Égalité"} ${s.my_score} – ${s.their_score} contre @${s.them?.username} en duel sur MyHafizz.\n${me.username ? `Défie-moi : mon nom d'utilisateur est @${me.username}.` : "Viens me défier."}\nmyhafizz.com`,
+      })} />}
       <Btn secondary onClick={back}>Quitter</Btn>
     </>}>
       <Head title="" close onBack={back} />

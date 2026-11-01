@@ -25,7 +25,7 @@ export default function HadithOfDay({ className = "" }) {
       )}
       <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t-2 border-border">
         <p className="flex-1 text-[12.5px] font-extrabold text-muted-foreground">{SOURCES[h.src]}, n° {h.n}</p>
-        <button onClick={() => { haptic(); shareCard({ arabic: h.ar, french: h.fr, reference: `${SOURCES[h.src]}, n° ${h.n}`, kind: "Hadith du jour", quran: false }); }} aria-label="Partager en image" className="w-9 h-9 rounded-lg flex items-center justify-center text-primary"><ShareNetwork weight="bold" className="w-5 h-5" /></button>
+        <button onClick={() => { haptic(); shareCard({ arabic: h.ar, french: h.fr, reference: `Rapporté dans ${SOURCES[h.src]}, n° ${h.n}`, kind: "Hadith du jour", quran: false }); }} aria-label="Partager en image" className="w-9 h-9 rounded-lg flex items-center justify-center text-primary"><ShareNetwork weight="bold" className="w-5 h-5" /></button>
       </div>
     </div>
   );

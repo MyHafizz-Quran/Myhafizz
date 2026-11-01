@@ -6,6 +6,7 @@ import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswe
 import { Profile } from "@/api/entities";
 import { speak, playUrl, playQueue, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
+import ShareResult from "@/components/ShareResult";
 
 const AR = "font-arabic";
 
@@ -289,7 +290,15 @@ export default function Partie() {
             </div>
           )}
         </div>
-        <div className="px-4 max-w-md mx-auto w-full grid grid-cols-2 gap-3 mt-6">
+        <div className="px-4 max-w-md mx-auto w-full mt-6">
+          {!end.offline && !end.duel && end.score > 0 && <ShareResult build={(me) => ({
+            card: { kicker: `${G.name} · niveau ${levelN}`, big: `${end.score} / ${end.total}`, sub: me.grade || G.name, rows: [
+              ["Bonnes réponses", `${Math.round((end.score / end.total) * 100)} %`], ["Points", `+${end.xp ?? 0}`],
+              ...(end.unlocked ? [["Niveau suivant", "débloqué"]] : []), ...(end.streak > 1 ? [["Série", `${end.streak} jours`]] : [])] },
+            text: `${G.name} sur MyHafizz : ${end.score}/${end.total} au niveau ${levelN}.\nApprends le Coran et la culture islamique en jouant. Tu fais mieux ?\nmyhafizz.com/Jouer`,
+          })} />}
+        </div>
+        <div className="px-4 max-w-md mx-auto w-full grid grid-cols-2 gap-3 mt-3">
           <button onClick={replay} className="h-[52px] rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold flex items-center justify-center gap-2"><ArrowCounterClockwise weight="bold" className="w-5 h-5" />Rejouer</button>
           <button onClick={() => navigate("/Jouer", { replace: true })} className="btn-relief h-[52px] bg-primary text-primary-foreground">Terminer</button>
         </div>

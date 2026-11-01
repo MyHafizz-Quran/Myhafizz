@@ -46,7 +46,7 @@ export default function VerseOfDay({ className = "" }) {
         <button onClick={toggle} className="btn-relief h-[46px] w-[52px] bg-card text-primary border-2 border-border [--relief-color:hsl(var(--border))] flex items-center justify-center shrink-0" aria-label={playing ? "Pause" : "Écouter"}>
           {playing ? <Pause weight="fill" className="w-5 h-5" /> : <Play weight="fill" className="w-5 h-5" />}
         </button>
-        <button onClick={() => { haptic(); shareCard({ arabic: v.ar, french: v.fr, reference: `Sourate ${v.surahName}, verset ${v.ayah}`, kind: "Verset du jour" }); }} className="btn-relief h-[46px] w-[52px] bg-card text-primary border-2 border-border [--relief-color:hsl(var(--border))] flex items-center justify-center shrink-0" aria-label="Partager en image">
+        <button onClick={() => { haptic(); shareCard({ arabic: v.ar, french: v.fr, reference: `Sourate ${v.surahName} (${v.surah}), verset ${v.ayah}`, kind: "Verset du jour" }); }} className="btn-relief h-[46px] w-[52px] bg-card text-primary border-2 border-border [--relief-color:hsl(var(--border))] flex items-center justify-center shrink-0" aria-label="Partager en image">
           <ShareNetwork weight="bold" className="w-5 h-5" />
         </button>
         <button onClick={() => { haptic(); navigate(`/Memorize?surah=${v.surah}&verse=${v.ayah}`); }} className="btn-relief h-[46px] flex-1 bg-primary text-primary-foreground">Mémoriser</button>
