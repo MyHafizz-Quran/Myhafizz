@@ -58,7 +58,7 @@ import Leaderboard from './pages/Leaderboard.jsx';
 import Welcome from './pages/Welcome.jsx';
 import Join from '@/pages/Join';
 import DesktopRail from '@/components/DesktopRail';
-import Lire from './pages/Lire.jsx';
+import Lire, { LireArabe } from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
 import Tafsir from "./pages/Tafsir";
 import Jouer from './pages/Jouer.jsx';
@@ -181,6 +181,7 @@ const AuthenticatedApp = () => {
           <Route path="/Leaderboard" element={<Leaderboard />} />
           <Route path="/Bienvenue" element={<Welcome />} />
           <Route path="/Lire" element={<Lire />} />
+          <Route path="/LireArabe" element={<LireArabe />} />
           <Route path="/Lecon" element={<Lecon />} />
           <Route path="/Jouer" element={<Jouer />} />
           <Route path="/Tafsir" element={<TafsirRoute />} />

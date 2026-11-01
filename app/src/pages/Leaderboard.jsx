@@ -142,7 +142,7 @@ export default function Leaderboard() {
         )}
 
         {tab === "lecture" && !me && !loading && (
-          <button onClick={() => navigate("/Lire")} className="card-flat w-full p-4 mt-4 text-left press">
+          <button onClick={() => navigate("/LireArabe")} className="card-flat w-full p-4 mt-4 text-left press">
             <p className="font-black">Tu n'es pas encore classé cette semaine</p>
             <p className="text-[12.5px] font-semibold text-muted-foreground">Fais une leçon de lecture pour entrer dans le classement.</p>
           </button>

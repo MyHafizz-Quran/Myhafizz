@@ -90,7 +90,7 @@ export async function extrasDue({ r, local, ctx, state, db, now }) {
     out.push({ key: "hadith", val: today, msg: { title: "Le hadith du jour", body: "Un hadith authentique, avec sa source, t'attend sur l'accueil.", url: "/Dashboard", tag: "mh-hadith" } });
   }
   if (on.has("arabe") && ctx?.arabic_level === "none" && state.kind !== "done" && dayNum(today) % 2 === 0 && at(18, 0)) {
-    out.push({ key: "arabe", val: today, msg: { title: "Lire l'arabe : 5 minutes", body: "Une petite leçon aujourd'hui et tu avances vers la lecture du Coran.", url: "/Lire", tag: "mh-arabe" } });
+    out.push({ key: "arabe", val: today, msg: { title: "Lire l'arabe : 5 minutes", body: "Une petite leçon aujourd'hui et tu avances vers la lecture du Coran.", url: "/LireArabe", tag: "mh-arabe" } });
   }
   if (on.has("tafsir") && ctx?.tafsir_any && local.weekday === "Thu" && at(19, 0)) {
     const last = ctx.tafsir_last ? new Date(ctx.tafsir_last).toISOString().slice(0, 10) : null;

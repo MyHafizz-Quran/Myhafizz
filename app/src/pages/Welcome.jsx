@@ -124,12 +124,12 @@ export default function Welcome() {
       catch (e) {
         setBusy(false);
         setError(e?.message === "permission" ? "Notifications refusées. Ton programme est enregistré, tu pourras activer les rappels dans Réglages." : "Rappels non activés. Ton programme est enregistré, tu pourras réessayer dans Réglages.");
-        setTimeout(() => done(level === "none" ? "/Lire" : "/Dashboard"), 2500);
+        setTimeout(() => done(level === "none" ? "/LireArabe" : "/Dashboard"), 2500);
         return;
       }
     }
     // Pas encore lecteur : on commence par le parcours « Lire l'arabe ».
-    done(level === "none" ? "/Lire" : "/Dashboard");
+    done(level === "none" ? "/LireArabe" : "/Dashboard");
   };
 
   const userHint = { checking: ["Vérification…", "text-muted-foreground"], free: ["Disponible", "text-primary"], taken: ["Déjà pris", "text-destructive"], format: ["3 à 20 caractères : a-z, 0-9, point ou tiret bas", "text-muted-foreground"] }[userState];

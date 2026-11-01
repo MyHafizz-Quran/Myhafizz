@@ -135,7 +135,7 @@ function Rail() {
         </Box>
 
         {/* Lecture */}
-        <Box title="Lire l'arabe" action="Continuer" onAction={() => navigate("/Lire")}>
+        <Box title="Lire l'arabe" action="Continuer" onAction={() => navigate("/LireArabe")}>
           <div className="flex items-center gap-3">
             <span className="w-10 h-10 rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><Target weight="fill" className="w-5 h-5" /></span>
             <div className="flex-1 min-w-0">
@@ -147,7 +147,7 @@ function Rail() {
         </Box>
 
         {/* Défis */}
-        <Box title="Défis de la semaine" action="Tout voir" onAction={() => navigate("/Lire")}>
+        <Box title="Défis de la semaine" action="Tout voir" onAction={() => navigate("/Challenges")}>
           <div className="space-y-3">
             {challenges.map((c) => (
               <div key={c.id} className="flex items-center gap-3">

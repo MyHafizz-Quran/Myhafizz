@@ -98,7 +98,7 @@ export default function Challenges() {
           ))}
         </div>
         <div className="flex gap-2 mt-3">
-          <Link to="/Lire" className="btn-relief flex-1 h-11 bg-primary text-primary-foreground">Faire une leçon</Link>
+          <Link to="/LireArabe" className="btn-relief flex-1 h-11 bg-primary text-primary-foreground">Faire une leçon</Link>
           <Link to="/Leaderboard?tab=lecture" className="btn-relief flex-1 h-11 bg-card border-2 border-border text-foreground [--relief-color:hsl(var(--border))]">Classement</Link>
         </div>
 

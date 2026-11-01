@@ -20,6 +20,9 @@ export default function Lire() {
   const done = new Set(rows.map((r) => r.lesson_id));
   const currentId = ALL_LESSONS.find((l) => !done.has(l.id))?.id;
   const xp = rows.reduce((t, r) => t + (r.xp || 0), 0);
+  const allDone = !currentId;
+  const cu = Math.max(0, UNITS.findIndex((u) => u.lessons.some((l) => l.id === currentId)));
+  const cn = UNITS[cu].lessons.filter((l) => done.has(l.id)).length;
   const voice = hasArabicVoice();
   const { data: sessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
   const [goal, setGoalState] = useState(getGoal());
@@ -63,6 +66,48 @@ export default function Lire() {
           <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
         </button>
 
+        <button onClick={() => { haptic(); navigate("/LireArabe"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3 text-left press">
+          <span dir="rtl" className="w-11 h-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center shrink-0 font-arabic text-[22px] leading-none">ب</span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-black">Lire l'arabe</span>
+            <span className="block text-[13px] font-semibold text-muted-foreground truncate">{allDone ? "Parcours terminé · bravo" : `Unité ${cu + 1} · ${UNITS[cu].title} · ${cn} / ${UNITS[cu].lessons.length} leçons`}</span>
+            <span className="block h-2 rounded-full bg-muted overflow-hidden mt-2"><span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(4, Math.round((done.size / ALL_LESSONS.length) * 100))}%` }} /></span>
+          </span>
+          <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Parcours « Lire l'arabe » : objectif du jour, défis, test de niveau, chemin des leçons et badges. */
+export function LireArabe() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { data: rows = [], isLoading } = useQuery({ queryKey: ["reading-lessons"], queryFn: () => ReadingLessons.list() });
+  const done = new Set(rows.map((r) => r.lesson_id));
+  const currentId = ALL_LESSONS.find((l) => !done.has(l.id))?.id;
+  const xp = rows.reduce((t, r) => t + (r.xp || 0), 0);
+  const voice = hasArabicVoice();
+  const { data: sessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
+  const [goal, setGoalState] = useState(getGoal());
+  const [editGoal, setEditGoal] = useState(false);
+  const today = todayCount(sessions);
+  const goalDone = today >= goal;
+  const earned = new Set(earnedBadges(rows).map((b) => b.id));
+  const challenges = weeklyChallenges(sessions);
+  const chDone = challenges.filter((c) => c.done).length;
+
+  const open = (l, state) => {
+    haptic();
+    if (state === "locked") { toast({ title: "Leçon verrouillée", description: "Termine d'abord la leçon précédente." }); return; }
+    navigate(`/Lecon?id=${l.id}`);
+  };
+
+  return (
+    <div className="min-h-[100dvh] bg-background pb-nav">
+      <div className="max-w-xl mx-auto px-4">
+        <PageHeader title="Lire l'arabe" back="/Lire" right={<span className="h-9 px-3 rounded-xl border-2 border-border bg-card flex items-center gap-1.5 font-black text-sm"><Lightning weight="fill" className="w-4 h-4 text-gold" />{xp}</span>} />
         {!voice && (
           <div className="card-flat p-3.5 mt-4 flex items-start gap-3">
             <SpeakerSlash weight="bold" className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
@@ -105,7 +150,6 @@ export default function Lire() {
           </button>
         )}
 
-        <p className="text-[13px] font-black uppercase tracking-wide text-muted-foreground mt-6 mb-1">Lire l'arabe</p>
         {UNITS.map((u, ui) => {
           const n = u.lessons.filter((l) => done.has(l.id)).length;
           return (
@@ -115,7 +159,7 @@ export default function Lire() {
                 <p className="text-[20px] font-black leading-tight mt-0.5">{u.title}</p>
                 <p className="text-sm font-semibold opacity-90">{u.subtitle}</p>
               </div>
-              <div className="flex flex-col items-center gap-5 py-7">
+              <div className="flex flex-col items-center gap-5 pt-16 pb-7">
                 {u.lessons.map((l, li) => {
                   const state = done.has(l.id) ? "done" : l.id === currentId ? "current" : "locked";
                   const Icon = state === "done" ? Check : state === "locked" ? Lock : l.review ? Trophy : Star;

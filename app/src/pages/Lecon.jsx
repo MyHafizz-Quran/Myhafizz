@@ -286,7 +286,7 @@ export default function Lecon() {
           ))}
         </div>
         <div className="px-4 max-w-md mx-auto w-full">
-          <button onClick={() => navigate("/Lire", { replace: true })} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground">Continuer</button>
+          <button onClick={() => navigate("/LireArabe", { replace: true })} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground">Continuer</button>
         </div>
       </div>
     );
@@ -475,7 +475,7 @@ export default function Lecon() {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="max-w-xl mx-auto w-full px-4 h-14 flex items-center gap-3">
-        <button onClick={() => navigate("/Lire")} aria-label="Quitter la leçon" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted press"><X weight="bold" className="w-6 h-6" /></button>
+        <button onClick={() => navigate("/LireArabe")} aria-label="Quitter la leçon" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted press"><X weight="bold" className="w-6 h-6" /></button>
         <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${pct}%` }} /></div>
       </div>
 
