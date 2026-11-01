@@ -20,7 +20,7 @@ export const setReciter = (id) => localStorage.setItem(KEY, id);
 export const reciterOf = (id) => RECITERS.find((r) => r.id === id) || RECITERS[0];
 
 /** Un petit fichier par vers, servi par myhafizz.com : démarre tout de suite, sans chercher dans un long enregistrement. */
-const LOCAL = new Set(["ghamdi", "soufi"]);
+const LOCAL = new Set(["suwayd", "ghamdi", "soufi"]);
 export const verseUrl = (reciter, n) => `/audio/tajwid/${reciter}/${n}.mp3`;
 const warm = new Map();
 /** Précharge les vers à venir pour qu'ils partent sans attente. */
