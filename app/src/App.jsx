@@ -60,11 +60,12 @@ import Lire from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
 import Jouer from './pages/Jouer.jsx';
 import Partie from './pages/Partie.jsx';
+import Duel from './pages/Duel.jsx';
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -112,7 +113,15 @@ const AuthenticatedApp = () => {
   if (!isAuthenticated) {
     const pendingJoin = new URLSearchParams(window.location.search).get("join");
     if (pendingJoin) return <Navigate to={`/rejoindre/${encodeURIComponent(pendingJoin)}`} replace />;
+    const duelCode = window.location.pathname === "/Duel" && new URLSearchParams(window.location.search).get("code");
+    if (duelCode) localStorage.setItem("mh_pending_duel", duelCode);
     return <Navigate to="/login" replace />;
+  }
+
+  const pendingDuel = localStorage.getItem("mh_pending_duel");
+  if (pendingDuel) {
+    localStorage.removeItem("mh_pending_duel");
+    return <Navigate to={`/Duel?code=${encodeURIComponent(pendingDuel)}`} replace />;
   }
 
   const pendingJoin = localStorage.getItem("mh_pending_join");
@@ -167,6 +176,7 @@ const AuthenticatedApp = () => {
           <Route path="/Lecon" element={<Lecon />} />
           <Route path="/Jouer" element={<Jouer />} />
           <Route path="/Partie" element={<Partie />} />
+          <Route path="/Duel" element={<Duel />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
         )}

@@ -85,11 +85,17 @@ export function startLevel(game, arabicLevel) {
   return 1;
 }
 
+export function unlockedLevel(game, progress, profile) {
+  const max = GAMES[game].levels.length;
+  return Math.min(max, Math.max(progress?.[game]?.level || 1, startLevel(game, profile?.arabic_level)));
+}
+
 /* ── Données serveur ── */
 const DEFAULT_SETTINGS = {
   games: { suite: true, sourate: true, ordre: true, lettres: true, ilm: true },
   robot: { 1: 0.3, 2: 0.15, 3: 0.05 },
   rules: { questions: 5, ilm_questions: 10, unlock_pct: 80, flash_seconds: 3 },
+  duel: { enabled: true, hours: 24, win_bonus: 20 },
 };
 export async function loadSettings() {
   const { data } = await db.from("game_settings").select("key, value");
@@ -229,3 +235,30 @@ export async function buildGame(game, levelN, { count = 5, category } = {}) {
 export const robotAnswers = (rate) => Math.random() >= rate;
 
 export { LETTERS, L };
+
+/* ── Duels 1 contre 1 en différé (lot J2) ── */
+const rpc = async (fn, args) => {
+  const { data, error } = await db.rpc(fn, args);
+  if (error) throw new Error(error.message || "Erreur réseau");
+  return data;
+};
+export const duelSearch = (q) => rpc("duel_search", { p_q: q });
+export const duelList = () => rpc("duel_list", {});
+export const duelGet = (id) => rpc("duel_get", { p_id: id });
+export const duelJoin = (code) => rpc("duel_join", { p_code: code });
+export const duelDecline = (id) => rpc("duel_decline", { p_id: id });
+export const duelSubmit = (id, answers) => rpc("duel_submit", { p_id: id, p_answers: answers });
+/** Tire les questions une seule fois : les deux joueurs auront exactement les mêmes. */
+export async function duelCreate({ game, level, category, mode, username, count }) {
+  const items = await buildGame(game, level, { count, category });
+  if (!items?.length) throw new Error("Impossible de préparer les questions.");
+  return rpc("duel_create", { p_game: game, p_level: level, p_category: game === "ilm" ? category || "mix" : "", p_mode: mode, p_username: username || "", p_items: items });
+}
+/** État d'un duel vu par moi : à jouer, en attente de l'autre, terminé, expiré, refusé. */
+export function duelState(d) {
+  if (d.status === "declined") return "declined";
+  if (d.status === "expired") return "expired";
+  if (d.status === "done") return "done";
+  if (!d.me) return "play";
+  return "waiting";
+}

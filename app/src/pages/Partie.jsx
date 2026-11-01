@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer } from "@phosphor-icons/react";
-import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr } from "@/lib/games";
+import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer } from "@phosphor-icons/react";
+import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, duelGet, duelSubmit } from "@/lib/games";
 import { speak, playUrl, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 
@@ -55,6 +55,9 @@ export default function Partie() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const params = new URLSearchParams(window.location.search);
+  const duelId = params.get("duel");
+  const { data: duel, error: duelError } = useQuery({ queryKey: ["duel-play", duelId], queryFn: () => duelGet(duelId), enabled: !!duelId, staleTime: Infinity, gcTime: 0 });
+  if (duel) { params.set("g", duel.game); params.set("l", String(duel.level)); params.set("c", duel.category || "mix"); }
   const game = GAMES[params.get("g")] ? params.get("g") : "lettres";
   const G = GAMES[game];
   const levelN = Math.max(1, Math.min(G.levels.length, Number(params.get("l")) || 1));
@@ -66,11 +69,17 @@ export default function Partie() {
   const { data: settings } = useQuery({ queryKey: ["game-settings"], queryFn: loadSettings, staleTime: 60_000 });
   const count = game === "ilm" ? settings?.rules?.ilm_questions ?? 10 : settings?.rules?.questions ?? 5;
   const [seed, setSeed] = useState(0);
-  const { data: items, isLoading, error } = useQuery({
+  const { data: built, isLoading: building, error: buildError } = useQuery({
     queryKey: ["game-items", game, levelN, category, seed, count],
     queryFn: () => buildGame(game, levelN, { count, category }),
-    enabled: !!settings, staleTime: Infinity, gcTime: 0,
+    enabled: !!settings && !duelId, staleTime: Infinity, gcTime: 0,
   });
+  const items = duelId ? duel?.items : built;
+  const isLoading = duelId ? !duel && !duelError : building;
+  const error = duelId ? duelError : buildError;
+  const them = duel?.them?.answers || null;
+  const rival = duel?.other?.username ? `@${duel.other.username}` : "Ton adversaire";
+  const shownAt = useRef(Date.now());
 
   const [i, setI] = useState(0);
   const [choice, setChoice] = useState(null);
@@ -83,6 +92,9 @@ export default function Partie() {
   const [end, setEnd] = useState(null);
   const [left, setLeft] = useState(null);
   useEffect(() => () => stopAudio(), []);
+  useEffect(() => { shownAt.current = Date.now(); }, [i, items]);
+  // duel déjà joué : direction le résultat
+  useEffect(() => { if (duel?.me || (duel && duel.status !== "pending")) navigate(`/Duel?id=${duel.id}`, { replace: true }); }, [duel]);
 
   const item = items?.[i];
   const rate = settings?.robot?.[robotN] ?? [0.3, 0.15, 0.05][robotN - 1];
@@ -126,11 +138,12 @@ export default function Partie() {
   const grade = (forced, timeout) => {
     if (result) return;
     const ok = forced === undefined ? isCorrect() : forced;
-    const botOk = robotAnswers(rate);
-    answers.current.push({ id: item.id || `${game}-${i}`, ok, timeout: !!timeout });
+    const t = duelId ? them?.[i] : null;
+    const botOk = duelId ? !!t?.ok : robotAnswers(rate);
+    answers.current.push({ id: item.id || `${game}-${i}`, ok, timeout: !!timeout, ms: Date.now() - shownAt.current });
     if (ok) setMe((x) => x + 1);
     if (botOk) setBot((x) => x + 1);
-    setBotLast(botOk);
+    setBotLast(duelId && !t ? null : botOk);
     setResult(ok ? "ok" : "ko"); chime(ok); haptic(ok ? 8 : 30);
     if (!ok && (item.kind === "letter-see" || item.kind === "letter-hear")) setTimeout(() => speak(L[item.answer].nameAr), 300);
     if (item.kind === "suite") setTimeout(() => playUrl(AUDIO(item.next.g)), 300);
@@ -141,6 +154,15 @@ export default function Partie() {
     if (i + 1 >= items.length) {
       const score = answers.current.filter((a) => a.ok).length;
       setEnd({ score, total: items.length, bot, saving: true });
+      if (duelId) {
+        try {
+          await duelSubmit(duelId, answers.current.map(({ ok, ms }) => ({ ok, ms })));
+          await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok }))).catch(() => {});
+          ["game-progress", "game-stats", "duels"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+          navigate(`/Duel?id=${duelId}`, { replace: true });
+        } catch { setEnd({ score, total: items.length, bot, offline: true, duel: true }); }
+        return;
+      }
       try {
         const r = await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok })));
         setEnd({ score, total: items.length, bot, ...r });
@@ -162,8 +184,8 @@ export default function Partie() {
       <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
         <div className="flex-1 max-w-md mx-auto w-full px-6 pt-10 text-center">
           <div className="w-24 h-24 mx-auto rounded-3xl bg-primary text-primary-foreground flex items-center justify-center shadow-[0_5px_0_var(--primary-lip)]"><CheckCircle weight="fill" className="w-12 h-12" /></div>
-          <h1 className="text-[28px] font-black mt-6">{won ? "Victoire !" : draw ? "Égalité" : "Partie terminée"}</h1>
-          <p className="font-semibold text-muted-foreground mt-1">Toi {end.score} · Robot {end.bot} · {end.score} / {end.total} bonnes réponses</p>
+          <h1 className="text-[28px] font-black mt-6">{duelId ? (end.saving ? "Envoi du duel…" : "Duel non envoyé") : won ? "Victoire !" : draw ? "Égalité" : "Partie terminée"}</h1>
+          <p className="font-semibold text-muted-foreground mt-1">{duelId ? `${end.score} / ${end.total} bonnes réponses` : `Toi ${end.score} · Robot ${end.bot} · ${end.score} / ${end.total} bonnes réponses`}</p>
           <div className="grid grid-cols-2 gap-3 mt-7">
             <div className="card-flat p-4"><Lightning weight="fill" className="w-6 h-6 text-gold mx-auto" /><p className="text-2xl font-black mt-1">{end.saving ? "…" : `+${end.xp ?? 0}`}</p><p className="text-xs font-bold text-muted-foreground">points</p></div>
             <div className="card-flat p-4">{end.mult > 1 ? <Fire weight="fill" className="w-6 h-6 text-gold mx-auto" /> : <Target weight="fill" className="w-6 h-6 text-primary mx-auto" />}<p className="text-2xl font-black mt-1">{end.mult > 1 ? `x${Number(end.mult).toFixed(1)}` : `${Math.round((end.score / end.total) * 100)} %`}</p><p className="text-xs font-bold text-muted-foreground">{end.mult > 1 ? `série de ${end.streak} jours` : "de réussite"}</p></div>
@@ -174,7 +196,8 @@ export default function Partie() {
               <div><p className="font-extrabold">Niveau {end.level} débloqué</p><p className="text-[12.5px] font-semibold text-muted-foreground">{G.levels.find((l) => l.n === end.level)?.name} : {G.levels.find((l) => l.n === end.level)?.desc}</p></div>
             </div>
           )}
-          {end.offline && <p className="text-[13px] font-bold text-muted-foreground mt-3">Pas de connexion : la partie n'a pas été enregistrée.</p>}
+          {end.offline && <p className="text-[13px] font-bold text-muted-foreground mt-3">{end.duel ? "Pas de connexion : ton duel n'a pas pu être envoyé. Reste sur cette page et réessaie." : "Pas de connexion : la partie n'a pas été enregistrée."}</p>}
+          {end.duel && <button onClick={() => { setI(items.length - 1); next(); }} className="btn-relief h-[52px] w-full mt-3 bg-primary text-primary-foreground">Réessayer l'envoi</button>}
           {mistakes.length > 0 && (
             <div className="text-left mt-6">
               <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mb-2">À retenir</p>
@@ -313,7 +336,7 @@ export default function Partie() {
       <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between text-[14px] font-extrabold">
         <span className="flex items-center gap-1.5"><User weight="fill" className="w-4 h-4 text-primary" />Toi {me}</span>
         {left != null && <span className={`flex items-center gap-1 ${left < 1.5 ? "text-destructive" : "text-muted-foreground"}`}><Timer weight="bold" className="w-4 h-4" />{left.toFixed(1)} s</span>}
-        <span className="flex items-center gap-1.5 text-muted-foreground"><Robot weight="fill" className="w-4 h-4" />Robot {ROBOT[robotN - 1].name.toLowerCase()} {bot}{botLast != null && <span className={botLast ? "text-primary" : "text-destructive"}>{botLast ? " ✓" : " ✗"}</span>}</span>
+        <span className="flex items-center gap-1.5 text-muted-foreground">{duelId ? <><Sword weight="fill" className="w-4 h-4" />{rival} {them ? bot : "·"}</> : <><Robot weight="fill" className="w-4 h-4" />Robot {ROBOT[robotN - 1].name.toLowerCase()} {bot}</>}{botLast != null && <span className={botLast ? "text-primary" : "text-destructive"}>{botLast ? " ✓" : " ✗"}</span>}</span>
       </div>
       <div className="flex-1 max-w-xl mx-auto w-full px-4 pt-4 pb-72">{body()}</div>
 
@@ -327,6 +350,10 @@ export default function Partie() {
                 <p className="text-[19px] font-black">{result === "ok" ? "Bonne réponse !" : answers.current[answers.current.length - 1]?.timeout ? "Temps écoulé" : "Pas tout à fait"}</p>
               </div>
               <Correction item={item} lv={lv} ok={result === "ok"} />
+              {duelId && them?.[i] && (
+                <p className="mt-2.5 rounded-xl bg-gold-tint text-[13px] font-extrabold px-3 py-2 flex items-center gap-2"><Sword weight="fill" className="w-4 h-4 text-gold shrink-0" />
+                  {rival} {them[i].ok ? "a aussi trouvé" : "s'est trompé"}{them[i].ms ? `, en ${Math.max(1, Math.round(them[i].ms / 1000))} s` : ""}</p>
+              )}
             </div>
           )}
           {result
