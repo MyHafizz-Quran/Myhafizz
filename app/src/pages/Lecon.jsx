@@ -309,7 +309,7 @@ export default function Lecon() {
           <div className="flex flex-col items-center text-center">
             <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Nouvelle lettre</p>
             <div className={`${AR} text-[150px] leading-[1.25] mt-2`}>{l.ar}</div>
-            <p className="text-[26px] font-black">{l.name} <span className={`${AR} text-accent-foreground font-normal`}>{l.nameAr}</span></p>
+            <p className="flex items-baseline justify-center gap-3 text-[26px] font-black"><span>{l.name}</span><span className={`${AR} text-accent-foreground font-normal`} dir="rtl">{l.nameAr}</span></p>
             <p className="font-semibold text-muted-foreground mt-2 max-w-xs">{l.hint}</p>
             {voice && <div className="mt-6"><SpeakBtn text={l.nameAr} auto /></div>}
           </div>
@@ -448,7 +448,7 @@ export default function Lecon() {
         return <Pairs key={item.key} pairs={item.pairs} arBoth={item.arBoth} onDone={(clean) => grade(clean)} />;
       case "trace":
         return (<>
-          <p className="text-center font-extrabold mb-3">{L[item.letter].name} <span className={`${AR} font-normal`}>{L[item.letter].ar}</span></p>
+          <p className="flex items-baseline justify-center gap-2 font-extrabold mb-3"><span>{L[item.letter].name}</span><span className={`${AR} font-normal`} dir="rtl">{L[item.letter].ar}</span></p>
           <Trace letter={L[item.letter]} onInk={setHasInk} resetKey={traceKey} registerCheck={(fn) => { traceCheck.current = fn; }} />
           {!result && <div className="flex justify-center mt-3"><button onClick={() => { haptic(); setTraceKey((k) => k + 1); }} className="h-10 px-4 rounded-xl border-2 border-border bg-card font-extrabold text-sm flex items-center gap-2 press"><Eraser weight="bold" className="w-4 h-4" />Effacer</button></div>}
         </>);

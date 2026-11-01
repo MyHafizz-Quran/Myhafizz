@@ -5,7 +5,9 @@ import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
 import { installGlobalFeedback } from '@/lib/feedback'
+import { startArabicFit } from '@/lib/arabicFit'
 installGlobalFeedback()
+startArabicFit()
 import { PLATFORM, isStandalone } from '@/hooks/usePlatform'
 
 // Plateforme et mode d'affichage, pour adapter les barres natives
