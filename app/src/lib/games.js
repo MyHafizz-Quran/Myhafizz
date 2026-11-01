@@ -182,7 +182,7 @@ export const helpier = (a, b) => (!b ? a : !a ? b : AIDS[Math.max(AIDS.indexOf(a
 const COMMON = [1, 103, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114];
 const extraP = {};
 /** Une sourate au format des jeux : Juz Amma / Tabarak en local, les autres depuis l'API (mise en cache). */
-async function loadSurah(n) {
+export async function loadSurah(n) {
   const quran = await loadQuran();
   const local = quran.find((x) => x.n === n);
   if (local) return local;
@@ -293,7 +293,7 @@ function ordreQuestions(quran, lv, count) {
 /** Al-Ilm : questions publiées de la base (catégorie et difficulté choisies). */
 async function ilmQuestions(lv, count, category) {
   let q = db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published");
-  if (category && category !== "mix") q = q.eq("category", category); else q = q.neq("category", "hadith_vf");
+  if (category && category !== "mix") q = q.eq("category", category); else q = q.not("category", "in", "(hadith_vf,tafsir)");
   const { data, error } = await q.lte("difficulty", lv.difficulty).limit(400);
   if (error) throw error;
   const rows = data || [];
@@ -357,7 +357,7 @@ export const pushNow = () => fetch(NOTIF_URL, { method: "POST" }).catch(() => {}
 export async function buildDuelPool(n = 30, cfg = {}, scope) {
   const quran = await loadQuran();
   const sc = scope?.surahs;
-  const { data } = await db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published").neq("category", "hadith_vf").lte("difficulty", 2).limit(600);
+  const { data } = await db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published").not("category", "in", "(hadith_vf,tafsir)").lte("difficulty", 2).limit(600);
   const ilm = shuffle(data || []);
   const r = (a) => a[Math.floor(Math.random() * a.length)];
   const out = [];

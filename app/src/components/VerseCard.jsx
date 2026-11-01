@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { maskWords } from "@/lib/srs";
 import { Eye, EyeOff, CheckCircle2, Circle, Play, Pause, Repeat, Heart, Eraser } from "@/components/icons";
 import { haptic } from "@/hooks/usePlatform";
-import { tafsirMuyassar } from "@/lib/tafsir";
+import { verseKey } from "@/lib/tafsir";
+import TafsirPanel from "@/components/TafsirPanel";
 import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";
@@ -228,12 +229,8 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   const blank = (text, i) => (
     <span key={i} onClick={(e) => { e.stopPropagation(); peekWord(i); }} className="inline-block rounded-lg bg-muted text-transparent select-none cursor-pointer mx-[2px] leading-[1.3]" aria-label="Mot effacé, touche pour le voir">{text}</span>
   );
-  const toggleTafsir = () => {
-    haptic();
-    if (tafsir && tafsir !== "loading") { setTafsir(null); return; }
-    setTafsir("loading");
-    tafsirMuyassar(verse.number).then((t) => setTafsir(t || "error"), () => setTafsir("error"));
-  };
+  const toggleTafsir = () => { haptic(); setTafsir((t) => (t ? null : "open")); };
+  const vk = verseKey(verse.number)?.split(":").map(Number);
   const arNum = String(verse.numberInSurah).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
   const iconBtn = "w-9 h-9 rounded-full flex items-center justify-center transition-colors press";
   const endMark = (
@@ -331,15 +328,8 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
       ) : null}
       {!isHidden && (
         <div className="px-4 pb-3">
-          <button onClick={toggleTafsir} className="text-[13px] font-extrabold text-primary">{tafsir && tafsir !== "loading" ? "Masquer l'explication" : tafsir === "loading" ? "Chargement…" : "Explication (tafsir)"}</button>
-          {tafsir && tafsir !== "loading" && (
-            tafsir === "error"
-              ? <p className="text-[13px] font-semibold text-muted-foreground mt-1">Explication indisponible pour le moment. Vérifie ta connexion.</p>
-              : <div className="mt-2 rounded-xl bg-muted p-3">
-                  <p dir="rtl" lang="ar" className="font-arabic text-[19px] leading-[1.95] text-right text-foreground">{tafsir}</p>
-                  <p className="text-[11.5px] font-bold text-muted-foreground mt-1.5">Tafsir al-Muyassar (arabe simplifié, Complexe du roi Fahd)</p>
-                </div>
-          )}
+          <button onClick={toggleTafsir} className="text-[13px] font-extrabold text-primary">{tafsir ? "Masquer l'explication" : "Explication (tafsir)"}</button>
+          {tafsir && vk && <TafsirPanel surah={vk[0]} ayah={vk[1]} />}
         </div>
       )}
     </div>

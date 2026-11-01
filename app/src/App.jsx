@@ -58,6 +58,7 @@ import Join from '@/pages/Join';
 import DesktopRail from '@/components/DesktopRail';
 import Lire from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
+import Tafsir from "./pages/Tafsir";
 import Jouer from './pages/Jouer.jsx';
 import Partie from './pages/Partie.jsx';
 import Duel from './pages/Duel.jsx';
@@ -68,6 +69,7 @@ import Ligue from './pages/Ligue.jsx';
 import Tournoi from './pages/Tournoi.jsx';
 import Notifications from './pages/Notifications.jsx';
 import { NotifProvider } from './lib/notifs.jsx';
+const TafsirRoute = () => { const loc = useLocation(); return <Tafsir key={loc.search} />; };
 const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
@@ -81,7 +83,7 @@ const AuthenticatedApp = () => {
   const location = useLocation();
   const platform = usePlatform();
   const path = location.pathname;
-  const immersive = IMMERSIVE.some((p) => path.startsWith(p));
+  const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search));
   const homeHeader = WITH_HOME_HEADER.some((p) => path.startsWith(p));
   const kid = useKidMode();
   const kidLocked = kid.on && !kid.unlocked && KID_LOCKED.some((p) => path.startsWith(p));
@@ -179,6 +181,7 @@ const AuthenticatedApp = () => {
           <Route path="/Lire" element={<Lire />} />
           <Route path="/Lecon" element={<Lecon />} />
           <Route path="/Jouer" element={<Jouer />} />
+          <Route path="/Tafsir" element={<TafsirRoute />} />
           <Route path="/Partie" element={<PartieRoute />} />
           <Route path="/Equipe" element={<Equipe />} />
           <Route path="/Joueur" element={<Joueur />} />
