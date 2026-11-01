@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { GearSix, Camera, At, IdentificationCard, PencilSimple, Fire, Medal, BookOpenText, Crown, Star, UsersThree, Ranking, BookmarkSimple, DownloadSimple, Question, Gift, CaretRight, Check, X } from "@phosphor-icons/react";
+import { GearSix, Camera, At, IdentificationCard, PencilSimple, Fire, Medal, BookOpenText, Crown, Star, UsersThree, Ranking, BookmarkSimple, DownloadSimple, Question, Gift, CaretRight, Check, X, ChartLineUp } from "@phosphor-icons/react";
 import { db } from "@/api/neonClient";
 import { MemorizationProgress, ActivityDays } from "@/api/entities";
 import { currentStreak, longestStreak } from "@/lib/srs";
@@ -165,6 +165,7 @@ export default function Profile() {
 
         <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-5 mb-2 ml-1">Mon espace</p>
         <div className="card-flat overflow-hidden divide-y-2 divide-border">
+          <Row icon={ChartLineUp} title="Mes progrès" sub="Versets, régularité, solidité" to="/Progres" />
           <Row icon={UsersThree} title="Mes groupes" to="/Groups" />
           <Row icon={Ranking} title="Classement" to="/Leaderboard" />
           <Row icon={BookmarkSimple} title="Signets" to="/Bookmarks" />

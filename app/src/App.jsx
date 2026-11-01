@@ -44,6 +44,7 @@ const Qibla = lazyPage(() => import('./pages/Qibla.jsx'));
 const Live = lazyPage(() => import('./pages/Live.jsx'));
 const Noms = lazyPage(() => import('./pages/Noms.jsx'));
 const Bilan = lazyPage(() => import('./pages/Bilan.jsx'));
+const Progres = lazyPage(() => import('./pages/Progres.jsx'));
 const Adhkar = lazyPage(() => import('./pages/Adhkar.jsx'));
 const Tasbih = lazyPage(() => import('./pages/Tasbih.jsx'));
 const Calendrier = lazyPage(() => import('./pages/Calendrier.jsx'));
@@ -182,6 +183,7 @@ const AuthenticatedApp = () => {
           <Route path="/Memorize" element={<Memorize />} />
           <Route path="/Qibla" element={<Qibla />} />
           <Route path="/Bilan" element={<Bilan />} />
+          <Route path="/Progres" element={<Progres />} />
           <Route path="/Adhkar" element={<Adhkar />} />
           <Route path="/Tasbih" element={<Tasbih />} />
           <Route path="/Calendrier" element={<Calendrier />} />
