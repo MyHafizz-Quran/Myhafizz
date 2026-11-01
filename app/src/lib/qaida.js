@@ -381,3 +381,4 @@ export function playQueue(urls) {
   next();
 }
 export function stopAudio() { try { player?.pause(); } catch { /* ignore */ } }
+export const currentPlayer = () => player;

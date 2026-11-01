@@ -6,6 +6,7 @@ import PageHeader from "@/components/PageHeader";
 import { TafsirChips, TafsirText } from "@/components/TafsirPanel";
 import { getSrc, lessonsOf, surahMeta, tafsirRange, tafsirOne, tafsirQuestions, tafsirDone, tafsirMe, DEFAULT_SRC } from "@/lib/tafsir";
 import { loadSurah, myQuranScope, AUDIO, surahFr } from "@/lib/games";
+import KaraokeVerse from "@/components/KaraokeVerse";
 import { playUrl, stopAudio } from "@/lib/qaida";
 import { db } from "@/api/neonClient";
 import { haptic } from "@/hooks/usePlatform";
@@ -263,8 +264,8 @@ function Lesson({ surah, index }) {
           <>
             <p className="text-[12px] font-black tracking-wide text-muted-foreground mt-3">{nameOf(surah).toUpperCase()} · VERSET {cur.k}</p>
             <div className="card-flat p-4 mt-2">
-              <p dir="rtl" lang="ar" className="font-arabic text-[27px] leading-[2.15] text-right">{cur.a}</p>
-              {level !== "good" && cur.t && <p className={`italic font-semibold text-muted-foreground mt-1 ${level === "some" ? "text-[13px]" : "text-[15px]"}`}>{cur.t}</p>}
+              <KaraokeVerse surah={surah} ayah={cur.k} url={AUDIO(cur.g)} arabic={cur.a} translit={cur.t}
+                phon={level === "none" ? "first" : level === "good" ? "none" : "small"} />
               <div className="flex items-center gap-3 mt-2">
                 <button onClick={() => { haptic(); playUrl(AUDIO(cur.g)); }} className="shrink-0 h-9 px-3 rounded-xl border-2 border-border bg-card flex items-center gap-1.5 font-extrabold text-[13px] press"><SpeakerHigh weight="fill" className="w-4 h-4" />Écouter</button>
                 <p className="text-[14px] font-semibold text-foreground/75">{cur.f}</p>

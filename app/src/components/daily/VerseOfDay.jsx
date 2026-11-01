@@ -7,6 +7,8 @@ import { verseOfDay } from "@/lib/daily";
 import { usePreferences } from "@/components/usePreferences";
 import { useAudioManager } from "@/lib/AudioManager";
 import { haptic } from "@/hooks/usePlatform";
+import KaraokeVerse from "@/components/KaraokeVerse";
+import { Profile } from "@/api/entities";
 
 /** Carte « Verset du jour » : texte, traduction, écoute et accès à la mémorisation. */
 export default function VerseOfDay({ className = "" }) {
@@ -15,6 +17,9 @@ export default function VerseOfDay({ className = "" }) {
   const audioMgr = useAudioManager();
   const { data: v, isLoading, isError } = useQuery({ queryKey: ["verse-of-day", new Date().toDateString()], queryFn: verseOfDay, staleTime: Infinity, retry: 1 });
   const audio = useRef(null);
+  const getPlayer = React.useCallback(() => audio.current, []);
+  const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), staleTime: 300000 });
+  const lv = profile?.arabic_level;
   const [playing, setPlaying] = useState(false);
   useEffect(() => () => audio.current?.pause(), []);
 
@@ -40,7 +45,8 @@ export default function VerseOfDay({ className = "" }) {
         <p className="font-black text-[17px]">Verset du jour</p>
         <span className="text-sm font-extrabold text-muted-foreground">{v.surahName} · {v.ayah}</span>
       </div>
-      <p dir="rtl" lang="ar" className="font-arabic text-[24px] leading-[2.1] text-right mt-2">{v.ar}</p>
+      <div className="mt-2"><KaraokeVerse surah={v.surah} ayah={v.ayah} arabic={v.ar} getPlayer={getPlayer} timed={(reciter || "ar.alafasy") === "ar.alafasy"}
+        arClass="text-[24px] leading-[2.1]" phon={lv === "none" ? "first" : lv === "some" ? "small" : "none"} /></div>
       <p className="text-[14px] font-semibold text-muted-foreground mt-1.5">{v.fr}</p>
       <div className="flex gap-2 mt-3">
         <button onClick={toggle} className="btn-relief h-[46px] w-[52px] bg-card text-primary border-2 border-border [--relief-color:hsl(var(--border))] flex items-center justify-center shrink-0" aria-label={playing ? "Pause" : "Écouter"}>
