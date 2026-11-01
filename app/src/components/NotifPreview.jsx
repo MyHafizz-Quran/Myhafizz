@@ -6,7 +6,7 @@ import { SpinnerGap, BookOpenText, SunHorizon, Flame } from "@phosphor-icons/rea
  * Trois vraies notifications MyHafizz tombent une à une sur un écran de téléphone,
  * puis la demande d'activation monte du bas.
  */
-export default function NotifPreview({ prayerLabel, pace, onEnable, onLater, busy, error }) {
+export default function NotifPreview({ prayerLabel, pace, onEnable, onLater, busy, error, enableLabel = "Activer les notifications" }) {
   const [now, setNow] = useState(new Date());
   const [shown, setShown] = useState(0);
   const [sheet, setSheet] = useState(false);
@@ -52,7 +52,7 @@ export default function NotifPreview({ prayerLabel, pace, onEnable, onLater, bus
           <p className="font-semibold text-muted-foreground mt-1.5">Un mot après la prière, jamais plus de 3 par jour, rien de 22 h à 6 h. Tu choisis lesquels dans ton profil.</p>
           {error && <p className="mt-3 text-sm font-bold text-destructive">{error}</p>}
           <button disabled={busy} onClick={onEnable} className="btn-relief w-full h-[52px] mt-5 bg-primary text-primary-foreground uppercase tracking-wide disabled:opacity-60">
-            {busy ? <SpinnerGap weight="bold" className="w-5 h-5 animate-spin" /> : "Activer les notifications"}
+            {busy ? <SpinnerGap weight="bold" className="w-5 h-5 animate-spin" /> : enableLabel}
           </button>
           <button disabled={busy} onClick={onLater} className="w-full h-12 font-extrabold text-muted-foreground">Plus tard</button>
         </div>

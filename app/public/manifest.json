@@ -2,7 +2,7 @@
   "name": "MyHafizz - Mémorisation du Coran",
   "short_name": "MyHafizz",
   "description": "Mémorise le Coran avec la méthode des madrasas : séance quotidienne sabaq, sabqi, manzil, révision des versets fragiles, groupes et khatma.",
-  "start_url": "/Dashboard?source=pwa",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#EFF9F9",
   "theme_color": "#EFF9F9",

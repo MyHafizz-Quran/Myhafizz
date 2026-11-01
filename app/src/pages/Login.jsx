@@ -4,6 +4,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Eye, EyeSlash, SpinnerGap, CheckCircle, CaretLeft, Check, EnvelopeOpen, UserCircle, X } from "@phosphor-icons/react";
 import { db, frAuthError } from "@/api/neonClient";
 import { useAuth } from "@/lib/AuthContext";
+import { report } from "@/lib/report";
 import { Profile, usernameAvailable, pendingProfile, cleanUsername, USERNAME_RE } from "@/api/entities";
 import MhLogo, { MhWordmark } from "@/components/MhLogo";
 
@@ -193,6 +194,8 @@ export default function Login() {
         const { error: err } = await db.auth.signUp({ email: mail, password, options: { data: { full_name: name.trim() } } });
         if (!err) track("sign_up", { method: "email" });
         if (err) throw err;
+        // Neon ne passe plus toujours par notre envoi d'e-mail à l'inscription : on demande le code explicitement
+        try { await db.auth.sendCode(mail, "email-verification"); } catch (e) { report(e, "signup:sendCode"); }
         setStep(2); setWait(45);
       });
     }

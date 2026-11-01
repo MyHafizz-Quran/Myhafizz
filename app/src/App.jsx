@@ -1,3 +1,5 @@
+import { Profile as ProfileApi } from '@/api/entities';
+import { useQuery } from '@tanstack/react-query';
 import { db } from '@/api/neonClient';
 import { syncFcm } from '@/lib/reminders';
 import VoiceSplash from './components/VoiceSplash.jsx';
@@ -149,6 +151,8 @@ const AuthenticatedApp = () => {
   if (!isAuthenticated) {
     const pendingJoin = new URLSearchParams(window.location.search).get("join");
     if (pendingJoin) return <Navigate to={`/rejoindre/${encodeURIComponent(pendingJoin)}`} replace />;
+    // App installée (même ancienne adresse de départ /Dashboard) : écran de bienvenue d'abord
+    if (isStandalone()) return <Navigate to="/" replace />;
     return <Navigate to="/login" replace />;
   }
 
@@ -163,6 +167,7 @@ const AuthenticatedApp = () => {
   return (
     <NotifProvider>
       <OfflineBanner />
+      <OnboardGate path={path} />
       {/* iOS 26 floute le contenu qui défile sous la barre d'état : une bande pleine, fixe, l'en empêche sur tous les écrans */}
       {platform !== "android" && <div className="ios-scroll-edge" aria-hidden="true" />}
       {homeHeader && <TopHeader />}
@@ -234,6 +239,15 @@ const AuthenticatedApp = () => {
   );
 };
 
+/** Onboarding obligatoire : tant que le profil n'a pas onboarded_at, on renvoie vers /Bienvenue. */
+function OnboardGate({ path }) {
+  const ok = localStorage.getItem("mh_onb_ok") === "1";
+  const { data } = useQuery({ queryKey: ["onboard-check"], queryFn: () => ProfileApi.get(), enabled: !ok, staleTime: 30000 });
+  if (ok || !data?.id || path.startsWith("/Bienvenue")) return null;
+  if (data.onboarded_at) { localStorage.setItem("mh_onb_ok", "1"); return null; }
+  return <Navigate to="/Bienvenue" replace />;
+}
+
 const LandingOrDashboard = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
 
@@ -257,12 +271,13 @@ const LandingOrDashboard = () => {
 };
 
 /** Pages publiques : pleine largeur et défilement de la page (voir html.full-bleed dans index.css) */
-function FullBleed({ children }) {
+function FullBleed({ children, band }) {
   useEffect(() => {
     document.documentElement.classList.add("full-bleed");
     return () => document.documentElement.classList.remove("full-bleed");
   }, []);
-  return children;
+  // band : bande pleine sous la barre d'état iOS, pour que le contenu ne passe pas dessous (effet flou d'iOS 26)
+  return band ? <>{children}<div aria-hidden="true" className="fixed top-0 inset-x-0 z-40 bg-background" style={{ height: "env(safe-area-inset-top, 0px)" }} /></> : children;
 }
 
 function App() {
@@ -275,9 +290,9 @@ function App() {
               <Suspense fallback={<PageFallback />}>
               <Routes>
                 <Route path="/" element={<LandingOrDashboard />} />
-                <Route path="/login" element={<FullBleed><Login /></FullBleed>} />
-                <Route path="/reset-password" element={<FullBleed><ResetPassword /></FullBleed>} />
-                <Route path="/confirm" element={<FullBleed><ConfirmEmail /></FullBleed>} />
+                <Route path="/login" element={<FullBleed band><Login /></FullBleed>} />
+                <Route path="/reset-password" element={<FullBleed band><ResetPassword /></FullBleed>} />
+                <Route path="/confirm" element={<FullBleed band><ConfirmEmail /></FullBleed>} />
                 <Route path="/terms" element={<FullBleed><Terms /></FullBleed>} />
                 <Route path="/privacy" element={<FullBleed><Privacy /></FullBleed>} />
                 <Route path="/rejoindre/:code" element={<Join />} />

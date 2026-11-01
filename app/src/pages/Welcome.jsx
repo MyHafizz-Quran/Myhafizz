@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { SpinnerGap, ArrowLeft, Bell, Check, X, BookOpenText, Waveform, Target, CalendarCheck } from "@phosphor-icons/react";
-import { HifzPlan, Profile, usernameAvailable, cleanUsername, USERNAME_RE } from "@/api/entities";
+import { HifzPlan, Profile, usernameAvailable, cleanUsername, USERNAME_RE, pendingProfile } from "@/api/entities";
 import { GOALS, goalSurahs } from "@/lib/learningData";
 import { useAuth } from "@/lib/AuthContext";
 import { haptic } from "@/hooks/usePlatform";
@@ -76,7 +76,17 @@ export default function Welcome() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    Profile.get().then((p) => { if (p && !p.username) setNeedUser(true); }).catch(() => {});
+    // Nom d'utilisateur saisi à l'inscription : on l'applique d'abord, on ne le redemande que s'il manque vraiment (Google, nom pris)
+    (async () => {
+      let p = await Profile.get().catch(() => null);
+      if (p && !p.username) {
+        const pend = pendingProfile.take(user?.email?.toLowerCase());
+        if (pend?.username) {
+          try { await Profile.update({ username: pend.username, ...(pend.full_name ? { full_name: pend.full_name } : {}) }); p = { ...p, username: pend.username }; } catch { /* pris : redemandé */ }
+        }
+      }
+      if (p && !p.username) setNeedUser(true);
+    })();
   }, []);
   useEffect(() => {
     const u = cleanUsername(username);
@@ -95,7 +105,7 @@ export default function Welcome() {
   const push = pushSupport();
 
   // Étapes : [nom d'utilisateur], objectif, niveau, rythme, récap
-  const steps = [...(needUser ? ["user"] : []), "goal", "level", "pace", "recap", ...(push === "ok" ? ["notif"] : [])];
+  const steps = [...(needUser ? ["user"] : []), "goal", "level", "pace", "recap", ...(push !== "unsupported" ? ["notif"] : [])];
   const cur = steps[Math.min(step, steps.length - 1)];
   const next = () => { haptic(); setError(null); setStep((s) => s + 1); window.scrollTo(0, 0); };
 
@@ -106,9 +116,9 @@ export default function Welcome() {
     finally { setBusy(false); }
   };
 
-  const done = (to) => { localStorage.setItem(ONBOARDED_KEY, "1"); navigate(to, { replace: true }); };
+  const done = (to) => { localStorage.setItem(ONBOARDED_KEY, "1"); localStorage.setItem("mh_onb_ok", "1"); qc.removeQueries({ queryKey: ["onboard-check"] }); navigate(to, { replace: true }); };
 
-  const finish = async (withReminders) => {
+  const finish = async (withReminders, goTo) => {
     setBusy(true); setError(null);
     try {
       const g = GOALS.find((x) => x.key === goal);
@@ -129,6 +139,7 @@ export default function Welcome() {
         return;
       }
     }
+    if (goTo) { done(goTo); return; }
     // Pas encore lecteur : on commence par le parcours « Lire l'arabe ».
     done(level === "none" ? "/LireArabe" : "/Dashboard");
   };
@@ -137,18 +148,21 @@ export default function Welcome() {
 
   if (cur === "notif") {
     const pr = PRAYERS.find((p) => p.key === prayers[0])?.label || "la prière";
+    // iPhone dans Safari : les notifications demandent l'app installée, on termine puis on montre comment l'installer
+    if (push === "install") return <NotifPreview prayerLabel={pr} pace={pace} busy={busy} error={error} enableLabel="Installer l'app pour les recevoir" onEnable={() => finish(false, "/telecharger")} onLater={() => finish(false)} />;
     return <NotifPreview prayerLabel={pr} pace={pace} busy={busy} error={error} onEnable={() => finish(true)} onLater={() => finish(false)} />;
   }
 
   return (
     <div className="min-h-[100dvh] bg-background">
+      <div aria-hidden="true" className="fixed top-0 inset-x-0 z-40 bg-background" style={{ height: "env(safe-area-inset-top, 0px)" }} />
       <div className="max-w-[460px] mx-auto px-5 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-44">
         <div className="flex items-center gap-3 h-11">
           {step > 0
             ? <button onClick={() => { setError(null); setStep(step - 1); }} aria-label="Retour" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground"><ArrowLeft weight="bold" className="w-5 h-5" /></button>
             : <span className="w-8" />}
           <div className="flex-1 h-3 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div>
-          {cur !== "user" ? <button onClick={() => done("/Dashboard")} className="text-sm font-extrabold text-muted-foreground">Passer</button> : <span className="w-8" />}
+          <span className="w-8" />
         </div>
         <p className="text-xs font-black uppercase tracking-wider text-muted-foreground mt-4">Étape {step + 1} sur {steps.length}</p>
 
