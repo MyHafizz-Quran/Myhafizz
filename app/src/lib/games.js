@@ -310,6 +310,18 @@ export async function ldInvite(username, rematchOf) {
   return id;
 }
 
+/* ── Tournois ── */
+export const tnList = () => rpc("tn_list", {});
+export const tnState = (id, pool) => rpc("tn_state", { p_id: id, p_candidates: pool || null });
+export const tnJoin = (id, join) => rpc("tn_join", { p_id: id, p_join: !!join });
+export const tnCreate = (group, title, starts, size) => rpc("tn_create", { p_group: group, p_title: title, p_starts: starts, p_size: size });
+export const tnCancel = (id) => rpc("tn_cancel", { p_id: id });
+/** Nom d'un tour : Finale, Demi-finale, Quart de finale, Huitième de finale. */
+export function roundName(r, rounds, plural) {
+  const k = (rounds || 1) - r;
+  return k <= 0 ? (plural ? "Finale" : "Finale") : k === 1 ? (plural ? "Demi-finales" : "Demi-finale") : k === 2 ? (plural ? "Quarts de finale" : "Quart de finale") : (plural ? "Huitièmes de finale" : "Huitième de finale");
+}
+
 /* ── Ligues de la semaine ── */
 export const TIERS = ["Bronze", "Argent", "Or", "Émeraude", "Saphir", "Diamant"];
 export const lgGet = () => rpc("lg_get", {});
@@ -354,6 +366,7 @@ export const BADGES = [
   ["perfect_1", "Sans faute", "target"], ["perfect_10", "10 sans faute", "target"], ["rematch_1", "Revanche gagnée", "arrows"],
   ["fairplay_20", "Fair-play (20 duels sans abandon)", "handshake"], ["khatma_1", "Khatma d'équipe", "users"], ["khatma_5", "5 khatmas d'équipe", "users"],
   ["solo_10", "10 parties solo", "game"], ["solo_100", "100 parties solo", "game"],
+  ["tournoi_champion", "Champion de tournoi", "crown"], ["tournoi_finale", "Finaliste de tournoi", "trophy"],
   ["league_podium", "Podium de ligue", "trophy"], ["league_diamant", "Ligue Diamant", "crown"],
   ["grade_confirme", "Grade Confirmé", "medal"], ["grade_expert", "Grade Expert", "medal"], ["grade_elite", "Grade Élite", "medal"], ["grade_maitre", "Grade Maître", "medal"], ["grade_legende", "Grade Légende", "crown"],
 ];

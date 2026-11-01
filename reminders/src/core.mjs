@@ -102,7 +102,7 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
         }
       }
     }
-    try { const lg = await db.query("select public.lg_close_due() as closed, public.lg_nudge_due() as nudged"); duels = { ...duels, league: lg.rows[0] }; } catch (e) { console.error("ligue", e.message); }
+    try { const lg = await db.query("select public.lg_close_due() as closed, public.lg_nudge_due() as nudged, public.tn_cron() as tournois"); duels = { ...duels, league: lg.rows[0] }; } catch (e) { console.error("ligue", e.message); }
     try { duels = { ...duels, ...(await runDuelPush(db)) }; } catch (e) { console.error("duels", e.message); }
     try { duels = { ...duels, ...(await sendPending(db)) }; } catch (e) { console.error("notif", e.message); }
   } finally {

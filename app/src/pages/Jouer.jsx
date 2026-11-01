@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info, SealCheck, CalendarCheck } from "@phosphor-icons/react";
+import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info, SealCheck, CalendarCheck, Trophy } from "@phosphor-icons/react";
 import { Profile } from "@/api/entities";
-import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount, lgGet, TIERS } from "@/lib/games";
+import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount, lgGet, TIERS, tnList } from "@/lib/games";
 import { TierIcon } from "@/pages/Ligue";
 import { haptic } from "@/hooks/usePlatform";
 import { DuelsTab } from "@/pages/Duel";
@@ -105,6 +105,7 @@ export default function Jouer() {
       <p className="font-semibold text-muted-foreground mt-1">{tab === "duels" ? "Défie d'autres joueurs. Chaque erreur est expliquée." : tab === "equipe" ? "Révisez ensemble, en groupe ou en binôme." : "Joue à ton rythme contre l'ordinateur. Chaque erreur est expliquée."}</p>
       {settings?.defi?.enabled !== false && <DefiCard />}
       <LigueCard />
+      <TournoiCard />
       {tabs.length > 1 && (
         <div className="mt-4 flex bg-muted rounded-2xl p-1 gap-1" role="tablist">
           {tabs.map(([k, l]) => (
@@ -140,7 +141,7 @@ export default function Jouer() {
           );
         })}
       </div>
-      <p className="text-center text-[13px] font-bold text-muted-foreground mt-6">Bientôt : les tournois.</p>
+      
       </>)}
     </div>
   );
@@ -184,6 +185,24 @@ function LigueCard() {
         <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
       </span>
       {target && <span className="inline-flex mt-3 h-7 px-2.5 rounded-lg bg-accent text-accent-foreground text-[12.5px] font-extrabold items-center">Encore {target.points - me.points + 1} pts pour la zone de montée</span>}
+    </button>
+  );
+}
+
+/** Carte du prochain tournoi (officiel ou de mes groupes). */
+function TournoiCard() {
+  const navigate = useNavigate();
+  const { data } = useQuery({ queryKey: ["tn-list"], queryFn: tnList, staleTime: 30_000 });
+  if (!data?.enabled) return null;
+  const t = data.items.find((x) => x.status === "running" && x.joined) || data.items.find((x) => x.status === "open") || data.items.find((x) => x.status === "running");
+  const sub = !t ? "Aucun tournoi prévu pour l'instant" : t.status === "running" ? "En cours · touche pour suivre" : `${new Date(t.starts_at).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }).replace(":", " h ")} · ${t.players} inscrits sur ${t.size}`;
+  return (
+    <button onClick={() => { haptic(); navigate(t ? `/Tournoi?id=${t.id}` : "/Tournoi"); }} className="w-full text-left card-flat p-4 mt-3 press">
+      <span className="flex items-center gap-3">
+        <span className="w-12 h-12 rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0"><Trophy weight="fill" className="w-6 h-6" /></span>
+        <span className="flex-1 min-w-0"><span className="block font-extrabold text-[17px] truncate">{t ? t.title : "Tournois"}</span><span className="block text-[13px] font-semibold text-muted-foreground first-letter:uppercase truncate">{sub}{t?.joined && t.status === "open" ? " · inscrit" : ""}</span></span>
+        <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+      </span>
     </button>
   );
 }

@@ -21,6 +21,10 @@ export async function sendPending(db) {
       ? { title: `${who} veut sa revanche`, body: "Duel en direct · touche pour accepter (60 s)", url: "/Notifications", tag: `mh-ld-${n.ref}` }
       : n.kind === "duel_invite"
         ? { title: `${who} te défie`, body: "Duel en direct · 7 questions mélangées · touche pour accepter (60 s)", url: "/Notifications", tag: `mh-ld-${n.ref}` }
+        : n.kind === "tournoi_soon"
+          ? { title: `${n.data?.title || "Ton tournoi"} commence dans 10 minutes`, body: "Ouvre MyHafizz et reste sur l'écran du tournoi : ton premier match se lance tout seul.", url: `/Tournoi?id=${n.ref}`, tag: `mh-tn-${n.ref}` }
+        : n.kind === "tournoi_round"
+          ? { title: "Qualifié pour le tour suivant", body: `${n.data?.title || "Tournoi"} · ton prochain match commence dans 1 minute.`, url: `/Tournoi?id=${n.ref}`, tag: `mh-tn-${n.ref}` }
         : n.kind === "league_nudge"
           ? { title: "La montée est à portée", body: `Plus que ${n.data?.gap ?? ""} pts pour monter en ligue ${TIERS[(n.data?.tier || 2) - 1]}. Fin de la semaine ce soir à minuit.`, url: "/Ligue", tag: "mh-ligue" }
           : n.kind === "league_result"

@@ -149,7 +149,7 @@ export default function Partie() {
   // duel en direct : suivre le serveur
   useEffect(() => {
     if (!liveId || !ls) return;
-    if (ls.status === "done" || ls.status === "declined" || ls.status === "expired" || ls.status === "cancelled") { stopAudio(); navigate(`/Duel?id=${liveId}`, { replace: true }); return; }
+    if (ls.status === "done" || ls.status === "declined" || ls.status === "expired" || ls.status === "cancelled") { stopAudio(); navigate(ls.tournament ? `/Tournoi?id=${ls.tournament}` : `/Duel?id=${liveId}`, { replace: true }); return; }
     if (ls.status !== "playing") return;
     if (ls.q !== i) { stopAudio(); setI(ls.q); setChoice(null); setOrder([]); setResult(null); setSubmitted(false); return; }
     if (ls.q_closed_at && !result) {
@@ -473,7 +473,7 @@ export default function Partie() {
               : <p className="font-semibold text-muted-foreground mt-1">Abandonner te retire <b className="text-destructive">{settings?.duel?.quit ?? 20} points</b> et donne la victoire à {rival}.</p>}
             <div className="grid gap-2.5 mt-4">
               <button onClick={() => setQuitAsk(false)} className="btn-relief h-[52px] bg-primary text-primary-foreground">Continuer à jouer</button>
-              <button onClick={async () => { setQuitAsk(false); if (defi) return submitDefi(); try { await ldQuit(liveId); } catch { /* le serveur clôt de toute façon */ } navigate(`/Duel?id=${liveId}`, { replace: true }); }} className="h-[52px] rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold text-destructive">{defi ? "Quitter et valider" : `Quitter (−${settings?.duel?.quit ?? 20})`}</button>
+              <button onClick={async () => { setQuitAsk(false); if (defi) return submitDefi(); try { await ldQuit(liveId); } catch { /* le serveur clôt de toute façon */ } navigate(ls?.tournament ? `/Tournoi?id=${ls.tournament}` : `/Duel?id=${liveId}`, { replace: true }); }} className="h-[52px] rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold text-destructive">{defi ? "Quitter et valider" : ls?.tournament ? "Quitter (tu es éliminé)" : `Quitter (−${settings?.duel?.quit ?? 20})`}</button>
             </div>
           </div>
         </div>
