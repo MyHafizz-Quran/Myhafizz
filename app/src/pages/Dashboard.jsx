@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, UsersThree, Target, House } from "@phosphor-icons/react";
 import { db } from "@/api/neonClient";
-import { MemorizationProgress, VerseReview, HifzPlan, ActivityDays, Groups, Assignments, KIND_LABEL } from "@/api/entities";
+import { MemorizationProgress, VerseReview, HifzPlan, ActivityDays, Groups, Assignments, KIND_LABEL, Profile } from "@/api/entities";
 import { buildSession, key, todayStr, currentStreak } from "@/lib/srs";
 import { ReadingSessions } from "@/api/entities/learning";
 import { getGoal, todayCount, weekStart } from "@/lib/readingGame";
@@ -46,9 +46,15 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   useEffect(() => { db.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
 
-  const { data: progress = [] } = useQuery({ queryKey: ["memorization-progress"], queryFn: () => MemorizationProgress.list() });
+  const { data: progress = [], isFetched: progressFetched } = useQuery({ queryKey: ["memorization-progress"], queryFn: () => MemorizationProgress.list() });
   const { data: reviews = [] } = useQuery({ queryKey: ["verse-reviews"], queryFn: () => VerseReview.list() });
   const { data: plan, isLoading: planLoading } = useQuery({ queryKey: ["hifz-plan"], queryFn: () => HifzPlan.get() });
+  const { data: profile, isFetched: profileFetched } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get() });
+  // Nouveau compte (y compris Google) sans programme : onboarding « Questions rapides ».
+  useEffect(() => {
+    if (planLoading || !progressFetched || !profileFetched) return;
+    if (!plan && !progress.length && profile && !profile.onboarded_at && !localStorage.getItem("mh_onboarded")) navigate("/Bienvenue", { replace: true });
+  }, [planLoading, progressFetched, profileFetched, plan, progress.length, profile, navigate]);
   const { data: days = [] } = useQuery({ queryKey: ["activity-days"], queryFn: () => ActivityDays.list() });
   const { data: groups = [] } = useQuery({ queryKey: ["groups"], queryFn: () => Groups.mine() });
   const { data: readSessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });

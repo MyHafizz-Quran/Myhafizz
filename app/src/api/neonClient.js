@@ -66,14 +66,26 @@ const auth = {
   signInWithOAuth: (...a) => rawAuth.signInWithOAuth(...a),
   signOut: (...a) => { avatarCache = { id: null, url: null, name: null }; return rawAuth.signOut(...a); },
   resetPasswordForEmail: (...a) => rawAuth.resetPasswordForEmail(...a),
+  // Codes à 6 chiffres envoyés par e-mail (Neon Auth, plugin Email OTP)
+  verifySignupCode: (email, token) => rawAuth.verifyOtp({ email, token, type: 'signup' }),
+  async sendCode(email, type) {
+    const r = await rawAuth.getBetterAuthInstance().emailOtp.sendVerificationOtp({ email, type });
+    return { error: r?.error || null };
+  },
+  async resetWithCode(email, otp, password) {
+    const r = await rawAuth.getBetterAuthInstance().emailOtp.resetPassword({ email, otp, password });
+    return { error: r?.error || null };
+  },
   onAuthStateChange(cb) {
     return rawAuth.onAuthStateChange((event, session) => cb(event, normalizeSession(session)));
   },
+  // Inscription directe (Better Auth) : avec la confirmation par code obligatoire, il n'y a pas
+  // encore de session à ce stade, ce que l'adaptateur Supabase considère comme une erreur.
   async signUp(credentials) {
-    const data = { ...(credentials?.options?.data || {}) };
-    const displayName = data.full_name || data.displayName || '';
-    delete data.full_name; delete data.avatar_url;
-    return rawAuth.signUp({ ...credentials, options: { ...credentials.options, data: { ...data, displayName } } });
+    const name = credentials?.options?.data?.full_name || credentials?.options?.data?.displayName || '';
+    const r = await rawAuth.getBetterAuthInstance().signUp.email({ email: credentials.email, password: credentials.password, name });
+    if (r?.error) return { data: { user: null, session: null }, error: { message: r.error.message || r.error.code || 'Erreur', code: r.error.code } };
+    return { data: { user: r?.data?.user ?? null, session: null }, error: null };
   },
   async updateUser(attributes = {}) {
     const { data = {}, ...rest } = attributes;
@@ -153,8 +165,11 @@ export function frAuthError(err) {
   if (m.includes("invalid email") || m.includes("email is invalid")) return "Cette adresse email n'est pas valide.";
   if (m.includes("password") && (m.includes("short") || m.includes("too small") || m.includes("at least"))) return "Le mot de passe doit contenir au moins 8 caractères.";
   if (m.includes("password") && m.includes("long")) return "Le mot de passe est trop long.";
-  if (m.includes("not verified") || m.includes("verify your email") || m.includes("email_not_verified")) return "Confirme d'abord ton email avec le lien reçu.";
+  if (m.includes("not verified") || m.includes("verify your email") || m.includes("email_not_verified")) return "Confirme d'abord ton e-mail avec le code reçu.";
   if (m.includes("too many") || m.includes("rate limit") || m.includes("429")) return "Trop de tentatives. Patiente une minute puis réessaie.";
+  if (m.includes("invalid otp") || m.includes("invalid_otp") || m.includes("otp is invalid") || m.includes("invalid code")) return "Code incorrect. Vérifie les 6 chiffres.";
+  if (m.includes("otp") && m.includes("expired")) return "Ce code a expiré. Demande un nouveau code.";
+  if (m.includes("too many attempts")) return "Trop d'essais. Demande un nouveau code.";
   if (m.includes("expired") || (m.includes("invalid") && m.includes("token"))) return "Ce lien a expiré. Redemande un email.";
   if (m.includes("network") || m.includes("failed to fetch") || m.includes("load failed")) return "Pas de connexion. Vérifie ton internet.";
   if (m.includes("provider") || m.includes("oauth") || m.includes("social")) return "La connexion avec Google n'est pas disponible pour le moment.";

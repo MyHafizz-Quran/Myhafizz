@@ -13,6 +13,11 @@ export default defineConfig({
         VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY!,
       },
     },
+    pseudo: {
+      name: "Nom d'utilisateur disponible",
+      source: "src/pseudo.mjs",
+      env: { PSEUDO_DATABASE_URL: process.env.PSEUDO_DATABASE_URL! },
+    },
   },
   triggers: {
     "rappels-5min": { type: "schedule", function: "rappels", cron: "*/5 * * * *" },
