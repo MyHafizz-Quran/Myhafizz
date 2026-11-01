@@ -13,7 +13,7 @@ export const TABS = [
   { to: "/Jouer", icon: GameController, label: "Jouer" },
 ];
 
-export const LEARN = ["/Lire", "/Lecon", "/Tafsir", "/Revision", "/ReviewSession", "/Repeat", "/Exercises", "/Strength", "/Recite", "/Quiz"];
+export const LEARN = ["/Lire", "/Lecon", "/Tafsir", "/Noms", "/Revision", "/ReviewSession", "/Repeat", "/Exercises", "/Strength", "/Recite", "/Quiz"];
 export const PLAY = ["/Jouer", "/Partie", "/Duel", "/Defi", "/Ligue", "/Tournoi", "/Joueur", "/Khatma"];
 
 function isActive(to, path) {

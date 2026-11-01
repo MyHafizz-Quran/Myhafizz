@@ -53,7 +53,7 @@ export function TajweedLegend() {
 }
 
 /** Fiche d'un mot : sens, translittération, écoute depuis ce mot */
-export function WordSheet({ word, onClose, onPlayFrom, canPlay }) {
+export function WordSheet({ word, onClose, onPlayFrom, canPlay, fr }) {
   return (
     <AnimatePresence>
       {word && (
@@ -66,8 +66,13 @@ export function WordSheet({ word, onClose, onPlayFrom, canPlay }) {
             {word.transliteration?.text && <p className="text-center text-muted-foreground font-semibold italic">{word.transliteration.text}</p>}
             <div className="card-flat p-4 mt-4 text-center">
               <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mb-1">Sens du mot</p>
-              <p className="text-lg font-extrabold">{word.translation?.text || "—"}</p>
-              <p className="text-[11px] font-semibold text-muted-foreground mt-1">Traduction mot à mot en anglais (Quran.com)</p>
+              {fr ? (<>
+                <p className="text-lg font-extrabold">{fr}</p>
+                {word.translation?.text && <p className="text-[13px] font-semibold text-muted-foreground mt-1">En anglais : {word.translation.text}</p>}
+              </>) : (<>
+                <p className="text-lg font-extrabold">{word.translation?.text || "—"}</p>
+                <p className="text-[11px] font-semibold text-muted-foreground mt-1">En anglais pour l'instant (Quran.com). Le français arrive après relecture.</p>
+              </>)}
             </div>
             {canPlay && (
               <button onClick={() => { onPlayFrom(); onClose(); }} className="btn-relief w-full h-[50px] bg-primary text-primary-foreground mt-4"><Play weight="fill" /> Écouter depuis ce mot</button>

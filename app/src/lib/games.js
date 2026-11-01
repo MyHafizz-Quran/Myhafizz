@@ -77,7 +77,7 @@ export const GAME_ORDER = ["lettres", "ilm", "hadith", "sourate", "suite", "ordr
 
 export const ILM_CATEGORIES = [
   ["sira", "Sira"], ["prophetes", "Prophètes"], ["coran", "Coran"], ["compagnons", "Compagnons"], ["histoire", "Histoire"],
-  ["croyance", "Croyance"], ["pratique", "Pratique"], ["hadith", "Hadith"], ["calendrier", "Calendrier"], ["mix", "Mélange"],
+  ["croyance", "Croyance"], ["pratique", "Pratique"], ["hadith", "Hadith"], ["calendrier", "Calendrier"], ["noms", "99 noms"], ["mix", "Mélange"],
 ];
 
 export const ROBOT = [
@@ -453,7 +453,7 @@ export const TK_SCOPES = {
   tabarak: { title: "Juz Tabarak", unit: "sourate", from: 67, to: 77 },
   ilm: { title: "Al-Ilm", unit: "thème" },
 };
-export const TK_ILM = ILM_CATEGORIES.filter(([k]) => k !== "mix"); // unité 1 à 9
+export const TK_ILM = ILM_CATEGORIES.filter(([k]) => k !== "mix" && k !== "noms"); // unité 1 à 9
 export const tkList = () => rpc("tk_list", {});
 export const tkGet = (id) => rpc("tk_get", { p_id: id });
 export const tkCreate = (group, scope, days) => rpc("tk_create", { p_group: group, p_scope: scope, p_days: days });

@@ -1,3 +1,4 @@
+import { saveReadPos } from "@/lib/words";
 import React, { createContext, useContext, useRef, useState, useCallback, useEffect } from 'react';
 import { getReciterDisplayName } from '@/lib/reciterNames';
 
@@ -202,6 +203,7 @@ export const AudioProvider = ({ children }) => {
     loopRef.current.wasPlaying = true;
     setLoopIndex(idx);
     saveReadingSession({ loopIndex: idx, loopMode: mode, wasPlaying: true });
+    if (surah?.number && verse.numberInSurah) saveReadPos(surah.number, verse.numberInSurah);
 
     // Media Session API — keeps lock-screen controls working
     if ('mediaSession' in navigator) {

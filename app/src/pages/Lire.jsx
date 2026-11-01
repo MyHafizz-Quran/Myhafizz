@@ -57,6 +57,11 @@ export default function Lire() {
           <span className="flex-1 min-w-0"><span className="block font-black">Tafsir</span><span className="block text-[13px] font-semibold text-muted-foreground">Comprendre ce que tu récites, verset par verset</span></span>
           <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
         </button>
+        <button onClick={() => { haptic(); navigate("/Noms"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3 text-left press">
+          <span dir="rtl" className="w-11 h-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center shrink-0 font-arabic text-[19px] leading-none">الله</span>
+          <span className="flex-1 min-w-0"><span className="block font-black">Les 99 noms d'Allah</span><span className="block text-[13px] font-semibold text-muted-foreground">Une carte par nom : sens, verset, invocation</span></span>
+          <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+        </button>
 
         {!voice && (
           <div className="card-flat p-3.5 mt-4 flex items-start gap-3">

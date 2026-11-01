@@ -37,6 +37,7 @@ import Exercises from './pages/Exercises.jsx';
 import Strength from './pages/Strength.jsx';
 import Qibla from './pages/Qibla.jsx';
 import Live from './pages/Live.jsx';
+import Noms from './pages/Noms.jsx';
 import Bilan from './pages/Bilan.jsx';
 import Adhkar from './pages/Adhkar.jsx';
 import Tasbih from './pages/Tasbih.jsx';
@@ -84,7 +85,7 @@ const AuthenticatedApp = () => {
   const location = useLocation();
   const platform = usePlatform();
   const path = location.pathname;
-  const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search));
+  const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search)) || (path === "/Noms" && /[?&]quiz=/.test(location.search));
   const homeHeader = WITH_HOME_HEADER.some((p) => path.startsWith(p));
   const kid = useKidMode();
   const kidLocked = kid.on && !kid.unlocked && KID_LOCKED.some((p) => path.startsWith(p));
@@ -184,6 +185,7 @@ const AuthenticatedApp = () => {
           <Route path="/Jouer" element={<Jouer />} />
           <Route path="/Tafsir" element={<TafsirRoute />} />
           <Route path="/Live" element={<Live />} />
+          <Route path="/Noms" element={<Noms />} />
           <Route path="/Partie" element={<PartieRoute />} />
           <Route path="/Equipe" element={<Equipe />} />
           <Route path="/Joueur" element={<Joueur />} />

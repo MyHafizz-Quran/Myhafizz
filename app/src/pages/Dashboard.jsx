@@ -1,3 +1,5 @@
+import NameOfDay from "@/components/daily/NameOfDay";
+import { getReadPos } from "@/lib/words";
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
@@ -98,6 +100,11 @@ export default function Dashboard() {
     const p = [...progress].filter((x) => x.status === "in_progress" && x.last_reviewed)
       .sort((a, b) => new Date(b.last_reviewed) - new Date(a.last_reviewed))[0]
       || progress.find((x) => x.status === "in_progress");
+    const pos = getReadPos();
+    if (pos && (!p?.last_reviewed || pos.at > new Date(p.last_reviewed).getTime())) {
+      const s = surahOf(pos.surah);
+      if (s) return { s, v: pos.ayah, pct: Math.round((pos.ayah / s.numberOfAyahs) * 100), pos: true };
+    }
     if (!p) return null;
     const s = surahOf(p.surah_number);
     const mem = new Set(p.memorized_verses || []);
@@ -186,6 +193,7 @@ export default function Dashboard() {
         {/* Verset et hadith du jour */}
         <VerseOfDay className="mt-3" />
         <HadithOfDay className="mt-3" />
+        <NameOfDay className="mt-3" />
 
         {/* Défi du jour */}
         <button onClick={() => { haptic(); navigate("/Defi"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
@@ -209,7 +217,7 @@ export default function Dashboard() {
 
         {/* Reprendre */}
         {resume && (
-          <button onClick={() => { haptic(); navigate(`/Memorize?surah=${resume.s.number}`); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
+          <button onClick={() => { haptic(); navigate(`/Memorize?surah=${resume.s.number}&verse=${resume.v}`); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-extrabold text-muted-foreground">Reprendre la lecture</p>
               <p className="font-black text-[19px] truncate">{resume.s.englishName}</p>

@@ -12,7 +12,7 @@ import PlayerPic from "@/components/PlayerPic";
 const MAIN = [
   { to: "/Dashboard", icon: House, label: "Accueil", match: (p) => p === "/" || p.startsWith("/Dashboard") },
   { to: "/SurahList", icon: BookOpen, label: "Coran", match: (p) => p.startsWith("/SurahList") || p.startsWith("/Memorize") },
-  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: (p) => ["/Lire", "/Lecon", "/Tafsir"].some((x) => p.startsWith(x)) },
+  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: (p) => ["/Lire", "/Lecon", "/Tafsir", "/Noms"].some((x) => p.startsWith(x)) },
   { to: "/Revision", icon: Brain, label: "Réviser", match: (p) => ["/Revision", "/ReviewSession", "/Repeat", "/Exercises", "/Strength", "/Recite", "/Quiz"].some((x) => p.startsWith(x)) },
   { to: "/Groups", icon: UsersThree, label: "Groupes", match: (p) => p.startsWith("/Group") },
 ];

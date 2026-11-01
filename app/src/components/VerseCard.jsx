@@ -8,6 +8,7 @@ import { getReciterDisplayName } from "@/lib/reciterNames";
 import { useAudioManager } from "@/lib/AudioManager";
 import { getArabicFontClass } from "@/lib/arabicDisplayUtils";
 import { WordSheet, SimilarVerses, tajweedHtml } from "@/components/verseExtras";
+import { wordAt, wordStart, hasWordTimings, loadFrLexicon, saveReadPos } from "@/lib/words";
 
 const REPEAT_OPTIONS = [1, 2, 3, 5, 10, Infinity];
 
@@ -44,9 +45,26 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   const savedTimeRef = useRef(getStopMarkers()[verse.number] || 0);
   const playbackRateRef = useRef(1);
   const wordsRef = useRef(words);
-  const wordTimingsRef = useRef(wordTimings);
+  const wordTimingsRef = useRef(hasWordTimings(reciter) ? wordTimings : null);
 
-  const { loopPlaying, stopLoop } = useAudioManager();
+  const { loopPlaying, stopLoop, loopRef } = useAudioManager();
+  const timed = hasWordTimings(reciter) ? wordTimings : null;
+  if (wordTimingsRef.current !== timed) wordTimingsRef.current = timed;
+
+  // Curseur mot à mot pendant la lecture continue (verset en cours de la boucle)
+  useEffect(() => {
+    if (!isActive || !loopPlaying || !timed?.length) { if (!isPlaying) setActiveWordIndex(-1); return; }
+    const a = loopRef.current?.audio;
+    if (!a) return;
+    const on = () => setActiveWordIndex(wordAt(timed, a.currentTime * 1000));
+    a.addEventListener("timeupdate", on);
+    return () => { a.removeEventListener("timeupdate", on); setActiveWordIndex(-1); };
+  }, [isActive, loopPlaying, timed]);
+  // Lexique français relu
+  const [fr, setFr] = useState(null);
+  const vkey = verseKey(verse.number) || "";
+  const [vSurah, vAyah] = vkey.split(":").map(Number);
+  useEffect(() => { if (selectedWord != null && vSurah && fr == null) loadFrLexicon(vSurah).then(setFr); }, [selectedWord]);
 
   const audioUrl = `https://cdn.islamic.network/quran/audio/128/${reciter}/${verse.number}.mp3`;
 
@@ -56,8 +74,8 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
 
   useEffect(() => {
     wordsRef.current = words;
-    wordTimingsRef.current = wordTimings;
-  }, [words, wordTimings]);
+    wordTimingsRef.current = hasWordTimings(reciter) ? wordTimings : null;
+  }, [words, wordTimings, reciter]);
 
   // When the global loop starts, pause this individual verse audio so only one source plays at a time
   useEffect(() => {
@@ -126,6 +144,7 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
 
 
   const handlePlay = (overrideStartTime = null) => {
+    saveReadPos(vSurah, vAyah);
     if (!audioRef.current) {
       audioRef.current = new Audio(audioUrl);
       audioRef.current.playbackRate = playbackRateRef.current;
@@ -133,8 +152,7 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
         const w = wordsRef.current;
         const wt = wordTimingsRef.current;
         if (!w || !wt || !audioRef.current) return;
-        const timeMs = audioRef.current.currentTime * 1000;
-        const idx = wt.findIndex(([, start, end]) => timeMs >= start && timeMs < end);
+        const idx = wordAt(wt, audioRef.current.currentTime * 1000);
         if (idx !== -1) setActiveWordIndex(idx);
       };
       audioRef.current.onended = () => {
@@ -177,8 +195,9 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
 
 
   const seekToWord = (idx) => {
-    if (!wordTimingsRef.current || !wordTimingsRef.current[idx]) return;
-    const seekTimeSec = wordTimingsRef.current[idx][1] / 1000;
+    const startMs = wordStart(wordTimingsRef.current, idx);
+    if (startMs == null) return;
+    const seekTimeSec = startMs / 1000;
     if (audioRef.current && isPlaying) {
       audioRef.current.currentTime = seekTimeSec;
     } else {
@@ -318,7 +337,8 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
 
       {!isHidden && maskLevel === 0 && !eraseOn && <div className="px-4"><SimilarVerses verseText={verse.text} similar={similar} /></div>}
       <WordSheet word={selectedWord != null ? displayWords?.[selectedWord] : null} onClose={() => setSelectedWord(null)}
-        canPlay={!!wordTimings?.[selectedWord]} onPlayFrom={() => seekToWord(selectedWord)} />
+        fr={selectedWord != null && fr ? fr[`${vAyah}:${selectedWord + 1}`] : null}
+        canPlay={wordStart(timed, selectedWord) != null} onPlayFrom={() => seekToWord(selectedWord)} />
 
       {(showPhonetic && verse.transliteration) || (showTranslation && verse.translation) ? (
         <div className={`px-4 pb-4 pt-1 space-y-1.5 transition-[filter,opacity] duration-300 ${isHidden ? "blur-md select-none opacity-20" : ""}`}>
