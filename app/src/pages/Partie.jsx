@@ -7,6 +7,7 @@ import { Profile } from "@/api/entities";
 import { speak, playUrl, playQueue, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 import ShareResult from "@/components/ShareResult";
+import PlayerPic from "@/components/PlayerPic";
 
 const AR = "font-arabic";
 
@@ -112,7 +113,7 @@ export default function Partie() {
   });
   const items = liveId ? ls?.items : defi ? dc?.items : built;
   const isLoading = liveId ? !ls?.items && !lsError : defi ? !dc && !dcError : tkId ? (!tk && !tkError) || building : building;
-  const error = liveId ? lsError : defi ? dcError : tkError || buildError;
+  const error = liveId ? (ls ? null : lsError) : defi ? dcError : tkError || buildError;
   const tkName = tk ? tkUnitName(tk.scope, tkUnit, tkQuran) : "";
   const exitTo = tkId ? `/Equipe?id=${tkId}` : defi ? "/Defi" : "/Jouer";
   // défi déjà relevé aujourd'hui : direction le résultat
@@ -149,6 +150,9 @@ export default function Partie() {
   const [end, setEnd] = useState(null);
   const [left, setLeft] = useState(null);
   useEffect(() => () => stopAudio(), []);
+  // chaque son automatique (lecture du verset, correction) ne se joue qu'une fois par question, quoi qu'il arrive au rendu
+  const played = useRef(new Set());
+  const once = (tag, fn) => { if (played.current.has(tag)) return; played.current.add(tag); fn(); };
   // le duel en direct relit l'état chaque seconde (nouveau tableau d'items) : on suit la question, pas le tableau
   const itemKey = items?.[i] ? `${i}:${JSON.stringify(items[i]).length}:${items[i].kind}:${items[i].key || items[i].cur?.g || items[i].verse?.g || items[i].seq?.[0]?.g || items[i].letter || items[i].id || ""}` : "";
   useEffect(() => { shownAt.current = Date.now(); }, [itemKey]);
@@ -162,8 +166,10 @@ export default function Partie() {
       const ok = !!ls.my_answer?.ok;
       setResult(ok ? "ok" : "ko"); chime(ok); haptic(ok ? 8 : 30);
       const it = ls.items[ls.q];
-      if (it?.kind === "suite") setTimeout(() => playUrl(AUDIO(it.next.g)), 300);
-      if (it?.kind === "ordre") setTimeout(() => playQueue(it.seq.map((v) => AUDIO(v.g))), 300);
+      once(`res:${ls.q}`, () => {
+        if (it?.kind === "suite") setTimeout(() => playUrl(AUDIO(it.next.g)), 300);
+        if (it?.kind === "ordre") setTimeout(() => playQueue(it.seq.map((v) => AUDIO(v.g))), 300);
+      });
     }
   }, [ls]);
   useEffect(() => { if (!liveId) return; const t = setInterval(() => setNow(Date.now()), 200); return () => clearInterval(t); }, [liveId]);
@@ -185,7 +191,7 @@ export default function Partie() {
   useEffect(() => {
     if (!item || result) return;
     const auto = item.kind === "letter-hear" || (item.kind === "sourate" && item.mode !== "texte") || (item.kind === "suite" && lv.aid === "phon");
-    if (auto) { const t = setTimeout(() => playItem(item), 400); return () => clearTimeout(t); }
+    if (auto) { const t = setTimeout(() => once(`auto:${i}:${itemKey}`, () => playItem(item)), 400); return () => clearTimeout(t); }
   }, [itemKey]);  
 
   // chrono (lettres)
@@ -254,7 +260,7 @@ export default function Partie() {
     setI(i + 1); setChoice(null); setOrder([]); setResult(null); setBotLast(null);
   };
 
-  const replay = () => { answers.current = []; setI(0); setMe(0); setBot(0); setChoice(null); setOrder([]); setResult(null); setEnd(null); setSeed((s) => s + 1); };
+  const replay = () => { played.current = new Set(); answers.current = []; setI(0); setMe(0); setBot(0); setChoice(null); setOrder([]); setResult(null); setEnd(null); setSeed((s) => s + 1); };
 
   const mistakes = useMemo(() => (end && items ? items.filter((_, k) => answers.current[k] && !answers.current[k].ok) : []), [end]);  
 
@@ -499,20 +505,23 @@ export default function Partie() {
 }
 
 /** Barre du duel en direct : les deux joueurs, leurs scores, le chrono de la question. */
-function LiveBar({ ls, now }) {
-  if (!ls) return null;
-  const leftS = ls.q_closed_at ? 0 : Math.max(0, (Date.parse(ls.q_started_at) + ls.secs * 1000 - now) / 1000);
-  const P = ({ p, score, right }) => (
+function LivePlayer({ p, score, right }) {
+  return (
     <span className={`flex items-center gap-2 min-w-0 ${right ? "flex-row-reverse text-right" : ""}`}>
       <PlayerPic p={p} size={38} />
       <span className="min-w-0"><span className="block text-[13px] font-extrabold truncate max-w-[96px]">{right ? `@${p?.username || "?"}` : "Toi"}</span><span className={`block text-[20px] font-black leading-none ${right ? "" : "text-primary"}`}>{score}</span></span>
     </span>
   );
+}
+
+function LiveBar({ ls, now }) {
+  if (!ls) return null;
+  const leftS = ls.q_closed_at ? 0 : Math.max(0, (Date.parse(ls.q_started_at) + ls.secs * 1000 - now) / 1000);
   return (
     <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between">
-      <P p={ls.me} score={ls.my_score} />
+      <LivePlayer p={ls.me} score={ls.my_score} />
       <span className={`w-[52px] h-[52px] rounded-full border-[5px] flex items-center justify-center font-black text-[18px] ${ls.q_closed_at ? "border-border text-muted-foreground" : leftS < 4 ? "border-destructive text-destructive" : "border-primary"}`}>{ls.q_closed_at ? "·" : Math.ceil(leftS)}</span>
-      <P p={ls.them} score={ls.their_score} right />
+      <LivePlayer p={ls.them} score={ls.their_score} right />
     </div>
   );
 }

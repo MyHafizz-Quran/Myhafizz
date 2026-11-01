@@ -35,6 +35,7 @@ export default [
       ...pluginJs.configs.recommended.rules,
       "no-unused-vars": "off",
       "react/jsx-uses-vars": "error",
+      "react/jsx-no-undef": "error",
       "react/jsx-uses-react": "error",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
