@@ -24,13 +24,42 @@ export const userLang = () => {
 };
 const TR_URL = "https://superagent-54460fe8.base44.app/functions/myhafizzTafsirTr";
 const trCache = new Map();
-/** Traduction (mise en cache côté serveur) d'un tafsir arabe pour le verset de référence. */
-function translate(src, surah, ayah, lang) {
+const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
+async function trPart(src, surah, ayah, lang, part) {
+  for (let n = 0; ; n++) {
+    try {
+      const r = await fetch(TR_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src, surah, ayah, lang, part }) });
+      const d = await r.json();
+      if (typeof d.body === "string") return d;
+      throw new Error(d.error || `traduction ${r.status}`);
+    } catch (e) {
+      if (n === 2) report(e, "tafsir:translate", { src, surah, ayah, lang, part });
+      await wait(Math.min(2000 * (n + 1), 15000)); // on réessaie tant que l'écran est ouvert
+    }
+  }
+}
+/**
+ * Traduction d'un tafsir arabe, partie par partie (les longues explications d'Ibn Kathir font des dizaines de parties).
+ * onPart reçoit le texte déjà traduit au fur et à mesure ; chaque partie est mise en cache côté serveur.
+ */
+function translate(src, surah, ayah, lang, onPart, alive) {
   const k = `${src}:${surah}:${ayah}:${lang}`;
-  if (!trCache.has(k)) trCache.set(k, fetch(TR_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src, surah, ayah, lang }) })
-    .then((r) => r.json()).then((d) => { if (typeof d.body !== "string") throw new Error(d.error || "traduction"); return d.body; })
-    .catch((e) => { trCache.delete(k); throw e; }));
-  return trCache.get(k);
+  const known = trCache.get(k);
+  if (known) { onPart(known, true); return; }
+  (async () => {
+    const out = [];
+    let parts = 1;
+    for (let i = 0; i < parts; i++) {
+      if (!alive()) return;
+      const d = await trPart(src, surah, ayah, lang, i);
+      parts = d.parts || 1;
+      out.push(d.body);
+      if (!alive()) return;
+      const text = out.filter(Boolean).join("\n\n");
+      onPart(text, i + 1 >= parts);
+      if (i + 1 >= parts) trCache.set(k, text);
+    }
+  })();
 }
 /** Vrai quand l'élément est (presque) à l'écran : on ne traduit que ce qui est lu. */
 function useInView(ref) {
@@ -55,15 +84,15 @@ export function TafsirText({ src, data, compact, surah }) {
   const inView = useInView(ref);
   const refAyah = data?.from || data?.ayah;
   useEffect(() => {
-    if (!needTr || !inView || orig) return;
+    if (!needTr || !inView) return;
     let alive = true; setTr({ st: "loading" });
-    translate(src, surah, refAyah, lang).then((b) => alive && setTr({ st: "ok", body: b }), (e) => { report(e, "tafsir:translate", { src, surah, refAyah, lang }); if (alive) setTr({ st: "error" }); });
+    translate(src, surah, refAyah, lang, (body, complete) => alive && setTr({ st: complete ? "ok" : "partial", body }), () => alive);
     return () => { alive = false; };
-  }, [needTr, inView, orig, src, surah, refAyah, lang]);
+  }, [needTr, inView, src, surah, refAyah, lang]);
   if (!data?.body) return <p className="text-[13px] font-semibold text-muted-foreground">Pas d'explication pour ce verset dans ce tafsir.</p>;
   const group = data.from !== data.to ? `Explication des versets ${data.from} à ${data.to}` : null;
   const box = compact ? "max-h-[50vh] overflow-y-auto" : "";
-  const showAr = s.lang === "ar" && (!needTr || orig || tr.st === "error");
+  const showAr = s.lang === "ar" && (!needTr || orig);
   return (
     <div ref={ref} className="rounded-2xl border-2 border-accent bg-accent/40 p-3.5">
       {group && <p className="text-[12px] font-black text-muted-foreground mb-1.5">{group}</p>}
@@ -71,13 +100,14 @@ export function TafsirText({ src, data, compact, surah }) {
         ? <p className="text-[15px] font-semibold leading-relaxed text-foreground/85 whitespace-pre-line">{data.body}</p>
         : showAr
           ? <div dir="rtl" lang="ar" className={`font-arabic text-right text-foreground leading-[2] whitespace-pre-line ${compact ? "text-[18px]" : "text-[19px]"} ${box}`}>{data.body}</div>
-          : tr.st === "ok"
-            ? <p className={`text-[15px] font-semibold leading-relaxed text-foreground/85 whitespace-pre-line ${box}`}>{tr.body}</p>
+          : tr.body
+            ? <div className={box}><p className="text-[15px] font-semibold leading-relaxed text-foreground/85 whitespace-pre-line">{tr.body}</p>
+                {tr.st === "partial" && <p className="text-[13px] font-semibold text-muted-foreground mt-2">{lang === "en" ? "Translating the rest…" : "Suite de la traduction…"}</p>}</div>
             : <p className="text-[13px] font-semibold text-muted-foreground">{lang === "en" ? "Translating…" : "Traduction en cours…"}</p>}
       <p className="text-[11.5px] font-bold text-muted-foreground mt-2">
-        {s.credit}{needTr && !showAr && tr.st === "ok" ? (lang === "en" ? " · translated from Arabic" : " · traduit de l'arabe") : ""}
+        {s.credit}{needTr && !showAr && tr.body ? (lang === "en" ? " · translated from Arabic" : " · traduit de l'arabe") : ""}
       </p>
-      {needTr && tr.st !== "error" && (
+      {needTr && (
         <button onClick={() => { haptic(); setOrig((o) => !o); }} className="text-[12.5px] font-extrabold text-primary mt-1">
           {orig ? (lang === "en" ? "Show the translation" : "Voir la traduction") : (lang === "en" ? "See the Arabic original" : "Voir l'original en arabe")}
         </button>

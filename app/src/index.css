@@ -248,6 +248,11 @@
   /* Chaque page gère sa propre zone de la barre d'état (PageHeader ou safe-area) : pas de double marge */
   html.no-global-header .pt-header { padding-top: 0; }
   html.no-tabbar { --bottom-nav-height: 0px; }
+  /* Mini-lecteur iOS au-dessus des onglets */
+  html.has-mini { --bottom-nav-height: 156px; }
+  /* Écran plein (ex. réglage d'une partie) : on retire les onglets */
+  html.hide-tabbar { --bottom-nav-height: 0px; }
+  html.hide-tabbar .tabbar { display: none; }
 }
 
 /* Sur grand écran, l'app reste au format téléphone, centrée */

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info, SealCheck, CalendarCheck, Trophy } from "@phosphor-icons/react";
@@ -33,6 +33,11 @@ export default function Jouer() {
   const enabled = GAME_ORDER.filter((g) => settings?.games?.[g] !== false && (g !== "hadith" || nbHadith >= 10));
   const beginner = profile?.arabic_level === "none";
 
+  // Réglage d'une partie ouvert : écran plein, sans onglets (le bouton Lancer reste visible)
+  useEffect(() => {
+    document.documentElement.classList.toggle("hide-tabbar", !!open);
+    return () => document.documentElement.classList.remove("hide-tabbar");
+  }, [open]);
   const openGame = (g) => { haptic(); setOpen(g); setLevel(unlockedLevel(g, progress, profile)); };
 
   // ── Réglage de la partie ──

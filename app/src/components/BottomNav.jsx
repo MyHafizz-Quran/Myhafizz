@@ -40,11 +40,18 @@ function useResume() {
 function IOSTabBar({ path }) {
   const navigate = useNavigate();
   const { loopPlaying, surah, verse, open, stopLoop } = useResume();
+  // Mini-lecteur affiché : la zone réservée en bas des pages grandit d'autant
+  useEffect(() => {
+    const on = !!(loopPlaying && surah);
+    document.documentElement.classList.toggle("has-mini", on);
+    return () => document.documentElement.classList.remove("has-mini");
+  }, [loopPlaying, surah]);
   return (
-    <div className="fixed left-0 right-0 bottom-0 z-[var(--z-bottom-nav)] pointer-events-none"
+    <div className="tabbar fixed left-0 right-0 bottom-0 z-[var(--z-bottom-nav)] pointer-events-none"
          style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)" }}>
-      {/* Fondu du contenu sous les barres */}
-      <div className="absolute inset-x-0 bottom-0 h-[72px] pointer-events-none" style={{ background: "linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / .85) 35%, hsl(var(--background) / 0) 100%)" }} />
+      {/* Fond plein sous les barres : le contenu ne passe jamais derrière les onglets */}
+      <div className="absolute inset-x-0 -top-2 bottom-0 bg-background pointer-events-auto" />
+      <div className="absolute inset-x-0 -top-6 h-4 pointer-events-none" style={{ background: "linear-gradient(to top, hsl(var(--background)), hsl(var(--background) / 0))" }} />
       <div className="relative px-3.5 flex flex-col gap-2">
         <AnimatePresence>
           {loopPlaying && surah && (
@@ -102,9 +109,12 @@ function AndroidTabBar({ path }) {
   }, []);
   useEffect(() => setHidden(false), [path]);
   return (
-    <div className="fixed left-0 right-0 bottom-0 z-[var(--z-bottom-nav)] pointer-events-none transition-transform duration-300"
+    <div className="tabbar fixed left-0 right-0 bottom-0 z-[var(--z-bottom-nav)] pointer-events-none transition-transform duration-300"
          style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 16px)", transform: hidden ? "translateY(120%)" : "none" }}>
-      <div className="px-4 flex items-center justify-between gap-3">
+      {/* Fond plein sous la barre Material : rien ne se mélange avec les onglets */}
+      <div className="absolute inset-x-0 -top-3 bottom-0 bg-background pointer-events-auto" />
+      <div className="absolute inset-x-0 -top-7 h-4 pointer-events-none" style={{ background: "linear-gradient(to top, hsl(var(--background)), hsl(var(--background) / 0))" }} />
+      <div className="relative px-4 flex items-center justify-between gap-3">
         <nav className="pointer-events-auto h-16 rounded-[32px] bg-[#E6F1F1] dark:bg-[#1E2C31] shadow-[0_3px_10px_rgba(0,0,0,.14)] flex items-center gap-0.5 px-2">
           {TABS.map(({ to, icon: Icon, label }) => {
             const on = isActive(to, path);
