@@ -297,7 +297,7 @@ export default function Partie() {
     </div>
   );
 
-  if (isLoading || !settings || error || !items?.length) {
+  if (isLoading || !settings || error || !items?.length || !item) {
     return (
       <div className="min-h-[100dvh] bg-background" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         {header}

@@ -1,4 +1,8 @@
 // Sentry : doit être importé avant tout le reste (voir src/main.jsx)
+// Zod (utilisé par Neon Auth) teste `new Function("")` pour accélérer ses validations : bloqué par notre CSP.
+// Mode sans eval : même résultat, aucune violation remontée.
+import { config as zodConfig } from "zod";
+zodConfig({ jitless: true });
 import { useEffect } from "react";
 import {
   useLocation,

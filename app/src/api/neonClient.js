@@ -36,14 +36,23 @@ function normalizeUser(user) {
 }
 const normalizeSession = (s) => (s ? { ...s, user: normalizeUser(s.user) } : s);
 
-async function loadAvatar(userId) {
-  if (!userId || avatarCache.id === userId) return;
-  try {
-    const { data } = await client.from('profiles').select('avatar_url, full_name').eq('id', userId).maybeSingle();
-    avatarCache = { id: userId, url: data?.avatar_url || null, name: data?.full_name || null };
-  } catch {
-    avatarCache = { id: userId, url: null, name: null };
-  }
+// Une seule requête à la fois par utilisateur : les appels simultanés (getSession/getUser au démarrage) partagent la même
+let avatarLoading = { id: null, promise: null };
+function loadAvatar(userId) {
+  if (!userId || avatarCache.id === userId) return Promise.resolve();
+  if (avatarLoading.id === userId && avatarLoading.promise) return avatarLoading.promise;
+  const promise = (async () => {
+    try {
+      const { data } = await client.from('profiles').select('avatar_url, full_name').eq('id', userId).maybeSingle();
+      avatarCache = { id: userId, url: data?.avatar_url || null, name: data?.full_name || null };
+    } catch {
+      avatarCache = { id: userId, url: null, name: null };
+    } finally {
+      if (avatarLoading.id === userId) avatarLoading = { id: null, promise: null };
+    }
+  })();
+  avatarLoading = { id: userId, promise };
+  return promise;
 }
 
 const auth = {
@@ -64,7 +73,7 @@ const auth = {
   },
   signInWithPassword: (...a) => rawAuth.signInWithPassword(...a),
   signInWithOAuth: (...a) => rawAuth.signInWithOAuth(...a),
-  signOut: (...a) => { avatarCache = { id: null, url: null, name: null }; return rawAuth.signOut(...a); },
+  signOut: (...a) => { avatarCache = { id: null, url: null, name: null }; avatarLoading = { id: null, promise: null }; return rawAuth.signOut(...a); },
   resetPasswordForEmail: (...a) => rawAuth.resetPasswordForEmail(...a),
   // Codes à 6 chiffres envoyés par e-mail (Neon Auth, plugin Email OTP)
   verifySignupCode: (email, token) => rawAuth.verifyOtp({ email, token, type: 'signup' }),
