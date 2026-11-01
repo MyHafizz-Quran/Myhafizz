@@ -1,3 +1,4 @@
+import { db } from '@/api/neonClient';
 import { syncFcm } from '@/lib/reminders';
 import VoiceSplash from './components/VoiceSplash.jsx';
 import { isStandalone } from '@/hooks/usePlatform';
@@ -82,7 +83,7 @@ const TajwidRoute = () => { const loc = useLocation(); return <Tajwid key={loc.s
 const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
-import { initAnalytics, trackPage, identify } from './lib/analytics';
+import { initAnalytics, trackPage, identify, track } from './lib/analytics';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
 const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Joueur", "/Notifications", "/Defi", "/Ligue", "/Tournoi", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
@@ -95,6 +96,16 @@ const AuthenticatedApp = () => {
   useEffect(() => { trackPage(location.pathname, location.search); }, [location.pathname, location.search]);
   useEffect(() => { if (user?.id) identify(user); }, [user?.id]);
   useEffect(() => { if (user?.id) { const t = setTimeout(syncFcm, 4000); return () => clearTimeout(t); } }, [user?.id]);
+  // Ouverture depuis une notification : compter l'ouverture puis retirer le paramètre de l'adresse
+  useEffect(() => {
+    if (!user?.id) return;
+    const q = new URLSearchParams(location.search); const k = q.get("mh_n");
+    if (!k) return;
+    q.delete("mh_n");
+    window.history.replaceState(null, "", location.pathname + (q.toString() ? `?${q}` : ""));
+    track("notif_open", { kind: k });
+    db.rpc("notif_opened", { p_kind: k }).then(() => {}, () => {});
+  }, [user?.id, location.search]);
   const platform = usePlatform();
   const path = location.pathname;
   const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search)) || (path === "/Noms" && /[?&]quiz=/.test(location.search)) || (path === "/Tajwid" && /[?&]u=/.test(location.search));

@@ -232,13 +232,28 @@ self.addEventListener("push", (event) => {
     icon: "/logo-192.png",
     badge: "/favicon-32.png",
     tag: data.tag || "mh-reminder",
-    data: { url: data.url || "/Revision" },
+    data: { url: data.url || "/Revision", kind: notifKind(data.tag) },
   }));
 });
 
+// Même règle que le serveur (reminders/src/pushsend.mjs) : type de notification d'après son tag
+function notifKind(tag) {
+  const h = String(tag || "").replace(/^mh-/, "").split("-")[0];
+  if (["fajr", "dhuhr", "asr", "maghrib", "isha"].includes(h)) return "priere";
+  if (h === "ld" || h === "duel") return "duel";
+  if (h === "tk") return "khatma";
+  if (h === "tn") return "tournoi";
+  if (["doux", "retour", "serie"].includes(h)) return "relance";
+  return h || "autre";
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = new URL((event.notification.data && event.notification.data.url) || "/Revision", self.location.origin).href;
+  const d = event.notification.data || {};
+  const u = new URL(d.url || "/Revision", self.location.origin);
+  // L'app lit mh_n à l'ouverture pour compter l'ouverture (statistiques admin + Google Analytics)
+  u.searchParams.set("mh_n", d.kind || "autre");
+  const url = u.href;
   event.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const c of all) {

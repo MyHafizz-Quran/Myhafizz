@@ -3,6 +3,28 @@
 // (hors jeton périmé), on retombe sur le Web Push direct, qui utilise la même clé VAPID.
 import crypto from "node:crypto";
 import webpush from "web-push";
+import pg from "pg";
+
+// Type de notification à partir de son tag (mh-fajr → priere, mh-duel-12 → duel…), pour les statistiques
+const PRAYERS = new Set(["fajr", "dhuhr", "asr", "maghrib", "isha"]);
+export function notifKind(msg) {
+  const t = String(msg?.tag || "").replace(/^mh-/, "");
+  const h = t.split("-")[0];
+  if (PRAYERS.has(h)) return "priere";
+  if (h === "ld" || h === "duel") return "duel";
+  if (h === "tk") return "khatma";
+  if (h === "tn") return "tournoi";
+  if (["doux", "retour", "serie"].includes(h)) return "relance";
+  return h || "autre";
+}
+let pool = null;
+async function countSent(kind) {
+  try {
+    if (!process.env.DATABASE_URL) return;
+    pool ||= new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+    await pool.query("insert into public.notif_stats(day, kind, sent) values (current_date, $1, 1) on conflict (day, kind) do update set sent = notif_stats.sent + 1", [kind]);
+  } catch (e) { console.error("notif_stats", e.message); }
+}
 
 const PROJECT = "myhafizz-b2a88";
 let tok = null, tokExp = 0;
@@ -35,7 +57,7 @@ export async function sendPush(sub, msg, opts = {}) {
           method: "POST", headers: { authorization: `Bearer ${t}`, "content-type": "application/json" },
           body: JSON.stringify({ message: { token: sub.fcm_token, data: { mh: JSON.stringify(msg) }, webpush: { headers } } }),
         });
-        if (r.ok) return "fcm";
+        if (r.ok) { await countSent(notifKind(msg)); return "fcm"; }
         const e = await r.json().catch(() => ({}));
         const code = e?.error?.details?.find?.((d) => d.errorCode)?.errorCode || e?.error?.status;
         if (code === "UNREGISTERED" || r.status === 404) { const err = new Error("fcm unregistered"); err.statusCode = 410; throw err; }
@@ -44,5 +66,6 @@ export async function sendPush(sub, msg, opts = {}) {
     } catch (e) { if (e.statusCode === 410) throw e; console.error("fcm", e.message); }
   }
   await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } }, JSON.stringify(msg), opts);
+  await countSent(notifKind(msg));
   return "webpush";
 }
