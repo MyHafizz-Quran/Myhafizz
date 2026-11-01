@@ -1,3 +1,4 @@
+import { trackRpc } from "@/lib/analytics";
 import { createClient, SupabaseAuthAdapter } from '@neondatabase/neon-js';
 
 // Neon (Managed Better Auth + Data API). Supabase-compatible API, exported as
@@ -159,7 +160,7 @@ export const db = {
   auth,
   storage,
   from: (...a) => client.from(...a),
-  rpc: (...a) => client.rpc(...a),
+  rpc: (fn, args, ...rest) => { trackRpc(fn, args); return client.rpc(fn, args, ...rest); },
 };
 export default db;
 

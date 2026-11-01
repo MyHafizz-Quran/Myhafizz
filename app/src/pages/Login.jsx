@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Eye, EyeSlash, SpinnerGap, CheckCircle, CaretLeft, Check, EnvelopeOpen, UserCircle, X } from "@phosphor-icons/react";
@@ -131,6 +132,7 @@ export default function Login() {
 
   const google = async () => {
     setError(null);
+    track("login_start", { method: "google" });
     const { error: e } = await db.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/Dashboard` } });
     if (e) setError(frAuthError(e));
   };
@@ -162,6 +164,7 @@ export default function Login() {
     }
     if (mode === "login" && step === 1) return run(async () => {
       const { error: err } = await db.auth.signInWithPassword({ email: mail, password });
+      if (!err) track("login", { method: "email" });
       if (err) {
         const m = String(err.message || "").toLowerCase();
         if (m.includes("not verified") || m.includes("email_not_verified") || m.includes("verify")) {
@@ -188,6 +191,7 @@ export default function Login() {
         if ((await usernameAvailable(username)) === false) { setStep(0); setUserState("taken"); throw new Error("Ce nom d'utilisateur vient d'être pris. Choisis-en un autre."); }
         pendingProfile.set({ email: mail, full_name: name.trim(), username: cleanUsername(username) });
         const { error: err } = await db.auth.signUp({ email: mail, password, options: { data: { full_name: name.trim() } } });
+        if (!err) track("sign_up", { method: "email" });
         if (err) throw err;
         setStep(2); setWait(45);
       });

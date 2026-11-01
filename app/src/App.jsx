@@ -77,14 +77,18 @@ const TajwidRoute = () => { const loc = useLocation(); return <Tajwid key={loc.s
 const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
+import { initAnalytics, trackPage, identify } from './lib/analytics';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
 const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Joueur", "/Notifications", "/Defi", "/Ligue", "/Tournoi", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isAuthenticated } = useAuth();
+  const { isLoadingAuth, isAuthenticated, user } = useAuth();
   const location = useLocation();
+  useEffect(() => { initAnalytics(); }, []);
+  useEffect(() => { trackPage(location.pathname, location.search); }, [location.pathname, location.search]);
+  useEffect(() => { if (user?.id) identify(user); }, [user?.id]);
   const platform = usePlatform();
   const path = location.pathname;
   const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search)) || (path === "/Noms" && /[?&]quiz=/.test(location.search)) || (path === "/Tajwid" && /[?&]u=/.test(location.search));

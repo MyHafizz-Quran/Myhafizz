@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
 import { getMethod, setLocation } from "@/lib/prayer";
 import { db } from "@/api/neonClient";
@@ -66,6 +67,7 @@ export async function getReminder() {
 
 export async function saveReminder({ prayers, offset_min = 15, position }) {
   const perm = await Notification.requestPermission();
+  track("notif_permission", { result: perm });
   if (perm !== "granted") throw new Error("permission");
   const pos = position || (await getPosition());
   setLocation(pos);

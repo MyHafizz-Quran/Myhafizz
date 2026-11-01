@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 /**
  * MyHafizz · Apprendre à lire (progression Qaida Nourania)
  * Contenu des unités, génération des exercices et voix.
@@ -383,6 +384,7 @@ export function playQueue(urls) {
 /** Joue un passage [t0, t1] (secondes) d'un enregistrement, répété `times` fois. onEnd appelé à la fin. */
 export function playClip(url, t0, t1, times = 1, onEnd, whole = false) {
   try {
+    track("audio_play", { source: String(url).split("/").slice(2, 5).join("/").slice(0, 80), repeat: times });
     window.speechSynthesis?.cancel();
     if (!player) player = new Audio();
     player.pause(); player.onended = null; player.ontimeupdate = null;

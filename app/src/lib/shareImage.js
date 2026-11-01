@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 // Cartes image sobres (palette Lagon) à partager : verset, hadith, résultats de jeux.
 function wrap(ctx, text, maxW) {
   const words = String(text || "").split(/\s+/); const lines = []; let line = "";
@@ -106,11 +107,13 @@ async function shareBlob(blob, text) {
 
 /** Partage natif (WhatsApp, statuts…) d'un verset ou d'un hadith, avec un message d'accompagnement. */
 export async function shareCard(data) {
+  track("share", { type: data?.kind || "carte" });
   const intro = data.kind?.startsWith("Hadith") ? "Un hadith authentique chaque jour, avec sa source, sur MyHafizz." : "Chaque jour, un verset à méditer et à mémoriser sur MyHafizz.";
   const text = data.text || `« ${data.french} »\n${data.reference}\n\n${intro}\nmyhafizz.com`;
   return shareBlob(await renderShareCard(data), text);
 }
 /** Partage d'un résultat de jeu. */
 export async function shareResult(card, text) {
+  track("share", { type: card?.kicker || "résultat" });
   return shareBlob(await renderResultCard(card), text);
 }
