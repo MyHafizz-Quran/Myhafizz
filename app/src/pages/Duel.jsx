@@ -6,6 +6,7 @@ import { ldSearch, ldInvite, ldState, ldCancel, playerProfile, gradeOf } from "@
 import { PlayerPic } from "@/pages/Partie";
 import { haptic } from "@/hooks/usePlatform";
 import ShareResult from "@/components/ShareResult";
+import { report, userMsg } from "@/lib/report";
 
 const Section = ({ children }) => <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mt-5 mb-2">{children}</p>;
 const Screen = ({ children, footer }) => (
@@ -78,7 +79,7 @@ function NewDuel() {
   const defy = async (u) => {
     haptic(); setBusy(u.username); setErr("");
     try { const id = await ldInvite(u.username); navigate(`/Duel?wait=${id}`, { replace: true }); }
-    catch (e) { setErr(e.message); setBusy(null); }
+    catch (e) { setErr(userMsg(e, "duel:invite") || ""); setBusy(null); }
   };
   return (
     <Screen>

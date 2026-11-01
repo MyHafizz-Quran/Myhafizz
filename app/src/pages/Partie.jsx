@@ -235,6 +235,14 @@ export default function Partie() {
     if (item.kind === "ordre") setTimeout(() => playQueue(item.seq.map((v) => AUDIO(v.g))), 300);
   };
 
+  // Partie non envoyée : nouvel essai automatique, sans message d'erreur
+  const resend = useRef(0);
+  useEffect(() => {
+    if (!end?.offline || end.duel || resend.current >= 10) return;
+    const t = setTimeout(() => { resend.current += 1; nextRef.current?.(); }, 4000 * (resend.current + 1));
+    return () => clearTimeout(t);
+  }, [end?.offline]);
+  const nextRef = useRef(null);
   const next = async () => {
     haptic(); stopAudio();
     if (i + 1 >= items.length) {
@@ -247,18 +255,19 @@ export default function Partie() {
           const r = await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok }))).catch(() => ({}));
           setEnd({ score, total: items.length, bot, ...r, tk: v });
           ["game-progress", "game-stats", "tk", "tk-list"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
-        } catch { setEnd({ score, total: items.length, bot, offline: true, tkRetry: true }); }
+        } catch (e) { report(e, "partie:khatma"); setEnd({ score, total: items.length, bot, offline: true, tkRetry: true }); }
         return;
       }
       try {
         const r = await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok })));
         setEnd({ score, total: items.length, bot, ...r });
         ["game-progress", "game-stats"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
-      } catch { setEnd({ score, total: items.length, bot, offline: true }); }
+      } catch (e) { report(e, "partie:finish"); setEnd({ score, total: items.length, bot, offline: true }); }
       return;
     }
     setI(i + 1); setChoice(null); setOrder([]); setResult(null); setBotLast(null);
   };
+  nextRef.current = next;
 
   const replay = () => { played.current = new Set(); answers.current = []; setI(0); setMe(0); setBot(0); setChoice(null); setOrder([]); setResult(null); setEnd(null); setSeed((s) => s + 1); };
 
@@ -287,7 +296,7 @@ export default function Partie() {
               <div><p className="font-extrabold">Niveau {end.level} débloqué</p><p className="text-[12.5px] font-semibold text-muted-foreground">{G.levels.find((l) => l.n === end.level)?.name} : {G.levels.find((l) => l.n === end.level)?.desc}</p></div>
             </div>
           )}
-          {end.offline && <p className="text-[13px] font-bold text-muted-foreground mt-3">{end.duel ? "Pas de connexion : ton duel n'a pas pu être envoyé. Reste sur cette page et réessaie." : "Pas de connexion : la partie n'a pas été enregistrée."}</p>}
+          {end.offline && <p className="text-[13px] font-bold text-muted-foreground mt-3">Envoi de ta partie…</p>}
           {end.duel && <button onClick={() => { setI(items.length - 1); next(); }} className="btn-relief h-[52px] w-full mt-3 bg-primary text-primary-foreground">Réessayer l'envoi</button>}
           {mistakes.length > 0 && (
             <div className="text-left mt-6">
@@ -323,7 +332,7 @@ export default function Partie() {
     return (
       <div className="min-h-[100dvh] bg-background" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         {header}
-        <p className="text-center font-bold text-muted-foreground mt-24">{error || (items && !items.length) ? "Impossible de préparer la partie. Vérifie ta connexion." : "Préparation de la partie…"}</p>
+        <p className="text-center font-bold text-muted-foreground mt-24">{"Préparation de la partie…"}</p>
       </div>
     );
   }
@@ -585,8 +594,8 @@ function TkEnd({ end, tk, name, quran, mistakes, lv, navigate, replay, retry }) 
   const pct = Math.round((end.score / end.total) * 100);
   const nextName = v?.next ? tkUnitName(tk?.scope, v.next, quran) : null;
   const unitWord = tk?.scope === "ilm" ? "thème" : "sourate";
-  const title = end.offline ? "Partie non envoyée" : v?.finished ? "Khatma terminée" : v?.validated ? `${name} validée` : v?.already ? `${name} déjà validée` : v?.status && v.status !== "active" ? "Khatma close" : "Pas encore validée";
-  const sub = end.offline ? "Pas de connexion. Reste sur cette page et réessaie."
+  const title = end.offline ? "Envoi en cours" : v?.finished ? "Khatma terminée" : v?.validated ? `${name} validée` : v?.already ? `${name} déjà validée` : v?.status && v.status !== "active" ? "Khatma close" : "Pas encore validée";
+  const sub = end.offline ? "Ta partie part dès que la connexion revient. Reste sur cette page."
     : v?.finished ? `Toute l'équipe gagne +${v.bonus} points. Qu'Allah l'accepte de vous.`
     : v?.validated ? `${end.score} / ${end.total} bonnes réponses · ${pct} %. Ta part fait avancer l'équipe.`
     : v?.already ? `${end.score} / ${end.total} · cette ${unitWord} était déjà validée par l'équipe. Bon entraînement.`

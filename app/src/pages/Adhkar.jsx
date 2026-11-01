@@ -64,7 +64,7 @@ export default function Adhkar() {
           </div>
         )}
 
-        {isError && <p className="mt-6 text-center font-semibold text-muted-foreground">Impossible de charger les adhkar. Vérifie ta connexion.</p>}
+        {isError && <p className="mt-6 text-center font-semibold text-muted-foreground">Chargement…</p>}
         {isLoading && <div className="h-64 rounded-2xl bg-muted animate-pulse mt-4" />}
 
         <div className="space-y-3 mt-4">

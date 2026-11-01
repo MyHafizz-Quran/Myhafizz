@@ -6,6 +6,7 @@ import { tnList, tnState, tnJoin, tnCreate, tnCancel, roundName, buildDuelPool, 
 import { PlayerPic } from "@/pages/Partie";
 import { haptic } from "@/hooks/usePlatform";
 import ShareResult from "@/components/ShareResult";
+import { report, userMsg } from "@/lib/report";
 
 const pad = (x) => String(x).padStart(2, "0");
 function left(ms) {
@@ -92,7 +93,7 @@ function Detail({ id }) {
     const d = t?.match?.duel;
     if (d && !t.match.done && seenDuel.current !== d) { seenDuel.current = d; haptic(); navigate(`/Partie?live=${d}`); }
   }, [t?.match?.duel, t?.match?.done]);
-  if (error) return <Shell title="Tournoi"><p className="text-center font-bold text-muted-foreground mt-16">{error.message?.includes("introuvable") ? "Ce tournoi n'existe pas ou t'est réservé." : "Impossible de charger le tournoi. Vérifie ta connexion."}</p></Shell>;
+  if (error) return <Shell title="Tournoi"><p className="text-center font-bold text-muted-foreground mt-16">{error.message?.includes("introuvable") ? "Ce tournoi n'existe pas ou t'est réservé." : "Chargement…"}</p></Shell>;
   if (!t) return <Shell title="Tournoi"><p className="text-center font-bold text-muted-foreground mt-16">Chargement…</p></Shell>;
   const nowS = now + off.current;
   const act = async (fn) => { haptic(); setBusy(true); setErr(""); try { await fn(); await qc.invalidateQueries({ queryKey: ["tn", id] }); qc.invalidateQueries({ queryKey: ["tn-list"] }); } catch (e) { setErr(e.message); } setBusy(false); };
@@ -193,7 +194,7 @@ function NewTournament() {
   const groups = data?.groups || [];
   const go = async () => {
     haptic(); setBusy(true); setErr("");
-    try { const id = await tnCreate(f.group || groups[0]?.id, f.title, `${f.day}T${f.time}:00Z`, f.size); navigate(`/Tournoi?id=${id}`, { replace: true }); } catch (e) { setErr(e.message); setBusy(false); }
+    try { const id = await tnCreate(f.group || groups[0]?.id, f.title, `${f.day}T${f.time}:00Z`, f.size); navigate(`/Tournoi?id=${id}`, { replace: true }); } catch (e) { setErr(userMsg(e, "tournoi:create") || ""); setBusy(false); }
   };
   const field = "w-full h-12 rounded-2xl border-2 border-border bg-card px-3 font-bold";
   return (
@@ -221,7 +222,7 @@ function List() {
   const label = (t) => t.status === "open" ? `${when(t.starts_at)} · ${t.players}/${t.size} inscrits` : t.status === "running" ? "En cours" : t.status === "done" ? (t.champion ? `Vainqueur : @${t.champion.username}` : "Terminé") : "Annulé";
   return (
     <Shell title="Tournois">
-      {error && <p className="text-center font-bold text-muted-foreground mt-10">Impossible de charger les tournois.</p>}
+      {error && <p className="text-center font-bold text-muted-foreground mt-10">Chargement…</p>}
       {data && !items.length && <p className="text-center font-bold text-muted-foreground mt-10">Aucun tournoi pour l'instant.</p>}
       <div className="space-y-2.5">
         {items.map((t) => (

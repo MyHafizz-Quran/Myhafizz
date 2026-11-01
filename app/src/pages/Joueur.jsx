@@ -5,6 +5,7 @@ import { ArrowLeft, Sword, Trophy, Crown, Fire, Target, ArrowsClockwise, Handsha
 import { playerProfile, gradeOf, GRADES, BADGES } from "@/lib/games";
 import { PlayerPic } from "@/pages/Partie";
 import { HistoryRow } from "@/pages/Duel";
+import { report, userMsg } from "@/lib/report";
 
 const ICON = { sword: Sword, trophy: Trophy, crown: Crown, fire: Fire, target: Target, arrows: ArrowsClockwise, handshake: Handshake, users: UsersThree, game: GameController, medal: Medal };
 const Section = ({ children }) => <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mt-5 mb-2">{children}</p>;
@@ -24,7 +25,7 @@ export default function Joueur() {
   );
   const wrap = (c) => <div className="min-h-[100dvh] bg-background" style={{ paddingTop: "env(safe-area-inset-top)" }}><div className="max-w-xl mx-auto px-4 pb-12">{c}</div></div>;
   if (isLoading) return wrap(<><Head title="Profil joueur" /><p className="text-center font-bold text-muted-foreground mt-16">Chargement…</p></>);
-  if (error || !p) return wrap(<><Head title="Profil joueur" /><p className="text-center font-bold text-muted-foreground mt-16">{error?.message || "Joueur introuvable."}</p></>);
+  if (error || !p) return wrap(<><Head title="Profil joueur" /><p className="text-center font-bold text-muted-foreground mt-16">{error ? (/introuvable/i.test(error.message || "") ? "Joueur introuvable." : "Chargement…") : "Joueur introuvable."}</p></>);
   const g = gradeOf(p.points);
 
   if (grades) {

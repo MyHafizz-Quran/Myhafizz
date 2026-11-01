@@ -42,7 +42,7 @@ export default function Ligue() {
     </div>
   );
   if (isLoading) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Chargement de la ligue…</p>);
-  if (error || !d) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Impossible de charger la ligue. Vérifie ta connexion.</p>);
+  if (error || !d) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Chargement de la ligue…</p>);
 
   // Lundi : résultat de la semaine passée (une seule fois)
   if (d.last) {

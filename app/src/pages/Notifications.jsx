@@ -6,6 +6,7 @@ import { notifList, notifReadAll, ldRespond, ldInvite, badgeName, TK_SCOPES, TIE
 import { PlayerPic } from "@/pages/Partie";
 import { useNotifs } from "@/lib/notifs";
 import { haptic } from "@/hooks/usePlatform";
+import { report, userMsg } from "@/lib/report";
 
 const ago = (iso) => {
   const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
@@ -26,12 +27,12 @@ export default function Notifications() {
   const respond = async (n, accept) => {
     haptic(); setBusy(n.id); setErr("");
     try { const r = await ldRespond(n.ref, accept); if (accept && r?.status === "playing") return navigate(`/Partie?live=${n.ref}`); }
-    catch (e) { setErr(e.message); }
+    catch (e) { setErr(userMsg(e, "notifs:act") || ""); }
     setBusy(null); qc.invalidateQueries({ queryKey: ["notifs"] }); refresh();
   };
   const defyBack = async (n) => {
     haptic(); setBusy(n.id); setErr("");
-    try { const id = await ldInvite(n.actor?.username); navigate(`/Duel?wait=${id}`); } catch (e) { setErr(e.message); setBusy(null); }
+    try { const id = await ldInvite(n.actor?.username); navigate(`/Duel?wait=${id}`); } catch (e) { setErr(userMsg(e, "notifs:revanche") || ""); setBusy(null); }
   };
   const row = (n) => {
     const who = `@${n.actor?.username || "un joueur"}`;
@@ -77,7 +78,7 @@ export default function Notifications() {
         </div>
         {err && <p className="text-[13px] font-bold text-destructive mb-2">{err}</p>}
         {isLoading && <p className="text-center font-bold text-muted-foreground mt-16">Chargement…</p>}
-        {error && <p className="text-center font-bold text-muted-foreground mt-16">Impossible de charger tes notifications.</p>}
+        {error && <p className="text-center font-bold text-muted-foreground mt-16">Chargement…</p>}
         {!isLoading && !error && !list.length && <div className="text-center mt-16"><BellSlash weight="bold" className="w-10 h-10 mx-auto text-muted-foreground" /><p className="font-bold text-muted-foreground mt-2">Aucune notification pour l'instant.</p></div>}
         {list.length > 0 && <div className="card-flat px-3.5">{list.map(row)}</div>}
       </div>

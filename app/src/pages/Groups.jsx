@@ -7,6 +7,7 @@ import { Groups as G, KIND_LABEL, ROLE_LABEL } from "@/api/entities";
 import PageHeader from "@/components/PageHeader";
 import Sheet, { Field, inputCls } from "@/components/community/Sheet";
 import { haptic } from "@/hooks/usePlatform";
+import { report, userMsg } from "@/lib/report";
 
 const KINDS = [
   { k: "class", icon: GraduationCap, t: "Classe / madrasa", d: "Tu es le maître : leçons, suivi et validation des élèves" },
@@ -30,19 +31,19 @@ export default function Groups() {
   useEffect(() => {
     setPreview(null); setErr("");
     if (join.trim().length !== 6) return;
-    G.preview(join).then((p) => (p ? setPreview(p) : setErr("Code introuvable."))).catch(() => setErr("Code introuvable."));
+    G.preview(join).then((p) => (p ? setPreview(p) : setErr("Code introuvable."))).catch((e) => report(e, "groups:preview"));
   }, [join]);
 
   const doCreate = async () => {
     if (!name.trim()) return;
     setBusy(true); setErr("");
     try { const id = await G.create(name.trim(), kind); qc.invalidateQueries({ queryKey: ["groups"] }); haptic(); navigate(`/Group?id=${id}`); }
-    catch { setErr("Création impossible, réessaie."); } finally { setBusy(false); }
+    catch (e) { report(e, "groups:create"); } finally { setBusy(false); }
   };
   const doJoin = async () => {
     setBusy(true); setErr("");
     try { const id = await G.join(join, role); localStorage.removeItem("mh_pending_join"); qc.invalidateQueries({ queryKey: ["groups"] }); haptic(); navigate(`/Group?id=${id}`, { replace: true }); }
-    catch (e) { setErr(/duo full/.test(e?.message || "") ? "Ce binôme a déjà deux membres." : "Impossible de rejoindre ce groupe."); } finally { setBusy(false); }
+    catch (e) { if (/duo full/.test(e?.message || "")) setErr("Ce binôme a déjà deux membres."); else report(e, "groups:join"); } finally { setBusy(false); }
   };
 
   return (

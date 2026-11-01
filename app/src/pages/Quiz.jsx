@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { X, Brain, Trophy, ArrowsClockwise, CheckCircle, XCircle, Lightbulb, SpinnerGap, Microphone, Stop, Keyboard, Star } from "@phosphor-icons/react";
 import { SURAHS } from "@/components/quranData";
+import { report, userMsg } from "@/lib/report";
 
 // ── Normalisation arabe ──────────────────────────────────────────────────────
 function normalize(text) {
@@ -157,8 +158,8 @@ export default function Quiz() {
       setResult(null);
       setShowHint(false);
       setPhase("question");
-    } catch {
-      setLoadError("Erreur de chargement des versets. Vérifiez votre connexion.");
+    } catch (e) {
+      report(e, "quiz:load");
       setPhase("intro");
     }
   }, [memorizedItems]);

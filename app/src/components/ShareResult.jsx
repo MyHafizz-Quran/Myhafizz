@@ -4,6 +4,7 @@ import { shareResult } from "@/lib/shareImage";
 import { playerProfile, gradeOf } from "@/lib/games";
 import { db } from "@/api/neonClient";
 import { haptic } from "@/hooks/usePlatform";
+import { report, userMsg } from "@/lib/report";
 
 // Le joueur connecté, avec sa photo (profil ou Google)
 async function meCard() {
@@ -24,7 +25,7 @@ export default function ShareResult({ build, className = "", label = "Partager" 
       const { card, text } = build(me);
       const r = await shareResult({ ...card, user: { username: me.username, name: me.name, image: me.image } }, text);
       if (r === "downloaded") setMsg("Image enregistrée, message copié.");
-    } catch { setMsg("Le partage n'a pas marché, réessaie."); }
+    } catch (e) { if (e?.name !== "AbortError") report(e, "share:result"); }
     setBusy(false);
   };
   return (

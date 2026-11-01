@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, XCircle, CircleNotch } from "@phosphor-icons/react";
 import { db } from "@/api/neonClient";
 import { haptic } from "@/hooks/usePlatform";
+import { report, userMsg } from "@/lib/report";
 
 const RE = /^[a-z0-9_.]{3,20}$/;
 const fmt = (d) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -30,7 +31,7 @@ export default function UsernameSheet({ info, onClose, onSaved }) {
     haptic(); setBusy(true); setErr("");
     const { data, error } = await db.rpc("set_username", { p_username: u });
     setBusy(false);
-    if (error) return setErr(error.message || "Ce nom n'a pas pu être enregistré.");
+    if (error) return setErr(userMsg(error, "username:set") || "");
     onSaved?.(data);
   };
   const hint = { bad: "3 à 20 caractères : lettres minuscules, chiffres, point et tiret bas.", taken: "Déjà pris, essaie une autre version.", free: "Disponible", checking: "Vérification…", same: "C'est ton nom actuel." }[state];

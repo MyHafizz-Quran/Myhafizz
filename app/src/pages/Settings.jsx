@@ -16,6 +16,7 @@ import KidFamilyLink from "@/components/KidFamilyLink";
 import { PRAYERS, pushSupport, getReminder, saveReminder, removeReminder, prayerTimes } from "@/lib/reminders";
 import { METHODS, getMethod, setMethod as savePrayerMethod, methodLabel, getLocation, setLocation, requestLocation, onPrayerChange } from "@/lib/prayer";
 import PageHeader from "@/components/PageHeader";
+import { report, userMsg } from "@/lib/report";
 
 function Seg({ options, value, onChange }) {
   return (
@@ -87,8 +88,9 @@ export default function Settings() {
   const remError = (e) => {
     const m = e?.message === "permission" ? "Les notifications sont bloquées. Autorise-les dans les réglages du navigateur."
       : e?.message === "geo" ? "Autorise la localisation : elle sert seulement à calculer les heures de prière."
-      : "Impossible d'enregistrer le rappel. Réessaie.";
-    toast({ title: "Rappel non activé", description: m, variant: "destructive" });
+      : null;
+    if (!m) { report(e, "settings:reminder"); return; }
+    toast({ title: "Rappel non activé", description: m });
   };
   const updateRem = async (patch) => {
     setRemBusy(true);
@@ -119,7 +121,7 @@ export default function Settings() {
       const l = await requestLocation(); setLoc(l);
       if (rem) { setRemBusy(true); try { setRem(await saveReminder({ prayers: rem.prayers, offset_min: rem.offset_min, position: l })); } catch (e) { remError(e); } setRemBusy(false); }
       toast({ title: "Position mise à jour" });
-    } catch { toast({ title: "Localisation refusée", description: "Autorise-la dans les réglages du navigateur.", variant: "destructive" }); }
+    } catch { toast({ title: "Localisation désactivée", description: "Autorise-la dans les réglages du navigateur pour des heures de prière précises." }); }
   };
   const times = rem ? prayerTimes(rem.lat, rem.lng, new Date(), method) : null;
   const hhmm = (d) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });

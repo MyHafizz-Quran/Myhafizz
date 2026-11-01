@@ -12,6 +12,7 @@ import { haptic } from "@/hooks/usePlatform";
 import PageHeader from "@/components/PageHeader";
 import UsernameSheet from "@/components/UsernameSheet";
 import { forgetAvatar } from "@/lib/avatars";
+import { report, userMsg } from "@/lib/report";
 
 const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
@@ -76,7 +77,7 @@ export default function Profile() {
     if (!name.trim()) return;
     setBusy(true); setError(null);
     const { error: e } = await db.auth.updateUser({ data: { full_name: name.trim() } });
-    if (e) setError("Impossible d'enregistrer le nom. Réessaie."); else { await refresh(); setEditing(false); }
+    if (e) report(e, "profile:name"); else { await refresh(); setEditing(false); }
     setBusy(false);
   };
   const pickAvatar = (e) => {
@@ -99,7 +100,7 @@ export default function Profile() {
       await db.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
       forgetAvatar(user.id);
       await refresh(); setAvatarFile(null); setAvatarPreview(null);
-    } catch { setError("La photo n'a pas pu être enregistrée."); }
+    } catch (e) { report(e, "profile:photo"); }
     setBusy(false);
   };
 

@@ -20,6 +20,7 @@ import {
   addPendingSyncAction,
 } from "@/lib/offlineStorage";
 import { useAudioManager, getReadingSession, saveReadingSession, clearReadingSession } from "@/lib/AudioManager";
+import { report, userMsg } from "@/lib/report";
 
 // Resolves whichever settles first: the promise or a rejection after `ms` ms.
 // Used to prevent IndexedDB from hanging forever on mobile WebKit.
@@ -104,7 +105,7 @@ export default function Memorize() {
   // Show a toast whenever the audio manager reports a load error
   useEffect(() => {
     if (!audioError) return;
-    toast({ title: "Erreur audio", description: audioError, variant: "destructive" });
+    report(new Error(audioError), "memorize:audio");
     clearAudioError();
   }, [audioError, clearAudioError, toast]);
 
@@ -142,7 +143,9 @@ export default function Memorize() {
   const currentProgress = progressList.find(p => p.surah_number === surahNumber);
   const memorizedVerses = new Set(currentProgress?.memorized_verses || []);
 
-  const fetchAndCacheVerses = useCallback(async () => {
+  const aliveRef = useRef(true);
+  useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; }; }, []);
+  const fetchAndCacheVerses = useCallback(async (attempt = 0) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -184,18 +187,12 @@ export default function Memorize() {
       // Cache for offline use
       cacheSurah(surahNumber, { ayahs, transliteration: translitMap });
     } catch (err) {
-      const isNetworkError =
-        (err instanceof TypeError && err.message.includes("fetch")) ||
-        err.name === "AbortError";
-      toast({
-        title: "Erreur de chargement",
-        description: isNetworkError
-          ? "Vérifiez votre connexion internet."
-          : "Impossible de charger les versets. Réessayez.",
-        variant: "destructive",
-      });
+      // Jamais de message à l'écran : Sentry + nouvel essai discret (les versets du cache restent affichés)
+      if (!aliveRef.current) return;
+      report(err, "memorize:verses", { surah: surahNumber, attempt: attempt + 1 });
+      if (attempt < 4) { setTimeout(() => aliveRef.current && fetchAndCacheVerses(attempt + 1), 1500 * (attempt + 1)); return; }
     } finally {
-      setLoadingVerses(false);
+      if (aliveRef.current) setLoadingVerses(false);
     }
   }, [surahNumber]);
 

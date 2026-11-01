@@ -33,7 +33,7 @@ export default function Defi() {
     </div>
   );
   if (isLoading) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Préparation du défi…</p>);
-  if (error || !d) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Impossible de charger le défi. Vérifie ta connexion.</p>);
+  if (error || !d) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Chargement du défi…</p>);
   if (!d.enabled) return wrap(<p className="text-center font-bold text-muted-foreground mt-16">Le défi du jour est en pause pour le moment.</p>);
 
   if (!r) {

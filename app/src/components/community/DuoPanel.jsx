@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Fire, CheckCircle, Circle, Handshake, CaretRight } from "@phosphor-icons/react";
 import { Duo } from "@/api/entities";
 import { haptic } from "@/hooks/usePlatform";
+import { report, userMsg } from "@/lib/report";
 
 const first = (n) => (n || "").trim().split(/\s+/)[0] || "Ton binôme";
 
@@ -38,7 +39,7 @@ export default function DuoPanel({ group, compact = false, className = "" }) {
       localStorage.setItem(`mh_duo_nudge_${group.id}`, new Date().toDateString()); setSent(true);
       setMsg(okSent ? `Encouragement envoyé à ${first(other?.display_name)}.` : "Tu l'as déjà encouragé aujourd'hui.");
       qc.invalidateQueries({ queryKey: ["duo", group.id] });
-    } catch { setMsg("Envoi impossible, réessaie."); }
+    } catch (e) { report(e, "duo:nudge"); }
   };
 
   if (isLoading) return <div className={`h-32 rounded-2xl bg-muted animate-pulse ${className}`} />;

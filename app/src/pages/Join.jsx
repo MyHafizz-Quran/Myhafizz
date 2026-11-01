@@ -5,6 +5,7 @@ import { GraduationCap, House, Users, CheckCircle, WarningCircle, Handshake } fr
 import { Groups as G, KIND_LABEL } from "@/api/entities";
 import { useAuth } from "@/lib/AuthContext";
 import MhLogo from "@/components/MhLogo";
+import { report, userMsg } from "@/lib/report";
 
 const ICON = { class: GraduationCap, family: House, circle: Users, duo: Handshake };
 const PROMISE = {
@@ -45,7 +46,7 @@ export default function Join() {
       localStorage.removeItem("mh_pending_join");
       qc.invalidateQueries({ queryKey: ["groups"] });
       navigate(`/Group?id=${id}`, { replace: true });
-    } catch { setErr("Impossible de rejoindre ce groupe pour le moment. Réessaie."); } finally { setBusy(false); }
+    } catch (e) { if (/duo full/.test(e?.message || "")) setErr("Ce binôme a déjà deux membres."); else report(e, "join"); } finally { setBusy(false); }
   };
   const toAuth = (mode) => {
     localStorage.setItem("mh_pending_join", code);

@@ -5,6 +5,7 @@ import { X, ArrowLeft, UsersThree, House, GraduationCap, Handshake, CheckCircle,
 import { TK_SCOPES, TK_ILM, tkList, tkGet, tkCreate, tkUnitName, loadQuran, loadSettings } from "@/lib/games";
 import { haptic } from "@/hooks/usePlatform";
 import PlayerPic from "@/components/PlayerPic";
+import { report, userMsg } from "@/lib/report";
 
 const KIND_ICON = { family: House, class: GraduationCap, circle: UsersThree, duo: Handshake };
 const KIND_WORD = { family: "Famille", class: "Classe", circle: "Cercle", duo: "Binôme" };
@@ -46,7 +47,7 @@ export function EquipeTab() {
       <Btn onClick={() => { haptic(); navigate(noGroup ? "/Groups" : "/Equipe?new=1"); }}><UsersThree weight="bold" className="w-5 h-5" />{noGroup ? "Créer ou rejoindre un groupe" : "Lancer une khatma d'équipe"}</Btn>
       <p className="text-[13px] font-semibold text-muted-foreground mt-3">{noGroup ? "La khatma d'équipe se joue dans un groupe (famille, classe, cercle) ou avec ton binôme." : "Révisez ensemble : chaque sourate est validée quand un membre réussit une partie dessus."}</p>
       {isLoading && <p className="text-center font-bold text-muted-foreground mt-10">Chargement…</p>}
-      {error && <p className="text-center font-bold text-muted-foreground mt-10">Impossible de charger tes khatmas. Vérifie ta connexion.</p>}
+      {error && <p className="text-center font-bold text-muted-foreground mt-10">Chargement…</p>}
       {!isLoading && !error && !list.length && !noGroup && <p className="text-center font-bold text-muted-foreground mt-10">Aucune khatma d'équipe pour l'instant.</p>}
       {active.length > 0 && <Section>En cours</Section>}
       <div className="space-y-2.5">{active.map((k) => (
@@ -93,12 +94,12 @@ function Create() {
   const create = async () => {
     setBusy(true); setErr("");
     try { const id = await tkCreate(sel.id, scope, daysOpts.includes(days) ? days : daysOpts[0]); qc.invalidateQueries({ queryKey: ["tk-list"] }); navigate(`/Equipe?id=${id}`, { replace: true }); }
-    catch (e) { setErr(e.message); setBusy(false); }
+    catch (e) { setErr(userMsg(e, "equipe:create") || ""); setBusy(false); }
   };
   return (
     <Screen footer={<>{err && <p className="text-[13px] font-bold text-destructive text-center">{err}</p>}<Btn disabled={!sel || sel.busy || busy} onClick={create}>{busy ? "Création…" : sel ? `Lancer pour ${sel.kind === "duo" ? "le binôme" : sel.kind === "family" ? "la famille" : sel.kind === "class" ? "la classe" : "le cercle"}` : "Choisis un groupe"}</Btn></>}>
       <Head title="Nouvelle khatma" close onBack={() => navigate("/Jouer?tab=equipe", { replace: true })} />
-      {error && <p className="font-bold text-muted-foreground mt-6">Impossible de charger tes groupes. Vérifie ta connexion.</p>}
+      
       <Section>Avec qui ?</Section>
       {data && !groups.length && <div className="card-flat p-4"><p className="font-semibold text-muted-foreground">Tu n'es dans aucun groupe. Crée un groupe ou un binôme, puis reviens ici.</p><div className="mt-3"><Btn secondary onClick={() => navigate("/Groups")}>Mes groupes</Btn></div></div>}
       <div className="space-y-2.5">{groups.map((g) => {
@@ -130,7 +131,7 @@ function Detail({ id }) {
   const { data: quran } = useQuery({ queryKey: ["quran-names"], queryFn: loadQuran, staleTime: Infinity });
   const back = () => navigate("/Jouer?tab=equipe", { replace: true });
   if (isLoading) return <Screen><Head title="Khatma d'équipe" onBack={back} /><p className="text-center font-bold text-muted-foreground mt-16">Chargement…</p></Screen>;
-  if (error || !k) return <Screen><Head title="Khatma d'équipe" onBack={back} /><p className="text-center font-bold text-muted-foreground mt-16">{error?.message || "Khatma introuvable."}</p></Screen>;
+  if (error || !k) return <Screen><Head title="Khatma d'équipe" onBack={back} /><p className="text-center font-bold text-muted-foreground mt-16">{error ? (/introuvable/i.test(error.message || "") ? "Khatma introuvable." : "Chargement…") : "Khatma introuvable."}</p></Screen>;
   const by = Object.fromEntries(k.parts.map((p) => [p.unit, p]));
   const who = Object.fromEntries(k.team.map((m) => [m.user_id, m]));
   const tag = (uid) => (uid === k.me ? "Toi" : initials(who[uid]?.username || who[uid]?.name));

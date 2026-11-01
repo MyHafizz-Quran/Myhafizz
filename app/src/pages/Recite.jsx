@@ -8,6 +8,7 @@ import { align, cmpKey, SpeechRec, Recordings, pickMime } from "@/lib/recitation
 import { VerseReview } from "@/api/entities";
 import { schedule, GRADES } from "@/lib/srs";
 import { haptic } from "@/hooks/usePlatform";
+import { report, userMsg } from "@/lib/report";
 
 const isWord = (w) => /[\u0621-\u064A]/.test(w);
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -71,7 +72,7 @@ function Verify({ surah, from, to, ayahs }) {
     // Le navigateur coupe l'écoute après un silence : on relance tant que l'élève récite
     r.onend = () => { if (wantRef.current) { try { r.start(); } catch { /* déjà relancé */ } } else setListening(false); };
     recRef.current = r; wantRef.current = true;
-    try { r.start(); setListening(true); } catch { setError("Impossible de démarrer le micro."); }
+    try { r.start(); setListening(true); } catch (e) { report(e, "recite:mic"); }
   };
   function stop(silent) {
     wantRef.current = false;
@@ -89,7 +90,7 @@ function Verify({ surah, from, to, ayahs }) {
       const prev = reviews.find((r) => r.surah_number === surah.number && r.verse_number === v);
       rows.push({ surah_number: surah.number, verse_number: v, ...schedule(prev, g) });
     }
-    try { await VerseReview.upsert(rows); setSaved(true); qc.invalidateQueries({ queryKey: ["verse-reviews"] }); } catch { setError("Enregistrement impossible, réessaie."); }
+    try { await VerseReview.upsert(rows); setSaved(true); qc.invalidateQueries({ queryKey: ["verse-reviews"] }); } catch (e) { report(e, "recite:save"); }
   };
 
   if (!SpeechRec) {

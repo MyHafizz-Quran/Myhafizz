@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { SOURCES, getSrc, setSrc, srcOf, tafsirOne } from "@/lib/tafsir";
 import { haptic } from "@/hooks/usePlatform";
+import { report } from "@/lib/report";
 
 /** Choix du tafsir (le dernier choix est gardé). */
 export function TafsirChips({ value, onChange }) {
@@ -56,7 +57,7 @@ export function TafsirText({ src, data, compact, surah }) {
   useEffect(() => {
     if (!needTr || !inView || orig) return;
     let alive = true; setTr({ st: "loading" });
-    translate(src, surah, refAyah, lang).then((b) => alive && setTr({ st: "ok", body: b }), () => alive && setTr({ st: "error" }));
+    translate(src, surah, refAyah, lang).then((b) => alive && setTr({ st: "ok", body: b }), (e) => { report(e, "tafsir:translate", { src, surah, refAyah, lang }); if (alive) setTr({ st: "error" }); });
     return () => { alive = false; };
   }, [needTr, inView, orig, src, surah, refAyah, lang]);
   if (!data?.body) return <p className="text-[13px] font-semibold text-muted-foreground">Pas d'explication pour ce verset dans ce tafsir.</p>;
@@ -73,7 +74,6 @@ export function TafsirText({ src, data, compact, surah }) {
           : tr.st === "ok"
             ? <p className={`text-[15px] font-semibold leading-relaxed text-foreground/85 whitespace-pre-line ${box}`}>{tr.body}</p>
             : <p className="text-[13px] font-semibold text-muted-foreground">{lang === "en" ? "Translating…" : "Traduction en cours…"}</p>}
-      {tr.st === "error" && !orig && <p className="text-[12px] font-bold text-muted-foreground mt-2">{lang === "en" ? "Translation unavailable right now, here is the Arabic original." : "Traduction indisponible pour le moment, voici l'original en arabe."}</p>}
       <p className="text-[11.5px] font-bold text-muted-foreground mt-2">
         {s.credit}{needTr && !showAr && tr.st === "ok" ? (lang === "en" ? " · translated from Arabic" : " · traduit de l'arabe") : ""}
       </p>
@@ -92,15 +92,20 @@ export default function TafsirPanel({ surah, ayah }) {
   const [state, setState] = useState("loading");
   useEffect(() => {
     let alive = true; setState("loading");
-    tafsirOne(src, surah, ayah).then((d) => alive && setState(d || "none"), () => alive && setState("error"));
-    return () => { alive = false; };
+    let t = 0;
+    const go = (n) => tafsirOne(src, surah, ayah).then((d) => alive && setState(d || "none"), (e) => {
+      if (!alive) return;
+      report(e, "tafsir:panel", { src, surah, ayah });
+      t = setTimeout(() => go(n + 1), Math.min(2000 * (n + 1), 15000));
+    });
+    go(0);
+    return () => { alive = false; clearTimeout(t); };
   }, [src, surah, ayah]);
   return (
     <div className="mt-2 space-y-2.5">
       <TafsirChips value={src} onChange={setS} />
       {state === "loading" ? <p className="text-[13px] font-semibold text-muted-foreground">Chargement…</p>
-        : state === "error" ? <p className="text-[13px] font-semibold text-muted-foreground">Explication indisponible pour le moment. Vérifie ta connexion.</p>
-        : <TafsirText src={src} data={state === "none" ? null : state} compact surah={surah} />}
+                : <TafsirText src={src} data={state === "none" ? null : state} compact surah={surah} />}
     </div>
   );
 }
