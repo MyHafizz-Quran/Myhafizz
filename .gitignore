@@ -31,3 +31,7 @@ dist-ssr
 
 .env.local
 .env
+reminders/.q.mjs
+reminders/.mig.mjs
+reminders/.t_extras.mjs
+reminders/.envrun.mjs

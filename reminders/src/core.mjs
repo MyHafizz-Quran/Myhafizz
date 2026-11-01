@@ -5,6 +5,7 @@ import webpush from "web-push";
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
 import { runDuelPush } from "./duels.mjs";
 import { sendPending } from "./notif.mjs";
+import { extrasDue, DAILY_CAP } from "./extras.mjs";
 
 const WINDOW_MIN = 40; // tolérance si un passage est en retard
 const NAMES = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
@@ -59,6 +60,20 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
     const claim = async (key, val, endpoint) => (await db.query(
       "update public.prayer_reminders set last_sent = coalesce(last_sent,'{}'::jsonb) || jsonb_build_object($1::text, $2::text) where endpoint = $3 and coalesce(last_sent->>$1, '') <> $2",
       [key, val, endpoint])).rowCount > 0;
+    // Compteur du jour (3 max) : réservé avant l'envoi, comme claim.
+    const bump = async (endpoint, today) => (await db.query(
+      `update public.prayer_reminders set last_sent = coalesce(last_sent,'{}'::jsonb) || jsonb_build_object('cnt', jsonb_build_object('d', $2::text,
+         'n', case when last_sent->'cnt'->>'d' = $2 then (last_sent->'cnt'->>'n')::int + 1 else 1 end))
+       where endpoint = $1 and (coalesce(last_sent->'cnt'->>'d', '') <> $2 or (last_sent->'cnt'->>'n')::int < $3)`, [endpoint, today, DAILY_CAP])).rowCount > 0;
+    const push = async (r, msg) => {
+      try {
+        await webpush.sendNotification({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth_key } }, JSON.stringify(msg), { TTL: 1800 });
+        sent++; return true;
+      } catch (e) {
+        if (e.statusCode === 404 || e.statusCode === 410) { await db.query("delete from public.prayer_reminders where endpoint = $1", [r.endpoint]); removed++; return "gone"; }
+        errors++; console.error("push error", e.statusCode || e.message); return false;
+      }
+    };
     for (const r of rows) {
       let tz = r.tz;
       try { localDate(tz); } catch { tz = "UTC"; }
@@ -69,6 +84,7 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
       // Vendredi : rappel de la sourate Al-Kahf 2 h après le lever du soleil (heure locale).
       const weekday = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).format(new Date(now));
       const state = r.user_id ? regularity(ctxBy[r.user_id], today) : { kind: "regular" };
+      let gone = false;
       const daily = (r.prayers || []).filter((x) => x !== "kahf" && times[x]).sort((a, b) => times[a] - times[b]);
       for (const p of r.prayers || []) {
         if (last[p] === today) continue;
@@ -88,18 +104,18 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
           if (state.kind === "away" && !(await claim("absence", state.since, r.endpoint))) continue;
           msg = buildMessage(state, p, p === daily[daily.length - 1]);
         }
-        const payload = JSON.stringify(msg);
-        try {
-          await webpush.sendNotification({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth_key } }, payload, { TTL: 1800 });
-          sent++;
-        } catch (e) {
-          if (e.statusCode === 404 || e.statusCode === 410) {
-            await db.query("delete from public.prayer_reminders where endpoint = $1", [r.endpoint]); removed++;
-            break;
-          }
-          errors++;
-          console.error("push error", e.statusCode || e.message);
-        }
+        if (!(await bump(r.endpoint, today))) continue;
+        if ((await push(r, msg)) === "gone") { gone = true; break; }
+      }
+      if (gone || !r.user_id) continue;
+      // Notifications personnalisées (verset, nom du jour, bilan, Tafsir, dates…).
+      const hm = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(now)).split(":").map(Number);
+      const due = await extrasDue({ r, local: { today, hour: hm[0], min: hm[1], weekday }, ctx: ctxBy[r.user_id], state, db, now });
+      for (const x of due) {
+        if (last[x.key] === x.val) continue;
+        if (!(await claim(x.key, x.val, r.endpoint))) continue;
+        if (!(await bump(r.endpoint, today))) break;
+        if ((await push(r, x.msg)) === "gone") break;
       }
     }
     try { const lg = await db.query("select public.lg_close_due() as closed, public.lg_nudge_due() as nudged, public.tn_cron() as tournois"); duels = { ...duels, league: lg.rows[0] }; } catch (e) { console.error("ligue", e.message); }

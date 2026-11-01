@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { getFeedback, setFeedback, vibrate } from "@/lib/feedback";
-import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin, BookOpen } from "@phosphor-icons/react";
+import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin, BookOpen, Sparkle, Quotes, Star, Confetti, CalendarCheck, BookOpenText, TextAUnderline, Moon } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -36,6 +36,17 @@ function Switch({ on, onClick, label }) {
   );
 }
 const Ico = ({ icon: I }) => <span className="w-[38px] h-[38px] rounded-xl bg-accent text-primary flex items-center justify-center shrink-0"><I weight="fill" className="w-[21px] h-[21px]" /></span>;
+const EXTRA_NOTIFS = [
+  { key: "verset", icon: Sparkle, label: "Verset du jour", sub: "Le matin vers 8 h" },
+  { key: "hadith", icon: Quotes, label: "Hadith du jour", sub: "Vers 12 h 30" },
+  { key: "nom", icon: Star, label: "Nom d'Allah du jour", sub: "Vers 9 h, un des 99 noms" },
+  { key: "bravo", icon: Confetti, label: "Bravo pour ta série", sub: "Quand tu atteins 7, 30, 100 jours…" },
+  { key: "hebdo", icon: CalendarCheck, label: "Bilan de la semaine", sub: "Le samedi matin" },
+  { key: "tafsir", icon: BookOpenText, label: "Reprendre le Tafsir", sub: "Le jeudi soir si tu l'as mis de côté" },
+  { key: "arabe", icon: TextAUnderline, label: "Lire l'arabe", sub: "Un jour sur deux, si tu apprends à lire" },
+  { key: "dates", icon: Moon, label: "Dates islamiques", sub: "Ramadan, 'Arafa, Aïd, Achoura…" },
+];
+
 function ToggleRow({ icon, label, sub, value, onChange }) {
   return (
     <div className="flex items-center gap-3 p-3.5">
@@ -82,7 +93,7 @@ export default function Settings() {
   const updateRem = async (patch) => {
     setRemBusy(true);
     try {
-      const next = { prayers: rem?.prayers || ["fajr", "maghrib", "kahf"], offset_min: rem?.offset_min ?? 15, ...patch };
+      const next = { prayers: rem?.prayers || ["fajr", "maghrib", "kahf", "verset", "bravo", "hebdo", "tafsir", "arabe", "dates"], offset_min: rem?.offset_min ?? 15, ...patch };
       if (!next.prayers.length) { await removeReminder(); setRem(null); }
       else {
         const row = await saveReminder({ ...next, position: rem ? { lat: rem.lat, lng: rem.lng } : undefined });
@@ -355,6 +366,12 @@ export default function Settings() {
                   </div>
                   <ToggleRow icon={BookOpen} label="Sourate Al-Kahf le vendredi" sub="Un rappel le vendredi matin, environ 2 h après le lever du soleil"
                     value={rem.prayers.includes("kahf")} onChange={() => { if (remBusy) return; haptic(); updateRem({ prayers: rem.prayers.includes("kahf") ? rem.prayers.filter((x) => x !== "kahf") : [...rem.prayers, "kahf"] }); }} />
+                  <p className="px-3.5 pt-3.5 font-extrabold">Autres notifications</p>
+                  <p className="px-3.5 text-[12.5px] font-semibold text-muted-foreground">3 notifications par jour au maximum, jamais entre 22 h et 6 h.</p>
+                  {EXTRA_NOTIFS.map((x) => (
+                    <ToggleRow key={x.key} icon={x.icon} label={x.label} sub={x.sub} value={rem.prayers.includes(x.key)}
+                      onChange={() => { if (remBusy) return; haptic(); updateRem({ prayers: rem.prayers.includes(x.key) ? rem.prayers.filter((k) => k !== x.key) : [...rem.prayers, x.key] }); }} />
+                  ))}
                   <SegRow label="Délai après la prière" value={rem.offset_min} onChange={(v) => updateRem({ offset_min: v })} options={[{ label: "10 min", value: 10 }, { label: "15 min", value: 15 }, { label: "30 min", value: 30 }]} />
                   <p className="px-3.5 py-3 text-[12.5px] font-semibold text-muted-foreground">Horaires calculés pour ta position (méthode {methodLabel(method)}). Ta position n'est utilisée que pour ce calcul.</p>
                 </>

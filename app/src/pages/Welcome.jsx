@@ -120,7 +120,7 @@ export default function Welcome() {
       setBusy(false); return;
     }
     if (withReminders && prayers.length && push === "ok") {
-      try { await saveReminder({ prayers, offset_min: 15 }); }
+      try { await saveReminder({ prayers: [...prayers, "kahf", "verset", "bravo", "hebdo", "tafsir", "arabe", "dates"], offset_min: 15 }); }
       catch (e) {
         setBusy(false);
         setError(e?.message === "permission" ? "Notifications refusées. Ton programme est enregistré, tu pourras activer les rappels dans Réglages." : "Rappels non activés. Ton programme est enregistré, tu pourras réessayer dans Réglages.");
