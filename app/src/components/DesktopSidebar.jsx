@@ -55,7 +55,7 @@ export default function DesktopSidebar() {
   });
 
   return (
-    <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[248px] z-[var(--z-bottom-nav)] flex-col border-r-2 border-border bg-card px-4 py-6">
+    <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[248px] z-[var(--z-bottom-nav)] flex-col overflow-y-auto overscroll-contain border-r-2 border-border bg-card px-4 py-6">
       <NavLink to="/Dashboard" className="px-2 mb-6"><MhWordmark size={32} /></NavLink>
       <button onClick={openSearch} className="h-11 mb-4 rounded-xl border-2 border-border px-3 flex items-center gap-2.5 text-muted-foreground font-bold hover:bg-muted">
         <MagnifyingGlass weight="bold" className="w-5 h-5" /><span className="flex-1 text-left">Rechercher</span>
