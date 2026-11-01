@@ -18,33 +18,54 @@ export default function VoiceSplash() {
   const [prog, setProg] = useState(0);
   const [tick, setTick] = useState(0);
   const [ready, setReady] = useState(false);
-  const [sound, setSound] = useState(false);
+  // Son activé par défaut : l'icône est sur « son » dès l'ouverture, l'utilisateur peut le couper.
+  const [sound, setSound] = useState(true);
   const au = useRef(null);
   const start = useRef(0);
+  const blocked = useRef(false); // lecture refusée par le navigateur tant qu'on n'a pas touché l'écran
+  const muted = useRef(false);
+  const skipClick = useRef(false); // le toucher qui lance le son ne saute pas l'animation
 
   useEffect(() => {
     const a = new Audio(AUDIO);
     a.preload = "auto";
     au.current = a;
-    a.play().then(() => setSound(true)).catch(() => setSound(false)); // souvent bloqué sans toucher : on reste muet
     start.current = performance.now();
+    // iOS et la plupart des navigateurs bloquent le son sans geste : on garde le son activé
+    // et on lance la récitation (avec l'animation reprise au début) au premier toucher.
+    const unlock = () => {
+      if (!blocked.current || muted.current) return;
+      blocked.current = false;
+      skipClick.current = true;
+      a.currentTime = 0;
+      a.play().then(() => { start.current = performance.now(); setReady(false); if (!raf) raf = requestAnimationFrame(loop); }).catch((err) => report(err, "VoiceSplash.unlock"));
+    };
+    a.play().catch(() => { blocked.current = true; });
+    window.addEventListener("pointerdown", unlock, { capture: true });
+    window.addEventListener("keydown", unlock, { capture: true });
     let raf;
     const loop = (t) => {
       const p = Math.min(1, (t - start.current) / DURATION);
       setProg(p);
       setTick((x) => x + 1);
       if (p < 1) raf = requestAnimationFrame(loop);
-      else setReady(true);
+      else { raf = 0; setReady(true); }
     };
     raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); try { a.pause(); } catch { /* rien */ } };
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointerdown", unlock, { capture: true });
+      window.removeEventListener("keydown", unlock, { capture: true });
+      try { a.pause(); } catch { /* rien */ }
+    };
   }, []);
 
   const toggleSound = (e) => {
     e.stopPropagation();
     const a = au.current;
     if (!a) return;
-    if (sound) { a.pause(); setSound(false); return; }
+    if (sound) { muted.current = true; blocked.current = false; a.pause(); setSound(false); return; }
+    muted.current = false;
     a.currentTime = Math.min(a.duration || 0, (prog * DURATION) / 1000);
     a.play().then(() => setSound(true)).catch((err) => report(err, "VoiceSplash.play"));
   };
@@ -52,7 +73,7 @@ export default function VoiceSplash() {
   const go = (to) => { try { au.current?.pause(); } catch { /* rien */ } navigate(to); };
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col" onClick={() => setReady(true)}>
+    <div className="fixed inset-0 bg-background flex flex-col" onClick={() => { if (skipClick.current) { skipClick.current = false; return; } setReady(true); }}>
       <button onClick={toggleSound} aria-label={sound ? "Couper le son" : "Écouter la récitation"}
         className="absolute right-4 top-[calc(env(safe-area-inset-top,0px)+12px)] w-11 h-11 rounded-full flex items-center justify-center text-muted-foreground">
         {sound ? <SpeakerHigh weight="bold" className="w-6 h-6" /> : <SpeakerSlash weight="bold" className="w-6 h-6" />}
