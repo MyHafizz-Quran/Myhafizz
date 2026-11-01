@@ -19,12 +19,29 @@ export const getReciter = (audio) => {
 export const setReciter = (id) => localStorage.setItem(KEY, id);
 export const reciterOf = (id) => RECITERS.find((r) => r.id === id) || RECITERS[0];
 
+/** Un petit fichier par vers, servi par myhafizz.com : démarre tout de suite, sans chercher dans un long enregistrement. */
+const LOCAL = new Set(["ghamdi", "soufi"]);
+export const verseUrl = (reciter, n) => `/audio/tajwid/${reciter}/${n}.mp3`;
+const warm = new Map();
+/** Précharge les vers à venir pour qu'ils partent sans attente. */
+export function prefetchVerses(reciter, list) {
+  if (!LOCAL.has(reciter)) return;
+  for (const n of list) {
+    const u = verseUrl(reciter, n);
+    if (warm.has(u)) continue;
+    const a = new Audio(); a.preload = "auto"; a.src = u; warm.set(u, a);
+  }
+}
+
 /** Joue le vers n avec le récitant choisi. Renvoie false si ce récitant n'a pas ce vers. */
 export function playVerse(audio, reciter, n, times = 1, onEnd) {
   const t = audio?.[reciter]?.[n];
   if (!t) return false;
   const [part, t0, t1] = t;
-  playClip(reciterOf(reciter).url(part), t0, t1, times, onEnd);
+  if (LOCAL.has(reciter)) {
+    playClip(verseUrl(reciter, n), 0, 1e9, times, onEnd, true);
+    prefetchVerses(reciter, [n + 1, n + 2]);
+  } else playClip(reciterOf(reciter).url(part), t0, t1, times, onEnd);
   return true;
 }
 export { stopAudio };

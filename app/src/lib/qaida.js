@@ -381,7 +381,7 @@ export function playQueue(urls) {
   next();
 }
 /** Joue un passage [t0, t1] (secondes) d'un enregistrement, répété `times` fois. onEnd appelé à la fin. */
-export function playClip(url, t0, t1, times = 1, onEnd) {
+export function playClip(url, t0, t1, times = 1, onEnd, whole = false) {
   try {
     window.speechSynthesis?.cancel();
     if (!player) player = new Audio();
@@ -394,6 +394,7 @@ export function playClip(url, t0, t1, times = 1, onEnd) {
       if (left > 0) start();
       else { player.pause(); player.ontimeupdate = null; onEnd && onEnd(); }
     };
+    if (whole) player.onended = () => { left -= 1; if (left > 0) start(); else { player.ontimeupdate = null; onEnd && onEnd(); } };
     if (player.src !== url) { player.src = url; player.preload = "auto"; player.addEventListener("loadedmetadata", start, { once: true }); player.load(); }
     else start();
   } catch { /* ignore */ }
