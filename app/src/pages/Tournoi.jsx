@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Trophy, Crown, Flag, CaretRight, Plus, UsersThree } from "@phosphor-icons/react";
-import { tnList, tnState, tnJoin, tnCreate, tnCancel, roundName, buildDuelPool, loadSettings } from "@/lib/games";
+import { tnList, tnState, tnJoin, tnCreate, tnCancel, roundName, buildDuelPool, loadSettings, playScope } from "@/lib/games";
 import { PlayerPic } from "@/pages/Partie";
 import { haptic } from "@/hooks/usePlatform";
 
@@ -80,7 +80,7 @@ function Detail({ id }) {
       off.current = Date.parse(s.now) - Date.now();
       if (s.need_pool && !pool.current && !building.current) {
         building.current = true;
-        loadSettings().catch(() => ({})).then((st) => buildDuelPool(40, st.duel || {})).then((p) => { pool.current = p; }).finally(() => { building.current = false; });
+        Promise.all([loadSettings().catch(() => ({})), playScope(s.match?.them?.id ? { user: s.match.them.id } : null)]).then(([st, sc]) => buildDuelPool(40, st.duel || {}, sc)).then((p) => { pool.current = p; }).finally(() => { building.current = false; });
       }
       return s;
     },

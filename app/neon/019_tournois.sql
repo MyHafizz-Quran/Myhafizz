@@ -120,7 +120,7 @@ BEGIN
     IF now() < m.ready_at THEN CONTINUE; END IF;
     SELECT seen_at INTO s1 FROM tournament_players WHERE tournament_id = t.id AND user_id = m.p1;
     SELECT seen_at INTO s2 FROM tournament_players WHERE tournament_id = t.id AND user_id = m.p2;
-    IF s1 > now() - interval '12 seconds' AND s2 > now() - interval '12 seconds' AND p_candidates IS NOT NULL THEN
+    IF s1 > now() - interval '12 seconds' AND s2 > now() - interval '12 seconds' AND p_candidates IS NOT NULL AND auth.uid() IN (m.p1, m.p2) THEN
       picked := '[]'; ks := '{}';
       FOR c IN SELECT value FROM jsonb_array_elements(p_candidates) LOOP
         EXIT WHEN jsonb_array_length(picked) >= want;

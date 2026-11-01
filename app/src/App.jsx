@@ -135,6 +135,8 @@ const AuthenticatedApp = () => {
   return (
     <NotifProvider>
       <OfflineBanner />
+      {/* iOS 26 floute le contenu qui défile sous la barre d'état : une bande pleine, fixe, l'en empêche sur tous les écrans */}
+      {platform !== "android" && <div className="ios-scroll-edge" aria-hidden="true" />}
       {homeHeader && <TopHeader />}
       {/* Contenu principal : transition d'écran native (glissement iOS, fondu Android) */}
       <motion.div

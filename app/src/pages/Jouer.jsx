@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info, SealCheck, CalendarCheck, Trophy } from "@phosphor-icons/react";
 import { Profile } from "@/api/entities";
-import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount, lgGet, TIERS, tnList } from "@/lib/games";
+import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount, lgGet, TIERS, tnList, playScope } from "@/lib/games";
 import { TierIcon } from "@/pages/Ligue";
 import { haptic } from "@/hooks/usePlatform";
 import { DuelsTab } from "@/pages/Duel";
@@ -122,6 +122,7 @@ export default function Jouer() {
         </div>
       )}
 
+      <QuranScopeNote />
       <div className="space-y-3 mt-5">
         {enabled.map((g) => {
           const G = GAMES[g], Icon = ICONS[g], lv = unlockedLevel(g, progress, profile);
@@ -204,5 +205,18 @@ function TournoiCard() {
         <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
       </span>
     </button>
+  );
+}
+
+/** Rappelle d'où viennent les questions du Coran : ce que le joueur a mémorisé. */
+function QuranScopeNote() {
+  const { data: sc } = useQuery({ queryKey: ["quran-scope"], queryFn: () => playScope(), staleTime: 60_000 });
+  if (!sc) return null;
+  return (
+    <p className="text-[13px] font-semibold text-muted-foreground mt-4 px-1">
+      {sc.personal
+        ? `Les jeux du Coran utilisent ce que tu as mémorisé : ${sc.verses} verset${sc.verses > 1 ? "s" : ""} dans ${sc.surahCount} sourate${sc.surahCount > 1 ? "s" : ""}. En duel, seulement ce que vous avez mémorisé tous les deux.`
+        : "Les jeux du Coran utilisent les petites sourates les plus connues. Dès que tu auras mémorisé quelques versets, les questions viendront de ta mémorisation."}
+    </p>
   );
 }

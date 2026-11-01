@@ -4,6 +4,7 @@
 import { db } from "@/api/neonClient";
 import { LETTERS, L, syllable } from "@/lib/qaida";
 import { SURAH_FR } from "@/components/surahNamesFr";
+import { SURAHS } from "@/components/quranData";
 
 export const AUDIO = (g) => `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${g}.mp3`;
 
@@ -171,15 +172,81 @@ function lettersQuestions(lv, count) {
 }
 
 /* ── Coran ── */
-function surahsIn(quran, lv) { return quran.filter((s) => s.n >= lv.from && s.n <= lv.to); }
+/* Les jeux du Coran suivent le joueur : son niveau d'arabe (onboarding) fixe l'aide minimale,
+   et les questions sont tirées des versets qu'il a mémorisés (en duel : ceux que les DEUX ont mémorisés).
+   Pas assez de versets mémorisés : on complète avec les petites sourates les plus connues. */
+const AIDS = ["ar", "both", "phon"];
+export const aidOf = (level) => (level === "good" ? "ar" : level === "some" ? "both" : level === "none" ? "phon" : null);
+/** L'aide la plus généreuse des deux (un débutant garde toujours la phonétique). */
+export const helpier = (a, b) => (!b ? a : !a ? b : AIDS[Math.max(AIDS.indexOf(a), AIDS.indexOf(b))]);
+const COMMON = [1, 103, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114];
+const extraP = {};
+/** Une sourate au format des jeux : Juz Amma / Tabarak en local, les autres depuis l'API (mise en cache). */
+async function loadSurah(n) {
+  const quran = await loadQuran();
+  const local = quran.find((x) => x.n === n);
+  if (local) return local;
+  const meta = SURAHS[n - 1];
+  if (!meta) return null;
+  extraP[n] ||= fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,en.transliteration,fr.hamidullah`)
+    .then((r) => r.json())
+    .then((j) => {
+      const [ar, tr, fr] = j.data;
+      return { n, name: meta.englishName, ar: `سُورَةُ ${meta.name}`, v: ar.ayahs.map((a, i) => {
+        let txt = a.text;
+        if (n !== 1 && i === 0 && txt.startsWith("بِسْمِ")) txt = txt.split(" ").slice(4).join(" ");
+        return { k: a.numberInSurah, g: a.number, a: txt, t: (tr.ayahs[i]?.text || "").replace(/<[^>]+>/g, ""), f: fr.ayahs[i]?.text || "" };
+      }) };
+    })
+    .catch((e) => { delete extraP[n]; throw e; });
+  return extraP[n];
+}
+const rpcScope = (args) => db.rpc("quran_scope", args).then(({ data, error }) => { if (error) throw error; return data; }).catch(() => ({ level: null, mem: [] }));
+let myScopeP = null, myScopeAt = 0;
+/** Mon niveau d'arabe et mes versets mémorisés (relu au plus toutes les minutes). */
+export function myQuranScope() {
+  if (!myScopeP || Date.now() - myScopeAt > 60_000) { myScopeAt = Date.now(); myScopeP = rpcScope({}); }
+  return myScopeP;
+}
+/** Le même chose pour un adversaire (par nom d'utilisateur, id ou duel commun). */
+export const quranScopeOf = ({ username, user, duel } = {}) => rpcScope({ p_username: username || null, p_user: user || null, p_duel: duel || null });
+/** Sourates de jeu limitées aux versets mémorisés par tous les joueurs donnés. */
+export async function quranScope(mems, { min = 8, maxExtra = 6 } = {}) {
+  let map = null;
+  for (const m of mems) {
+    const cur = new Map((m || []).map((x) => [Number(x.s), new Set((x.v || []).map(Number))]));
+    if (!map) { map = cur; continue; }
+    for (const [n, set] of map) { const o = cur.get(n); if (!o) map.delete(n); else map.set(n, new Set([...set].filter((v) => o.has(v)))); }
+  }
+  map ||= new Map();
+  const verses = [...map.values()].reduce((a, x) => a + x.size, 0);
+  const personal = verses >= min;
+  if (!personal) for (const n of COMMON) map.set(n, new Set(Array.from({ length: SURAHS[n - 1].numberOfAyahs }, (_, i) => i + 1)));
+  let nums = [...map.keys()].filter((n) => map.get(n).size);
+  const far = shuffle(nums.filter((n) => n < 67 && !COMMON.includes(n)));
+  if (far.length > maxExtra) { const drop = new Set(far.slice(maxExtra)); nums = nums.filter((n) => !drop.has(n)); }
+  const surahs = (await Promise.all(nums.map((n) => loadSurah(n).catch(() => null)))).filter(Boolean).map((x) => ({ ...x, ok: map.get(x.n) }));
+  return { surahs, personal, verses, surahCount: surahs.length };
+}
+/** Mon périmètre de jeu : ce que j'ai mémorisé (seul) ou ce que nous avons tous les deux mémorisé (duel). */
+export async function playScope(opponent) {
+  const me = await myQuranScope();
+  const mems = [me.mem];
+  if (opponent) mems.push((await quranScopeOf(opponent)).mem);
+  return { ...(await quranScope(mems)), level: me.level };
+}
+const okAt = (s, i) => !s.ok || s.ok.has(s.v[i]?.k);
+function surahsIn(quran, lv) { return lv.scope?.length ? lv.scope : quran.filter((s) => s.n >= lv.from && s.n <= lv.to); }
 
 function suiteQuestions(quran, lv, count) {
-  const ss = surahsIn(quran, lv).filter((s) => s.v.length >= 3);
+  const pairs = (s) => s.v.map((_, i) => i).filter((i) => i < s.v.length - 1 && okAt(s, i) && okAt(s, i + 1));
+  const ss = surahsIn(quran, lv).filter((s) => s.v.length >= 3 && pairs(s).length);
   const out = [];
   const seen = new Set();
+  if (!ss.length) return out;
   for (let tries = 0; out.length < count && tries < 200; tries++) {
     const s = pick(ss, 1)[0];
-    const i = Math.floor(Math.random() * (s.v.length - 1));
+    const i = pick(pairs(s), 1)[0];
     const key = `${s.n}:${i}`; if (seen.has(key)) continue; seen.add(key);
     const cur = s.v[i], nxt = s.v[i + 1];
     const sameSurah = s.v.filter((_, j) => j !== i + 1 && j !== i);
@@ -194,9 +261,11 @@ function suiteQuestions(quran, lv, count) {
 function sourateQuestions(quran, lv, count) {
   const ss = surahsIn(quran, lv);
   const out = [];
+  const pool = ss.length >= 4 ? ss : [...ss, ...quran.filter((x) => !ss.some((y) => y.n === x.n))];
   for (const s of pick(ss, Math.min(count, ss.length))) {
-    const v = lv.n === 5 || lv.mode !== "sens" ? pick(s.v, 1)[0] : s.v[0];
-    const near = ss.filter((x) => x.n !== s.n);
+    const mine = s.v.filter((_, i) => okAt(s, i));
+    const v = lv.n === 5 || lv.mode !== "sens" ? pick(mine, 1)[0] : mine[0];
+    const near = (ss.length >= 4 ? ss : pool.filter((x) => Math.abs(x.n - s.n) <= 20 || ss.includes(x))).filter((x) => x.n !== s.n);
     const opts = shuffle([s, ...pick(near, 3)]);
     out.push({ kind: "sourate", mode: lv.mode, verse: v, surah: s.n, answer: s.n, options: opts.map((x) => ({ n: x.n, label: surahLabel(x), fr: surahFr(x.n), ar: x.ar })) });
   }
@@ -205,12 +274,15 @@ function sourateQuestions(quran, lv, count) {
 }
 
 function ordreQuestions(quran, lv, count) {
-  const ss = surahsIn(quran, lv).filter((s) => s.v.length >= lv.count);
+  const starts = (s, c) => s.v.map((_, i) => i).filter((i) => i + c <= s.v.length && s.v.slice(i, i + c).every((_, j) => okAt(s, i + j)));
+  let c = lv.count, ss = [];
+  for (; c >= 2; c--) { ss = surahsIn(quran, lv).filter((s) => starts(s, c).length); if (ss.length) break; }
   const out = [];
+  if (!ss.length) return out;
   for (let i = 0; i < count; i++) {
     const s = pick(ss, 1)[0];
-    const start = Math.floor(Math.random() * (s.v.length - lv.count + 1));
-    const seq = s.v.slice(start, start + lv.count);
+    const start = pick(starts(s, c), 1)[0];
+    const seq = s.v.slice(start, start + c);
     let tiles = shuffle(seq);
     if (tiles.every((t, j) => t.k === seq[j].k)) tiles = [...seq].reverse();
     out.push({ kind: "ordre", surah: s.n, surahName: s.name, seq, tiles });
@@ -245,8 +317,8 @@ export async function hadithCount() {
   return count || 0;
 }
 
-export async function buildGame(game, levelN, { count = 5, category } = {}) {
-  const lv = GAMES[game].levels.find((l) => l.n === levelN) || GAMES[game].levels[0];
+export async function buildGame(game, levelN, { count = 5, category, scope } = {}) {
+  const lv = { ...(GAMES[game].levels.find((l) => l.n === levelN) || GAMES[game].levels[0]), scope: scope?.surahs };
   if (game === "hadith") return hadithQuestions(lv, Math.max(count, 10));
   if (game === "lettres") return lettersQuestions(lv, count);
   if (game === "ilm") return ilmQuestions(lv, count, category);
@@ -282,17 +354,18 @@ const NOTIF_URL = import.meta.env.VITE_NOTIF_URL || "https://br-gentle-bird-ba2x
 export const pushNow = () => fetch(NOTIF_URL, { method: "POST" }).catch(() => {});
 
 /** 7 questions tirées au hasard dans tous les jeux, mélangés. Le serveur écarte celles déjà vues. */
-export async function buildDuelPool(n = 30, cfg = {}) {
+export async function buildDuelPool(n = 30, cfg = {}, scope) {
   const quran = await loadQuran();
+  const sc = scope?.surahs;
   const { data } = await db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published").neq("category", "hadith_vf").lte("difficulty", 2).limit(600);
   const ilm = shuffle(data || []);
   const r = (a) => a[Math.floor(Math.random() * a.length)];
   const out = [];
   const make = {
     ilm: () => { const q = ilm.pop(); return q && { kind: "ilm", ...q, key: `ilm:${q.id}`, game: "ilm" }; },
-    suite: () => { const lv = r(GAMES.suite.levels.slice(0, 4)); const q = suiteQuestions(quran, lv, 1)[0]; return q && { ...q, key: `suite:${q.surah}:${q.cur.k}`, game: "suite" }; },
-    sourate: () => { const lv = r(GAMES.sourate.levels.slice(0, 4)); const q = sourateQuestions(quran, lv, 1)[0]; return q && { ...q, key: `sourate:${q.surah}:${q.verse.k}:${q.mode}`, game: "sourate" }; },
-    ordre: () => { const lv = r(GAMES.ordre.levels.slice(0, 3)); const q = ordreQuestions(quran, lv, 1)[0]; return q && { ...q, key: `ordre:${q.surah}:${q.seq[0].k}:${q.seq.length}`, game: "ordre" }; },
+    suite: () => { const lv = { ...r(GAMES.suite.levels.slice(0, 4)), scope: sc }; const q = suiteQuestions(quran, lv, 1)[0]; return q && { ...q, key: `suite:${q.surah}:${q.cur.k}`, game: "suite" }; },
+    sourate: () => { const lv = { ...r(GAMES.sourate.levels.slice(0, 4)), scope: sc }; const q = sourateQuestions(quran, lv, 1)[0]; return q && { ...q, key: `sourate:${q.surah}:${q.verse.k}:${q.mode}`, game: "sourate" }; },
+    ordre: () => { const lv = { ...r(GAMES.ordre.levels.slice(0, 3)), scope: sc }; const q = ordreQuestions(quran, lv, 1)[0]; return q && { ...q, key: `ordre:${q.surah}:${q.seq[0].k}:${q.seq.length}`, game: "ordre" }; },
     lettres: () => { const lv = r(GAMES.lettres.levels.slice(0, 4)); const q = lettersQuestions({ ...lv, timer: 0 }, 1)[0]; return q && { ...q, key: `lettres:${q.kind}:${q.letter}:${Math.random().toString(36).slice(2, 6)}`, game: "lettres" }; },
   };
   const bag = ["ilm", "ilm", "ilm", "suite", "suite", "sourate", "sourate", "ordre", "lettres"];
@@ -304,7 +377,8 @@ export async function buildDuelPool(n = 30, cfg = {}) {
 }
 export async function ldInvite(username, rematchOf) {
   const st = await loadSettings().catch(() => ({}));
-  const pool = await buildDuelPool(Math.max(30, (Number(st.duel?.questions) || 7) * 4), st.duel || {});
+  const scope = await playScope(rematchOf ? { duel: rematchOf } : { username });
+  const pool = await buildDuelPool(Math.max(30, (Number(st.duel?.questions) || 7) * 4), st.duel || {}, scope);
   const id = await rpc("ld_invite", { p_username: username || "", p_candidates: pool, p_rematch_of: rematchOf || null });
   pushNow();
   return id;
@@ -338,7 +412,8 @@ export async function loadDefi() {
   const d = await dcGet();
   if (d.ready || !d.enabled) return d;
   const st = await loadSettings().catch(() => ({}));
-  const pool = (await buildDuelPool(20, {})).filter((q) => q.kind !== "ordre" || q.seq.length <= 3);
+  // le défi est le même pour tous : versets des petites sourates que tout le monde connaît
+  const pool = (await buildDuelPool(20, {}, await quranScope([[]]))).filter((q) => q.kind !== "ordre" || q.seq.length <= 3);
   return dcGet(pool.slice(0, Math.max(5, Number(st.defi?.questions) || 5)));
 }
 

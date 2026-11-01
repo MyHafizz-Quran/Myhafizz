@@ -49,7 +49,6 @@ export default function TopHeader() {
 
   return (
     <>
-      <div className="ios-scroll-edge" />
       <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] bg-background flex items-center justify-between px-4"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)", height: "calc(var(--header-height) + env(safe-area-inset-top, 0px))" }}>
         <span className="rounded-full h-11 pl-2 pr-3.5 flex items-center"><MhWordmark size={26} /></span>

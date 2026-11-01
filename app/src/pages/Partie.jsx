@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat, Hourglass, SignOut, CalendarCheck } from "@phosphor-icons/react";
-import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, ldState, ldAnswer, ldQuit, dcStart, dcSubmit, dcAnswer, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM } from "@/lib/games";
+import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, ldState, ldAnswer, ldQuit, dcStart, dcSubmit, dcAnswer, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM, playScope, aidOf, helpier } from "@/lib/games";
 import { Profile } from "@/api/entities";
 import { speak, playUrl, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
@@ -67,7 +67,7 @@ export default function Partie() {
   const defi = params.get("defi");
   const { data: dc, error: dcError } = useQuery({ queryKey: ["defi-play"], queryFn: dcStart, enabled: !!defi, staleTime: Infinity, gcTime: 0, retry: 1 });
   const t0 = useRef(null);
-  const { data: liveProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), enabled: !!liveId || !!defi });
+  const { data: liveProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), });
   useEffect(() => {
     if (!liveId) return;
     let alive = true, t;
@@ -93,7 +93,10 @@ export default function Partie() {
   const G = GAMES[game];
   const levelN = Math.max(1, Math.min(G.levels.length, Number(params.get("l")) || 1));
   const liveAid = liveProfile?.arabic_level === "good" ? "ar" : liveProfile?.arabic_level === "some" ? "both" : "phon";
-  const lv = liveId || defi ? { n: 1, aid: liveAid, timer: 0 } : G.levels.find((l) => l.n === levelN);
+  const QURAN_GAME = game === "suite" || game === "sourate" || game === "ordre";
+  const baseLv = G.levels.find((l) => l.n === levelN);
+  // niveau d'arabe de l'onboarding : un débutant garde la phonétique, même aux niveaux supérieurs
+  const lv = liveId || defi ? { n: 1, aid: liveAid, timer: 0 } : QURAN_GAME && !tkId ? { ...baseLv, aid: helpier(baseLv.aid, aidOf(liveProfile?.arabic_level)) } : baseLv;
   const robotN = Math.max(1, Math.min(3, Number(params.get("r")) || 2));
   const category = params.get("c") || "mix";
   const voice = hasArabicVoice();
@@ -103,7 +106,7 @@ export default function Partie() {
   const [seed, setSeed] = useState(0);
   const { data: built, isLoading: building, error: buildError } = useQuery({
     queryKey: ["game-items", game, levelN, category, seed, count, tkId, tkUnit],
-    queryFn: () => (tkId && tk.scope !== "ilm" ? buildSurahGame(tkUnit, levelN, count) : buildGame(game, levelN, { count, category })),
+    queryFn: () => (tkId && tk.scope !== "ilm" ? buildSurahGame(tkUnit, levelN, count) : (async () => buildGame(game, levelN, { count, category, scope: QURAN_GAME ? await playScope() : null }))()),
     enabled: !!settings && !duelId && !defi && (!tkId || (!!tk && (tk.scope === "ilm" || !!tkProfile))), staleTime: Infinity, gcTime: 0,
   });
   const items = liveId ? ls?.items : defi ? dc?.items : built;
