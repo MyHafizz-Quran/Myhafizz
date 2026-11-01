@@ -27,7 +27,7 @@ function getFavorites() { try { return JSON.parse(localStorage.getItem(FAV_KEY) 
  * - Audio controls: play/pause, restart, repeat, speed
  * - Bottom action row: favorite, stop marker, hide, memorized (with text labels)
  */
-export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, showTranslation = false, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0, showTajweed = false, similar = null }) {
+export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", isMemorized, isHidden, onToggleMemorized, onToggleHidden, showPhonetic = false, phonFirst = false, showTranslation = false, isActive = false, surahEnglishName = "", arabicTextSize = "medium", arabicFont = "system", lineSpacing = "normal", showVerseNumbers = true, words, wordTimings, maskLevel = 0, showTajweed = false, similar = null }) {
   const [selectedWord, setSelectedWord] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -239,6 +239,7 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
   const displayWords = words ? words.filter(w => (w.char_type_name || w.char_type) !== 'end') : null;
   const SIZE = { small: "text-[26px]", medium: "text-[31px]", large: "text-[37px]", xlarge: "text-[44px]" };
   const LEAD = { compact: "leading-[1.9]", normal: "leading-[2.15]", airy: "leading-[2.5]" };
+  const phonWords = displayWords && displayWords.length && displayWords.every((w) => w.transliteration?.text) ? displayWords.map((w) => w.transliteration.text) : null;
   const plainWords = displayWords && displayWords.length ? null : verse.text.split(/\s+/).filter(Boolean);
   const wordCount = displayWords && displayWords.length ? displayWords.length : plainWords.length;
   const eraseOn = erased !== null && !isHidden;
@@ -310,7 +311,7 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
             {displayWords.map((word, i) => isErased(i) ? <React.Fragment key={i}>{blank(word.text_uthmani, i)}{" "}</React.Fragment> : (
               <span key={i}
                 onClick={(e) => { if (isHidden) return; e.stopPropagation(); setSelectedWord(i); }}
-                className={`inline rounded-lg px-[3px] transition-colors duration-200 cursor-pointer ${i === activeWordIndex ? "text-primary bg-accent" : "hover:text-primary"}`}>
+                className={`inline rounded-lg px-[3px] transition-colors duration-200 cursor-pointer ${i === activeWordIndex ? "bg-primary text-primary-foreground" : "hover:text-primary"}`}>
                 {maskLevel === 1 && !isHidden && !eraseOn ? maskWords(word.text_uthmani, 1)
                   : showTajweed && word.text_uthmani_tajweed && i !== activeWordIndex ? <span dangerouslySetInnerHTML={{ __html: tajweedHtml(word.text_uthmani_tajweed) }} />
                   : word.text_uthmani}{" "}
@@ -342,7 +343,11 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
 
       {(showPhonetic && verse.transliteration) || (showTranslation && verse.translation) ? (
         <div className={`px-4 pb-4 pt-1 space-y-1.5 transition-[filter,opacity] duration-300 ${isHidden ? "blur-md select-none opacity-20" : ""}`}>
-          {showPhonetic && verse.transliteration && <p className="text-[14px] italic font-semibold text-muted-foreground leading-relaxed">{verse.transliteration}</p>}
+          {showPhonetic && verse.transliteration && (phonWords
+            ? <p className={`${phonFirst ? "text-[17px] text-foreground" : "text-[14px] text-muted-foreground"} italic font-semibold leading-relaxed`}>
+                {phonWords.map((t, i) => <React.Fragment key={i}><span className={`rounded-md px-[2px] transition-colors duration-200 ${i === activeWordIndex ? "bg-primary text-primary-foreground not-italic" : ""}`}>{t}</span>{" "}</React.Fragment>)}
+              </p>
+            : <p className={`${phonFirst ? "text-[17px] text-foreground" : "text-[14px] text-muted-foreground"} italic font-semibold leading-relaxed`}>{verse.transliteration}</p>)}
           {showTranslation && verse.translation && <p className="text-[15px] font-semibold text-foreground/80 leading-relaxed">{verse.translation}</p>}
         </div>
       ) : null}

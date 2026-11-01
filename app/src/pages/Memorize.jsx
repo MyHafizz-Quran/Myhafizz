@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { MemorizationProgress, VerseReview } from "@/api/entities";
+import { MemorizationProgress, VerseReview, Profile } from "@/api/entities";
 import { todayStr } from "@/lib/srs";
 import { loadSimilar } from "@/lib/similar";
 import { TajweedLegend } from "@/components/verseExtras";
@@ -77,6 +77,8 @@ export default function Memorize() {
   const [maskLevel, setMaskLevel] = useState(0); // 0 texte, 1 initiales, 2 masqué
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef(null);
+  const { data: myProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), staleTime: 300000 });
+  const phonFirst = myProfile?.arabic_level === "none";
   const { reciter, showPhonetic, showTranslation, arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers, showTajweed, setShowTajweed } = usePreferences();
   const [similarMap, setSimilarMap] = useState({});
 
@@ -249,7 +251,7 @@ export default function Memorize() {
         { signal: controller.signal }
       ).then(r => r.json()),
       fetch(
-        `https://api.quran.com/api/v4/recitations/7/by_chapter/${surahNumber}?per_page=300`,
+        `https://api.quran.com/api/v4/recitations/7/by_chapter/${surahNumber}?per_page=300&fields=segments`,
         { signal: controller.signal }
       ).then(r => r.json()),
     ]).then(([wordsResult, timingsResult]) => {
@@ -562,7 +564,8 @@ export default function Memorize() {
                     isHidden={hiddenVerses.has(verse.numberInSurah)}
                     onToggleMemorized={() => toggleMemorized(verse.numberInSurah)}
                     onToggleHidden={() => toggleHidden(verse.numberInSurah)}
-                    showPhonetic={showPhonetic}
+                    showPhonetic={showPhonetic || phonFirst}
+                    phonFirst={phonFirst}
                     showTranslation={showTranslation}
                     arabicTextSize={arabicTextSize}
                     arabicFont={arabicFont}
