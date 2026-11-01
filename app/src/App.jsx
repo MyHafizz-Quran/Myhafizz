@@ -61,6 +61,7 @@ import DesktopRail from '@/components/DesktopRail';
 import Lire, { LireArabe } from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
 import Tafsir from "./pages/Tafsir";
+import Tajwid from "./pages/Tajwid";
 import Jouer from './pages/Jouer.jsx';
 import Partie from './pages/Partie.jsx';
 import Duel from './pages/Duel.jsx';
@@ -72,6 +73,7 @@ import Tournoi from './pages/Tournoi.jsx';
 import Notifications from './pages/Notifications.jsx';
 import { NotifProvider } from './lib/notifs.jsx';
 const TafsirRoute = () => { const loc = useLocation(); return <Tafsir key={loc.search} />; };
+const TajwidRoute = () => { const loc = useLocation(); return <Tajwid key={loc.search} />; };
 const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
@@ -85,7 +87,7 @@ const AuthenticatedApp = () => {
   const location = useLocation();
   const platform = usePlatform();
   const path = location.pathname;
-  const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search)) || (path === "/Noms" && /[?&]quiz=/.test(location.search));
+  const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search)) || (path === "/Noms" && /[?&]quiz=/.test(location.search)) || (path === "/Tajwid" && /[?&]u=/.test(location.search));
   const homeHeader = WITH_HOME_HEADER.some((p) => path.startsWith(p));
   const kid = useKidMode();
   const kidLocked = kid.on && !kid.unlocked && KID_LOCKED.some((p) => path.startsWith(p));
@@ -185,6 +187,7 @@ const AuthenticatedApp = () => {
           <Route path="/Lecon" element={<Lecon />} />
           <Route path="/Jouer" element={<Jouer />} />
           <Route path="/Tafsir" element={<TafsirRoute />} />
+          <Route path="/Tajwid" element={<TajwidRoute />} />
           <Route path="/Live" element={<Live />} />
           <Route path="/Noms" element={<Noms />} />
           <Route path="/Partie" element={<PartieRoute />} />

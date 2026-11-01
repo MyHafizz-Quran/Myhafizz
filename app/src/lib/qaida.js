@@ -369,7 +369,7 @@ export function playUrl(url, fallback) {
   try {
     window.speechSynthesis?.cancel();
     if (!player) player = new Audio();
-    player.pause(); player.onended = null; player.src = url; player.currentTime = 0;
+    player.pause(); player.onended = null; player.ontimeupdate = null; player.src = url; player.currentTime = 0;
     const p = player.play();
     if (p && p.catch) p.catch(() => fallback && speak(fallback));
   } catch { if (fallback) speak(fallback); }
@@ -379,6 +379,24 @@ export function playQueue(urls) {
   let k = 0;
   const next = () => { if (k >= urls.length) return; playUrl(urls[k++]); if (player) player.onended = next; };
   next();
+}
+/** Joue un passage [t0, t1] (secondes) d'un enregistrement, répété `times` fois. onEnd appelé à la fin. */
+export function playClip(url, t0, t1, times = 1, onEnd) {
+  try {
+    window.speechSynthesis?.cancel();
+    if (!player) player = new Audio();
+    player.pause(); player.onended = null; player.ontimeupdate = null;
+    let left = times;
+    const start = () => { try { player.currentTime = t0; } catch { /* ignore */ } const p = player.play(); if (p && p.catch) p.catch(() => {}); };
+    player.ontimeupdate = () => {
+      if (player.currentTime < t1) return;
+      left -= 1;
+      if (left > 0) start();
+      else { player.pause(); player.ontimeupdate = null; onEnd && onEnd(); }
+    };
+    if (player.src !== url) { player.src = url; player.preload = "auto"; player.addEventListener("loadedmetadata", start, { once: true }); player.load(); }
+    else start();
+  } catch { /* ignore */ }
 }
 export function stopAudio() { try { player?.pause(); } catch { /* ignore */ } }
 export const currentPlayer = () => player;

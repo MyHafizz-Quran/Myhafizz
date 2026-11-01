@@ -2,7 +2,7 @@
 // 3 notifications max par jour et par appareil (rappels de prière compris), rien de 22 h à 6 h
 // pour ces types, chaque type se coupe dans les réglages, silence complet après 14 jours d'absence.
 
-export const EXTRA_TYPES = ["verset", "hadith", "nom", "bravo", "hebdo", "tafsir", "arabe", "dates"];
+export const EXTRA_TYPES = ["verset", "hadith", "nom", "bravo", "hebdo", "tafsir", "arabe", "tajwid", "dates"];
 export const DAILY_CAP = 3;
 const WINDOW_MIN = 40;
 
@@ -96,6 +96,21 @@ export async function extrasDue({ r, local, ctx, state, db, now }) {
     const last = ctx.tafsir_last ? new Date(ctx.tafsir_last).toISOString().slice(0, 10) : null;
     if (!last || Math.round((Date.parse(today) - Date.parse(last)) / 86400000) >= 3) {
       out.push({ key: "tafsir", val: today, msg: { title: "Ton Tafsir t'attend", body: "Comprendre ce que tu récites change ta prière. Reprends ta leçon de Tafsir.", url: "/Tafsir", tag: "mh-tafsir" } });
+    }
+  }
+  // Tajwid (Tuḥfat al-Aṭfāl) : les jours impairs vers 18 h 30, si commencé et pas touché depuis 2 jours.
+  // Une seule fois, le samedi vers 17 h : découverte pour ceux qui lisent l'arabe et n'ont pas commencé.
+  if (on.has("tajwid") && (at(18, 30) || (local.weekday === "Sat" && at(17, 0)))) {
+    const q = await db.query(
+      `select coalesce(max(p.done_at), null) as last, count(*) filter (where p.passed) as passed, count(*) as started,
+              (select row_to_json(u) from public.tajwid_units u where u.n not in (select unit from public.tajwid_progress where user_id = $1 and passed) order by u.n limit 1) as next
+       from public.tajwid_progress p where p.user_id = $1`, [r.user_id]).catch(() => ({ rows: [] }));
+    const t = q.rows[0];
+    if (t && Number(t.started) > 0 && t.next && dayNum(today) % 2 === 1 && at(18, 30)) {
+      const gap = t.last ? Math.round((Date.parse(today) - Date.parse(new Date(t.last).toISOString().slice(0, 10))) / 86400000) : 99;
+      if (gap >= 2) out.push({ key: "tajwid", val: today, msg: { title: "Tajwid : la suite de la Tuḥfa", body: `${t.next.n === 0 ? "Introduction" : `Unité ${t.next.n}`} · ${t.next.title}. Quelques vers, une règle et 5 minutes d'exercices.`, url: `/Tajwid?u=${t.next.n}`, tag: "mh-tajwid" } });
+    } else if (t && Number(t.started) === 0 && ctx?.arabic_level && ctx.arabic_level !== "none" && local.weekday === "Sat" && at(17, 0)) {
+      out.push({ key: "tajwid_intro", val: "v1", msg: { title: "Nouveau : le Tajwid", body: "Apprends les règles de récitation avec la Tuḥfat al-Aṭfāl, vers par vers, avec des exemples du Coran.", url: "/Tajwid", tag: "mh-tajwid" } });
     }
   }
   if (on.has("bravo") && state.kind === "done" && at(21, 0)) {

@@ -39,12 +39,13 @@ function useActiveWord(segments, url, getPlayer) {
  * Verset avec curseur mot à mot sur l'arabe ET la phonétique.
  * phon : "none" (pas de phonétique), "small" (sous l'arabe) ou "first" (phonétique en grand, pour ceux qui ne lisent pas encore l'arabe).
  */
-export default function KaraokeVerse({ surah, ayah, url, arabic, translit, phon = "small", arClass = "text-[27px] leading-[2.15]", getPlayer = currentPlayer, timed = true }) {
+export default function KaraokeVerse({ surah, ayah, url, arabic, translit, phon = "small", arClass = "text-[27px] leading-[2.15]", getPlayer = currentPlayer, timed = true, mark = null }) {
   const { data } = useQuery({ queryKey: ["karaoke", surah], queryFn: () => loadChapter(surah), staleTime: Infinity, retry: 1 });
   const v = data?.[ayah];
   const words = v?.w?.length ? v.w : null;
   const active = useActiveWord(timed ? v?.s : null, url, getPlayer);
-  const hl = (i) => (i === active ? "bg-primary text-primary-foreground" : "");
+  const mk = mark ? new Set(mark) : null;
+  const hl = (i) => (i === active ? "bg-primary text-primary-foreground" : mk?.has(i) ? "bg-accent text-primary ring-2 ring-primary/40" : "");
   const phonText = phon !== "none" && (words && words.every((x) => x.t)
     ? words.map((x, i) => <React.Fragment key={i}><span className={`rounded-md px-[2px] transition-colors duration-150 ${hl(i)} ${i === active ? "not-italic" : ""}`}>{x.t}</span>{" "}</React.Fragment>)
     : translit);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { getFeedback, setFeedback, vibrate } from "@/lib/feedback";
-import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin, BookOpen, Sparkle, Quotes, Star, Confetti, CalendarCheck, BookOpenText, TextAUnderline, Moon } from "@phosphor-icons/react";
+import { CaretRight, TextAa, Translate, Palette, Play, Stop, CheckCircle, DownloadSimple, Trash, HardDrives, Hash, SpinnerGap, X, Microphone, Baby, LockSimple, Bell, SpeakerHigh, Vibrate, Clock, MapPin, BookOpen, Sparkle, Quotes, Star, Confetti, CalendarCheck, BookOpenText, TextAUnderline, Moon, Waveform } from "@phosphor-icons/react";
 import { usePreferences } from "@/components/usePreferences";
 import { RECITERS } from "@/components/ReciterSelector";
 import { SURAHS } from "@/components/quranData";
@@ -45,6 +45,7 @@ const EXTRA_NOTIFS = [
   { key: "hebdo", icon: CalendarCheck, label: "Bilan de la semaine", sub: "Le samedi matin" },
   { key: "tafsir", icon: BookOpenText, label: "Reprendre le Tafsir", sub: "Le jeudi soir si tu l'as mis de côté" },
   { key: "arabe", icon: TextAUnderline, label: "Lire l'arabe", sub: "Un jour sur deux, si tu apprends à lire" },
+  { key: "tajwid", icon: Waveform, label: "Tajwid", sub: "Un vers de la Tuḥfa, le soir, si tu l'as commencée" },
   { key: "dates", icon: Moon, label: "Dates islamiques", sub: "Ramadan, 'Arafa, Aïd, Achoura…" },
 ];
 
@@ -95,7 +96,7 @@ export default function Settings() {
   const updateRem = async (patch) => {
     setRemBusy(true);
     try {
-      const next = { prayers: rem?.prayers || ["fajr", "maghrib", "kahf", "verset", "bravo", "hebdo", "tafsir", "arabe", "dates"], offset_min: rem?.offset_min ?? 15, ...patch };
+      const next = { prayers: rem?.prayers || ["fajr", "maghrib", "kahf", "verset", "bravo", "hebdo", "tafsir", "arabe", "tajwid", "dates"], offset_min: rem?.offset_min ?? 15, ...patch };
       if (!next.prayers.length) { await removeReminder(); setRem(null); }
       else {
         const row = await saveReminder({ ...next, position: rem ? { lat: rem.lat, lng: rem.lng } : undefined });

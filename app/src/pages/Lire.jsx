@@ -9,6 +9,8 @@ import { UNITS, ALL_LESSONS, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 import { useToast } from "@/components/ui/use-toast";
 import PageHeader from "@/components/PageHeader";
+import { useTajwid } from "@/pages/Tajwid";
+import { progressOf } from "@/lib/tajwid";
 
 // décalage en zigzag façon chemin
 const OFFSET = [0, 44, 64, 44, 0, -44, -64, -44];
@@ -32,6 +34,8 @@ export default function Lire() {
   const earned = new Set(earnedBadges(rows).map((b) => b.id));
   const challenges = weeklyChallenges(sessions);
   const chDone = challenges.filter((c) => c.done).length;
+  const { data: tj } = useTajwid();
+  const tp = progressOf(tj);
 
   const open = (l, state) => {
     haptic();
@@ -72,6 +76,15 @@ export default function Lire() {
             <span className="block font-black">Lire l'arabe</span>
             <span className="block text-[13px] font-semibold text-muted-foreground truncate">{allDone ? "Parcours terminé · bravo" : `Unité ${cu + 1} · ${UNITS[cu].title} · ${cn} / ${UNITS[cu].lessons.length} leçons`}</span>
             <span className="block h-2 rounded-full bg-muted overflow-hidden mt-2"><span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(4, Math.round((done.size / ALL_LESSONS.length) * 100))}%` }} /></span>
+          </span>
+          <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+        </button>
+        <button onClick={() => { haptic(); navigate("/Tajwid"); }} className="card-flat w-full p-4 mt-3 mb-6 flex items-center gap-3 text-left press">
+          <span dir="rtl" className="w-11 h-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center shrink-0 font-arabic text-[20px] leading-none">تج</span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-black">Tajwid · Tuḥfat al-Aṭfāl</span>
+            <span className="block text-[13px] font-semibold text-muted-foreground truncate">{tp.passed ? (tp.current ? `Unité ${tp.current.n} · ${tp.current.title}` : "Poème terminé · bravo") : cu >= 3 || allDone ? "Le poème d'al-Jamzūrī, avec les exemples du Coran" : "Conseillé après l'unité 4 de Lire l'arabe"}</span>
+            <span className="block h-2 rounded-full bg-muted overflow-hidden mt-2"><span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(4, tp.pct)}%` }} /></span>
           </span>
           <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
         </button>
