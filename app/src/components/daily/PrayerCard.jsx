@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Compass, CaretRight } from "@phosphor-icons/react";
+import { MapPin, Compass, CaretRight, Broadcast } from "@phosphor-icons/react";
+import { useLive } from "@/lib/live";
 import { getLocation, setLocation, requestLocation, prayerDay, onPrayerChange, getMethod, hhmm, countdown } from "@/lib/prayer";
 import { haptic } from "@/hooks/usePlatform";
 import { getReminder } from "@/lib/reminders";
 
 /** Carte « Heures de prière » de l'accueil : prochaine prière, compte à rebours, horaires du jour. */
-export default function PrayerCard({ className = "" }) {
+export default function PrayerCard({ className = "", hero = false }) {
   const navigate = useNavigate();
+  const live = useLive();
   const [loc, setLoc] = useState(getLocation);
   const [method, setM] = useState(getMethod);
   const [now, setNow] = useState(() => new Date());
@@ -47,6 +49,38 @@ export default function PrayerCard({ className = "" }) {
   }
 
   const { today, next, current } = prayerDay(loc, now, method);
+  const grid = (
+    <div className="grid grid-cols-5 gap-1.5 mt-3">
+      {today.map((p) => {
+        const isNext = !next.tomorrow && p.key === next.key;
+        const past = p.time <= now && current?.key !== p.key;
+        return (
+          <div key={p.key} className={`h-[52px] rounded-xl border-2 flex flex-col items-center justify-center ${isNext ? "border-primary bg-accent text-accent-foreground" : "border-border"} ${past ? "text-muted-foreground" : ""}`}>
+            <span className="text-[12.5px] font-extrabold">{p.label}</span>
+            <span className="text-[11.5px] font-bold">{hhmm(p.time)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+  if (hero) return (
+    <div className={`card-flat p-5 text-center ${className}`}>
+      <p className="text-[13px] font-black uppercase tracking-wide text-muted-foreground">Prochaine prière{next.tomorrow ? " · demain" : ""}</p>
+      <p className="font-black text-[38px] leading-[1.1] mt-1">{next.label}</p>
+      <p className="font-extrabold text-primary">dans {countdown(next.time - now)} · {hhmm(next.time)}</p>
+      {grid}
+      <div className={`grid ${live.on ? "grid-cols-2" : "grid-cols-1"} gap-2.5 mt-4`}>
+        <button onClick={() => { haptic(); navigate("/Qibla"); }} className="btn-relief h-11 bg-card text-foreground border-2 border-border text-sm flex items-center justify-center gap-2" aria-label="Direction de la qibla">
+          <Compass weight="bold" className="w-[18px] h-[18px] text-primary" />Qibla
+        </button>
+        {live.on && (
+          <button onClick={() => { haptic(); navigate("/Live"); }} className="btn-relief h-11 bg-card text-foreground border-2 border-border text-sm flex items-center justify-center gap-2">
+            <Broadcast weight="bold" className="w-[18px] h-[18px] text-destructive" />Live
+          </button>
+        )}
+      </div>
+    </div>
+  );
   return (
     <div className={`card-flat p-4 ${className}`}>
       <div className="flex items-start gap-3">

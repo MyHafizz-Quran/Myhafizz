@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
-import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, UsersThree, Target, House, GameController } from "@phosphor-icons/react";
+import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, UsersThree, Target, House, GameController, Lightning, BookOpenText } from "@phosphor-icons/react";
 import { db } from "@/api/neonClient";
 import { MemorizationProgress, VerseReview, HifzPlan, ActivityDays, Groups, Assignments, KIND_LABEL, Profile } from "@/api/entities";
 import { buildSession, key, todayStr, currentStreak } from "@/lib/srs";
@@ -131,11 +131,20 @@ export default function Dashboard() {
 
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6 lg:items-start">
         <div className="min-w-0">
+        {/* Ramadan */}
+        <RamadanCard className="mt-3" />
+
+        {/* Veille et jour de Jumu'a */}
+        <FridayCard className="mt-3" learned={last7.learned} active={last7.active} />
+
+        {/* Heures de prière */}
+        <PrayerCard hero className="mt-4" />
+
         {/* Séance du jour */}
         {planLoading ? (
-          <div className="h-64 rounded-2xl bg-muted animate-pulse mt-4" />
+          <div className="h-64 rounded-2xl bg-muted animate-pulse mt-3" />
         ) : !plan ? (
-          <Card className="p-5 mt-4">
+          <Card className="p-5 mt-3">
             <Target weight="fill" className="w-8 h-8 text-primary mb-2" />
             <p className="font-black text-lg">Crée ton programme</p>
             <p className="text-sm text-muted-foreground font-semibold mb-4">Choisis un objectif et un rythme. Chaque jour, MyHafizz prépare ta leçon et tes révisions.</p>
@@ -174,26 +183,29 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Verset et hadith du jour */}
+        <VerseOfDay className="mt-3" />
+        <HadithOfDay className="mt-3" />
+
+        {/* Défi du jour */}
+        <button onClick={() => { haptic(); navigate("/Defi"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
+          <span className="w-[46px] h-[46px] rounded-2xl bg-gold-tint text-[#9A6A00] flex items-center justify-center shrink-0"><Lightning weight="fill" className="w-6 h-6" /></span>
+          <div className="flex-1 min-w-0"><p className="font-black text-[17px]">Défi du jour</p><p className="text-[13px] font-semibold text-muted-foreground">5 questions, les mêmes pour tout le monde</p></div>
+          <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
+        </button>
+
         {/* Encouragements du binôme */}
         <DuoNudges groups={groups} className="mt-3" />
-
-        {/* Ramadan */}
-        <RamadanCard className="mt-3" />
-
-        {/* Veille et jour de Jumu'a */}
-        <FridayCard className="mt-3" learned={last7.learned} active={last7.active} />
-
-        {/* Heures de prière */}
-        <PrayerCard className="mt-3" />
-
-        {/* Adhkar, tasbih, calendrier, Qiyam */}
-        <DailyTools className="mt-3" />
 
         {/* Binôme */}
         {groups.filter((g) => g.kind === "duo").slice(0, 1).map((g) => <DuoPanel key={g.id} group={g} compact className="mt-3" />)}
 
-        {/* Objectif de saison */}
-        <SeasonCard className="mt-3" progress={progress} />
+        {/* Tafsir */}
+        <button onClick={() => { haptic(); navigate("/Tafsir"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
+          <span className="w-[46px] h-[46px] rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0"><BookOpenText weight="fill" className="w-6 h-6" /></span>
+          <div className="flex-1 min-w-0"><p className="font-black text-[17px]">Tafsir</p><p className="text-[13px] font-semibold text-muted-foreground">Comprendre ce que tu récites, verset par verset</p></div>
+          <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
+        </button>
 
         {/* Reprendre */}
         {resume && (
@@ -227,17 +239,19 @@ export default function Dashboard() {
           <span className="w-[46px] h-[46px] rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0"><GameController weight="fill" className="w-6 h-6" /></span>
           <div className="flex-1 min-w-0">
             <p className="font-black text-[17px]">Jouer</p>
-            <p className="text-[13px] font-semibold text-muted-foreground">Versets, sourates, lettres et Al-Ilm contre l'ordinateur</p>
+            <p className="text-[13px] font-semibold text-muted-foreground">Duels, ligue, tournois, Khatma d'équipe et jeux solo</p>
           </div>
           <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
         </button>
 
+        {/* Adhkar, tasbih, calendrier, Qiyam */}
+        <DailyTools className="mt-3" />
+
+        {/* Objectif de saison */}
+        <SeasonCard className="mt-3" progress={progress} />
+
         </div>
         <div className="min-w-0">
-        {/* Verset et hadith du jour */}
-        <VerseOfDay className="mt-3 lg:mt-4" />
-        <HadithOfDay className="mt-3" />
-
         {/* Chiffres */}
         <Card className="flex mt-3">
           <div className="flex-1 p-3 text-center"><p className="text-[22px] font-black">{session.totalMemorized}</p><p className="text-[11.5px] font-bold text-muted-foreground leading-tight">versets<br />mémorisés</p></div>

@@ -12,12 +12,12 @@ import PlayerPic from "@/components/PlayerPic";
 const MAIN = [
   { to: "/Dashboard", icon: House, label: "Accueil", match: (p) => p === "/" || p.startsWith("/Dashboard") },
   { to: "/SurahList", icon: BookOpen, label: "Coran", match: (p) => p.startsWith("/SurahList") || p.startsWith("/Memorize") },
-  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: (p) => p.startsWith("/Lire") || p.startsWith("/Lecon") },
+  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: (p) => ["/Lire", "/Lecon", "/Tafsir"].some((x) => p.startsWith(x)) },
   { to: "/Revision", icon: Brain, label: "Réviser", match: (p) => ["/Revision", "/ReviewSession", "/Repeat", "/Exercises", "/Strength", "/Recite", "/Quiz"].some((x) => p.startsWith(x)) },
   { to: "/Groups", icon: UsersThree, label: "Groupes", match: (p) => p.startsWith("/Group") },
 ];
 const MORE = [
-  { to: "/Jouer", icon: GameController, label: "Jouer", match: (p) => p.startsWith("/Jouer") || p.startsWith("/Partie") },
+  { to: "/Jouer", icon: GameController, label: "Jouer", match: (p) => ["/Jouer", "/Partie", "/Duel", "/Defi", "/Ligue", "/Tournoi", "/Joueur", "/Khatma"].some((x) => p.startsWith(x)) },
   { to: "/Challenges", icon: Trophy, label: "Défis" },
   { to: "/Leaderboard", icon: Ranking, label: "Classement" },
   { to: "/Bookmarks", icon: BookmarkSimple, label: "Signets" },

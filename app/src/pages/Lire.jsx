@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight, Target, Medal, CheckCircle, BookOpenText } from "@phosphor-icons/react";
+import { Check, Lock, Star, Trophy, Lightning, SpeakerSlash, Exam, CaretRight, Target, Medal, CheckCircle, BookOpenText, Brain, Plus } from "@phosphor-icons/react";
 import { ReadingSessions } from "@/api/entities/learning";
 import { getGoal, setGoal, GOAL_CHOICES, todayCount, weekStart, BADGES, earnedBadges, weeklyChallenges } from "@/lib/readingGame";
 import { ReadingLessons } from "@/api/entities";
@@ -40,9 +40,19 @@ export default function Lire() {
     <div className="min-h-[100dvh] bg-background pb-nav">
       <div className="max-w-xl mx-auto px-4">
         <PageHeader title="Apprendre" right={<span className="h-9 px-3 rounded-xl border-2 border-border bg-card flex items-center gap-1.5 font-black text-sm"><Lightning weight="fill" className="w-4 h-4 text-gold" />{xp}</span>} />
-        <p className="font-semibold text-muted-foreground mt-1">De la première lettre jusqu'à la lecture du Coran, en petites leçons de 5 minutes.</p>
+        <p className="font-semibold text-muted-foreground mt-1">Mémoriser, réviser, comprendre et apprendre à lire.</p>
 
-        <button onClick={() => { haptic(); navigate("/Tafsir"); }} className="card-flat w-full p-4 mt-4 flex items-center gap-3 text-left press">
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <button onClick={() => { haptic(); navigate("/ReviewSession?part=sabaq"); }} className="card-flat p-4 text-left press">
+            <span className="w-11 h-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center"><Plus weight="bold" className="w-6 h-6" /></span>
+            <span className="block font-black mt-2">Mémoriser</span><span className="block text-[13px] font-semibold text-muted-foreground">Nouveaux versets du jour</span>
+          </button>
+          <button onClick={() => { haptic(); navigate("/Revision"); }} className="card-flat p-4 text-left press">
+            <span className="w-11 h-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center"><Brain weight="fill" className="w-6 h-6" /></span>
+            <span className="block font-black mt-2">Réviser</span><span className="block text-[13px] font-semibold text-muted-foreground">Sourates et versets fragiles</span>
+          </button>
+        </div>
+        <button onClick={() => { haptic(); navigate("/Tafsir"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3 text-left press">
           <span className="w-11 h-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center shrink-0"><BookOpenText weight="fill" className="w-6 h-6" /></span>
           <span className="flex-1 min-w-0"><span className="block font-black">Tafsir</span><span className="block text-[13px] font-semibold text-muted-foreground">Comprendre ce que tu récites, verset par verset</span></span>
           <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
@@ -90,6 +100,7 @@ export default function Lire() {
           </button>
         )}
 
+        <p className="text-[13px] font-black uppercase tracking-wide text-muted-foreground mt-6 mb-1">Lire l'arabe</p>
         {UNITS.map((u, ui) => {
           const n = u.lessons.filter((l) => done.has(l.id)).length;
           return (

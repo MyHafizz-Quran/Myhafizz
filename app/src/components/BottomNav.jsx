@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { House, BookOpen, GraduationCap, Brain, MagnifyingGlass, Play, Pause } from "@phosphor-icons/react";
+import { House, BookOpen, GraduationCap, GameController, MagnifyingGlass, Play, Pause } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import usePlatform, { haptic } from "@/hooks/usePlatform";
 import { useAudioManager, getReadingSession } from "@/lib/AudioManager";
@@ -9,14 +9,18 @@ import { SURAHS } from "@/components/quranData";
 export const TABS = [
   { to: "/Dashboard", icon: House, label: "Accueil" },
   { to: "/SurahList", icon: BookOpen, label: "Coran" },
-  { to: "/Lire", icon: GraduationCap, label: "Apprendre", match: ["/Lire", "/Lecon"] },
-  { to: "/Revision", icon: Brain, label: "Réviser" },
+  { to: "/Lire", icon: GraduationCap, label: "Apprendre" },
+  { to: "/Jouer", icon: GameController, label: "Jouer" },
 ];
+
+export const LEARN = ["/Lire", "/Lecon", "/Tafsir", "/Revision", "/ReviewSession", "/Repeat", "/Exercises", "/Strength", "/Recite", "/Quiz"];
+export const PLAY = ["/Jouer", "/Partie", "/Duel", "/Defi", "/Ligue", "/Tournoi", "/Joueur", "/Khatma"];
 
 function isActive(to, path) {
   if (to === "/Dashboard") return path === "/" || path.startsWith("/Dashboard");
   if (to === "/SurahList") return path.startsWith("/SurahList") || path.startsWith("/Memorize") || path.startsWith("/Bookmarks");
-  if (to === "/Lire") return path.startsWith("/Lire") || path.startsWith("/Lecon");
+  if (to === "/Lire") return LEARN.some((x) => path.startsWith(x));
+  if (to === "/Jouer") return PLAY.some((x) => path.startsWith(x));
   return path.startsWith(to);
 }
 
