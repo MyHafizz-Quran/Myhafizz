@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Medal, UsersThree, BellSlash } from "@phosphor-icons/react";
-import { notifList, notifReadAll, ldRespond, ldInvite, badgeName, TK_SCOPES } from "@/lib/games";
+import { notifList, notifReadAll, ldRespond, ldInvite, badgeName, TK_SCOPES, TIERS } from "@/lib/games";
 import { PlayerPic } from "@/pages/Partie";
 import { useNotifs } from "@/lib/notifs";
 import { haptic } from "@/hooks/usePlatform";
@@ -51,6 +51,8 @@ export default function Notifications() {
       case "badge": pic = <Ico I={Medal} />; title = `Nouveau badge : ${badgeName(n.data?.badge)}`; go = "/Joueur"; break;
       case "khatma_start": pic = <Ico I={UsersThree} />; title = `${who} lance une khatma : ${TK_SCOPES[n.data?.scope]?.title || ""}`; sub += ` · ${n.data?.kind === "duo" ? "ton binôme" : n.data?.group || ""}`; go = `/Equipe?id=${n.ref}`; break;
       case "khatma_done": pic = <Ico I={UsersThree} />; title = `${n.data?.kind === "duo" ? "Ton binôme" : n.data?.group || "Ton groupe"} a terminé ${TK_SCOPES[n.data?.scope]?.title || "la khatma"}`; sub += ` · +${n.data?.bonus ?? 50} pts`; go = `/Equipe?id=${n.ref}`; break;
+      case "league_nudge": pic = <Ico I={Medal} />; title = `Plus que ${n.data?.gap} pts pour monter en ligue ${TIERS[(n.data?.tier || 2) - 1]}`; go = "/Ligue"; break;
+      case "league_result": pic = <Ico I={Medal} />; title = n.data?.result === "up" ? `Tu montes en ligue ${TIERS[n.data.new_tier - 1]}` : n.data?.result === "down" ? `Nouvelle semaine en ligue ${TIERS[n.data.new_tier - 1]}` : `Tu restes en ligue ${TIERS[n.data.new_tier - 1]}`; sub += ` · ${n.data?.pos}e sur ${n.data?.players}`; go = "/Ligue"; break;
       default: title = "Notification";
     }
     return (

@@ -6,13 +6,14 @@ import webpush from "web-push";
 const ORIGINS = ["https://myhafizz.com", "https://www.myhafizz.com", "https://myhafizz.vercel.app", "http://localhost:5173"];
 const pool = new pg.Pool({ connectionString: process.env.REMINDER_DATABASE_URL, max: 2 });
 let vapid = false;
+const TIERS = ["Bronze", "Argent", "Or", "Émeraude", "Saphir", "Diamant"];
 
 export async function sendPending(db) {
   if (!vapid) { webpush.setVapidDetails("mailto:contact@myhafizz.com", process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY); vapid = true; }
   const { rows } = await db.query(`
     update public.notifications n set pushed_at = now()
     where n.id in (select id from public.notifications where push and pushed_at is null and created_at > now() - interval '10 minutes' order by id limit 50 for update skip locked)
-    returning n.id, n.user_id, n.kind, n.ref, (select username from public.profiles p where p.id = n.actor) as actor`);
+    returning n.id, n.user_id, n.kind, n.ref, n.data, (select username from public.profiles p where p.id = n.actor) as actor`);
   let sent = 0;
   for (const n of rows) {
     const who = n.actor ? `@${n.actor}` : "Un joueur";
@@ -20,7 +21,11 @@ export async function sendPending(db) {
       ? { title: `${who} veut sa revanche`, body: "Duel en direct · touche pour accepter (60 s)", url: "/Notifications", tag: `mh-ld-${n.ref}` }
       : n.kind === "duel_invite"
         ? { title: `${who} te défie`, body: "Duel en direct · 7 questions mélangées · touche pour accepter (60 s)", url: "/Notifications", tag: `mh-ld-${n.ref}` }
-        : null;
+        : n.kind === "league_nudge"
+          ? { title: "La montée est à portée", body: `Plus que ${n.data?.gap ?? ""} pts pour monter en ligue ${TIERS[(n.data?.tier || 2) - 1]}. Fin de la semaine ce soir à minuit.`, url: "/Ligue", tag: "mh-ligue" }
+          : n.kind === "league_result"
+            ? { title: `Tu montes en ligue ${TIERS[(n.data?.new_tier || 2) - 1]}`, body: `Tu as fini ${n.data?.pos}e sur ${n.data?.players}. Belle semaine !`, url: "/Ligue", tag: "mh-ligue" }
+            : null;
     if (!msg) continue;
     const subs = (await db.query("select endpoint, p256dh, auth_key from public.prayer_reminders where user_id = $1", [n.user_id])).rows;
     for (const s of subs) {

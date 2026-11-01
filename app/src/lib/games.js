@@ -310,6 +310,11 @@ export async function ldInvite(username, rematchOf) {
   return id;
 }
 
+/* ── Ligues de la semaine ── */
+export const TIERS = ["Bronze", "Argent", "Or", "Émeraude", "Saphir", "Diamant"];
+export const lgGet = () => rpc("lg_get", {});
+export const lgSeen = () => rpc("lg_seen", {});
+
 /* ── Défi du jour ── */
 export const dcGet = (candidates) => rpc("dc_get", { p_candidates: candidates || null });
 export const dcStart = () => rpc("dc_start", {});
@@ -349,6 +354,7 @@ export const BADGES = [
   ["perfect_1", "Sans faute", "target"], ["perfect_10", "10 sans faute", "target"], ["rematch_1", "Revanche gagnée", "arrows"],
   ["fairplay_20", "Fair-play (20 duels sans abandon)", "handshake"], ["khatma_1", "Khatma d'équipe", "users"], ["khatma_5", "5 khatmas d'équipe", "users"],
   ["solo_10", "10 parties solo", "game"], ["solo_100", "100 parties solo", "game"],
+  ["league_podium", "Podium de ligue", "trophy"], ["league_diamant", "Ligue Diamant", "crown"],
   ["grade_confirme", "Grade Confirmé", "medal"], ["grade_expert", "Grade Expert", "medal"], ["grade_elite", "Grade Élite", "medal"], ["grade_maitre", "Grade Maître", "medal"], ["grade_legende", "Grade Légende", "crown"],
 ];
 export const badgeName = (id) => BADGES.find((b) => b[0] === id)?.[1] || id;

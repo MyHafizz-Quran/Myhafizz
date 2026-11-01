@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info, SealCheck, CalendarCheck } from "@phosphor-icons/react";
 import { Profile } from "@/api/entities";
-import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount } from "@/lib/games";
+import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount, lgGet, TIERS } from "@/lib/games";
+import { TierIcon } from "@/pages/Ligue";
 import { haptic } from "@/hooks/usePlatform";
 import { DuelsTab } from "@/pages/Duel";
 import { EquipeTab } from "@/pages/Equipe";
@@ -103,6 +104,7 @@ export default function Jouer() {
       </div>
       <p className="font-semibold text-muted-foreground mt-1">{tab === "duels" ? "Défie d'autres joueurs. Chaque erreur est expliquée." : tab === "equipe" ? "Révisez ensemble, en groupe ou en binôme." : "Joue à ton rythme contre l'ordinateur. Chaque erreur est expliquée."}</p>
       {settings?.defi?.enabled !== false && <DefiCard />}
+      <LigueCard />
       {tabs.length > 1 && (
         <div className="mt-4 flex bg-muted rounded-2xl p-1 gap-1" role="tablist">
           {tabs.map(([k, l]) => (
@@ -138,7 +140,7 @@ export default function Jouer() {
           );
         })}
       </div>
-      <p className="text-center text-[13px] font-bold text-muted-foreground mt-6">Bientôt : ligues et tournois.</p>
+      <p className="text-center text-[13px] font-bold text-muted-foreground mt-6">Bientôt : les tournois.</p>
       </>)}
     </div>
   );
@@ -162,6 +164,26 @@ function DefiCard() {
         {d?.streak > 0 && <span className="h-7 px-2.5 rounded-lg bg-accent text-accent-foreground text-[12.5px] font-extrabold flex items-center gap-1"><Fire weight="fill" className="w-4 h-4 text-gold" />Série : {d.streak} j</span>}
         {hours && <span className="h-7 px-2.5 rounded-lg bg-muted text-muted-foreground text-[12.5px] font-extrabold flex items-center">{r ? "Nouveau défi" : "Change"} dans {hours} h</span>}
       </span>
+    </button>
+  );
+}
+
+/** Carte de la ligue de la semaine (masquée tant que les ligues ne sont pas ouvertes). */
+function LigueCard() {
+  const navigate = useNavigate();
+  const { data: d } = useQuery({ queryKey: ["ligue"], queryFn: lgGet, staleTime: 60_000 });
+  if (!d?.enabled) return null;
+  const me = d.board?.find((x) => x.me);
+  const target = !d.last && d.joined && me && d.up && me.pos > d.up ? d.board[d.up - 1] : null;
+  return (
+    <button onClick={() => { haptic(); navigate("/Ligue"); }} className="w-full text-left card-flat p-4 mt-3 press">
+      <span className="flex items-center gap-3">
+        <span className="w-12 h-12 rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0"><TierIcon tier={d.tier} className="w-6 h-6" /></span>
+        <span className="flex-1 min-w-0"><span className="block font-extrabold text-[17px]">Ligue {TIERS[d.tier - 1]}</span>
+          <span className="block text-[13px] font-semibold text-muted-foreground">{d.last ? "Le résultat de la semaine est arrivé" : me ? `Tu es ${me.pos}e · ${me.points} pts cette semaine` : "Gagne ton premier point pour entrer"}</span></span>
+        <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+      </span>
+      {target && <span className="inline-flex mt-3 h-7 px-2.5 rounded-lg bg-accent text-accent-foreground text-[12.5px] font-extrabold items-center">Encore {target.points - me.points + 1} pts pour la zone de montée</span>}
     </button>
   );
 }
