@@ -1,3 +1,4 @@
+import ReadingNext from "@/components/daily/ReadingNext";
 import NameOfDay from "@/components/daily/NameOfDay";
 import { getReadPos } from "@/lib/words";
 import React, { useEffect, useMemo, useState } from "react";
@@ -147,6 +148,9 @@ export default function Dashboard() {
         {/* Heures de prière */}
         <PrayerCard hero className="mt-4" />
 
+        {/* Profil « pas encore » : la lecture passe en premier */}
+        {profile?.arabic_level === "none" && <ReadingNext className="mt-3" />}
+
         {/* Séance du jour */}
         {planLoading ? (
           <div className="h-64 rounded-2xl bg-muted animate-pulse mt-3" />
@@ -230,7 +234,7 @@ export default function Dashboard() {
         )}
 
         {/* Apprendre à lire */}
-        <button onClick={() => { haptic(); navigate("/Lire"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
+        {profile?.arabic_level !== "none" && <button onClick={() => { haptic(); navigate("/Lire"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
           <span className="w-[46px] h-[46px] rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0 font-arabic text-[26px] leading-none">أ ب</span>
           <div className="flex-1 min-w-0">
             <p className="font-black text-[17px]">Apprendre à lire l'arabe</p>
@@ -240,7 +244,7 @@ export default function Dashboard() {
             </>) : <p className="text-[13px] font-semibold text-muted-foreground">Lettres, voyelles, puis les mots du Coran</p>}
           </div>
           <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
-        </button>
+        </button>}
 
         {/* Jouer */}
         <button onClick={() => { haptic(); navigate("/Jouer"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
