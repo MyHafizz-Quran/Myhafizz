@@ -175,7 +175,7 @@ function Reader({ surah }) {
                   <p dir="rtl" lang="ar" className="flex-1 font-arabic text-[24px] leading-[2.1] text-right">{v.a} <span className="text-primary text-[18px]">﴿{v.k}﴾</span></p>
                 </div>
                 <p className="text-[14.5px] font-semibold text-foreground/75 mt-1">{v.f}</p>
-                {r?.body ? <div className="mt-2"><TafsirText src={src} data={r} /></div>
+                {r?.body ? <div className="mt-2"><TafsirText src={src} data={r} surah={surah} /></div>
                   : r && r.from !== v.k ? <p className="text-[12.5px] font-bold text-muted-foreground mt-2">Expliqué avec le verset {r.from}, plus haut.</p>
                   : isLoading ? <p className="text-[13px] font-semibold text-muted-foreground mt-2">Chargement…</p> : null}
               </div>
@@ -272,7 +272,7 @@ function Lesson({ surah, index }) {
               </div>
             </div>
             <p className="font-black mt-4 mb-2">L'explication</p>
-            {ex ? <TafsirText src={src} data={ex} compact /> : <p className="text-[13px] font-semibold text-muted-foreground">Chargement…</p>}
+            {ex ? <TafsirText src={src} data={ex} compact surah={surah} /> : <p className="text-[13px] font-semibold text-muted-foreground">Chargement…</p>}
             <div className="mt-3"><TafsirChips value={src} onChange={setS} /></div>
             <div className="flex-1 min-h-4" />
             <button onClick={() => { haptic(); stopAudio(); setStep((x) => x + 1); }} className="btn-relief w-full h-[54px] mt-4 bg-primary text-primary-foreground">J'ai compris</button>
