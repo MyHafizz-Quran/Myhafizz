@@ -46,14 +46,9 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   useEffect(() => { db.auth.getUser().then(({ data }) => setUser(data.user)).catch(() => {}); }, []);
 
-  const { data: progress = [], isFetched: progressFetched } = useQuery({ queryKey: ["memorization-progress"], queryFn: () => MemorizationProgress.list() });
+  const { data: progress = [] } = useQuery({ queryKey: ["memorization-progress"], queryFn: () => MemorizationProgress.list() });
   const { data: reviews = [] } = useQuery({ queryKey: ["verse-reviews"], queryFn: () => VerseReview.list() });
   const { data: plan, isLoading: planLoading } = useQuery({ queryKey: ["hifz-plan"], queryFn: () => HifzPlan.get() });
-  // Premier lancement de l'app installée sans programme : parcours d'accueil (aussi pour les inscriptions Google).
-  useEffect(() => {
-    const standalone = window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
-    if (!planLoading && progressFetched && !plan && standalone && !progress.length && !localStorage.getItem("mh_onboarded")) navigate("/Bienvenue", { replace: true });
-  }, [planLoading, progressFetched, plan, progress.length, navigate]);
   const { data: days = [] } = useQuery({ queryKey: ["activity-days"], queryFn: () => ActivityDays.list() });
   const { data: groups = [] } = useQuery({ queryKey: ["groups"], queryFn: () => Groups.mine() });
   const { data: readSessions = [] } = useQuery({ queryKey: ["reading-sessions"], queryFn: () => ReadingSessions.since(weekStart().toISOString()) });
