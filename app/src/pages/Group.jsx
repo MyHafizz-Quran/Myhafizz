@@ -11,6 +11,7 @@ import { todayStr } from "@/lib/srs";
 import { haptic } from "@/hooks/usePlatform";
 import PageHeader from "@/components/PageHeader";
 import InviteSheet from "@/components/InviteSheet";
+import PlayerPic from "@/components/PlayerPic";
 
 const ago = (d) => {
   if (!d) return "jamais";
@@ -64,7 +65,7 @@ function Tracking({ group }) {
           <tbody className="divide-y-2 divide-border">
             {rows.map((r) => (
               <tr key={r.s.user_id} className="font-bold hover:bg-muted/60">
-                <td className="p-3.5"><div className="flex items-center gap-2.5"><span className="w-9 h-9 rounded-full bg-accent text-primary font-extrabold flex items-center justify-center shrink-0 text-sm">{initials(r.s.display_name)}</span><span className="font-extrabold truncate">{r.s.display_name || "Élève"}</span></div></td>
+                <td className="p-3.5"><div className="flex items-center gap-2.5"><PlayerPic p={{ id: r.s.user_id, name: r.s.display_name, image: r.s.avatar_url }} size={36} /><span className="font-extrabold truncate">{r.s.display_name || "Élève"}</span></div></td>
                 <td className="p-3.5 text-right font-black">{r.memorized}</td>
                 <td className="p-3.5 text-right">{r.surahs}</td>
                 <td className="p-3.5 text-right">{r.week}</td>
@@ -90,7 +91,7 @@ function Tracking({ group }) {
         return (
           <div key={s.user_id}>
             <button onClick={() => setOpen(open === s.user_id ? null : s.user_id)} className="w-full flex items-center gap-3 p-4 text-left active:bg-muted">
-              <div className="w-10 h-10 rounded-full bg-accent text-primary font-extrabold flex items-center justify-center shrink-0">{initials(s.display_name)}</div>
+              <PlayerPic p={{ id: s.user_id, name: s.display_name, image: s.avatar_url }} size={40} />
               <div className="flex-1 min-w-0">
                 <p className="font-extrabold truncate">{s.display_name || "Élève"}</p>
                 <p className="text-sm font-semibold text-muted-foreground">{memorized} versets · actif {ago(last)}</p>
@@ -136,7 +137,7 @@ function Members({ group }) {
     <div className="card-flat divide-y-2 divide-border overflow-hidden">
       {group.members.map((m) => (
         <div key={m.user_id} className="flex items-center gap-3 p-3">
-          <div className="w-9 h-9 rounded-full bg-accent text-primary text-sm font-extrabold flex items-center justify-center">{initials(m.display_name)}</div>
+          <PlayerPic p={{ id: m.user_id, name: m.display_name, image: m.avatar_url }} size={36} />
           <p className="flex-1 font-extrabold truncate">{m.display_name || "Membre"}{m.user_id === group.me ? " (moi)" : ""}</p>
           <span className="text-xs font-bold text-muted-foreground">{ROLE_LABEL[m.role]}</span>
         </div>

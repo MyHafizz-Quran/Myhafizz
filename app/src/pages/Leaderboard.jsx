@@ -8,6 +8,7 @@ import { weekStart, daysLeftInWeek } from "@/lib/readingGame";
 import { TOTAL_VERSES } from "@/components/quranData";
 import { useAuth } from "@/lib/AuthContext";
 import PageHeader from "@/components/PageHeader";
+import PlayerPic from "@/components/PlayerPic";
 
 
 // Extract first name from a full name string
@@ -119,9 +120,7 @@ export default function Leaderboard() {
   const unitLabel = tab === "lecture" ? "points" : "versets";
 
   const me = rankings.find((r) => r.isMe);
-  const Avatar = ({ r, size = 40 }) => r.avatarSrc
-    ? <img src={r.avatarSrc} alt="" style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />
-    : <span style={{ width: size, height: size }} className={`rounded-full font-black flex items-center justify-center shrink-0 ${r.isMe ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"}`}>{r.initials}</span>;
+  const Avatar = ({ r, size = 40 }) => <PlayerPic p={{ id: r.userId, name: r.displayName, image: r.avatarSrc }} size={size} tone={r.isMe ? "primary" : "accent"} />;
 
   return (
     <div className="min-h-[100dvh] bg-background pb-nav">

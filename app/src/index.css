@@ -333,3 +333,10 @@ html.full-bleed .fixed.left-0.right-0, html.full-bleed .fixed.inset-x-0 { left: 
 
 @keyframes verseFlash { 0%,60% { box-shadow: 0 0 0 3px hsl(var(--primary)); } 100% { box-shadow: 0 0 0 0 transparent; } }
 .verse-flash { animation: verseFlash 1.8s ease-out; border-radius: 16px; }
+
+/* iOS : les champs date/heure gardent une largeur minimale native et débordent de leur carte */
+input[type="date"], input[type="time"], input[type="datetime-local"] {
+  -webkit-appearance: none; appearance: none;
+  display: block; min-width: 0; max-width: 100%; box-sizing: border-box;
+}
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value { text-align: inherit; margin: 0; min-height: 1.4em; }

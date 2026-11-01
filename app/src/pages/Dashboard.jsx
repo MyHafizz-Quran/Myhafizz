@@ -18,6 +18,7 @@ import { DailyTools, RamadanCard, SeasonCard } from "@/components/daily/DailyExt
 import DuoPanel, { DuoNudges } from "@/components/community/DuoPanel";
 import { hijriLabel } from "@/lib/hijri";
 import { weekStats } from "@/lib/weekly";
+import PlayerPic from "@/components/PlayerPic";
 
 const PARTS = [
   { part: "sabaq", title: "Sabaq · nouveau" },
@@ -72,7 +73,6 @@ export default function Dashboard() {
 
   const session = useMemo(() => buildSession({ plan, progress, reviews }), [plan, progress, reviews]);
   const firstName = (user?.user_metadata?.full_name || "").split(" ")[0];
-  const initial = (firstName || user?.email || "?")[0].toUpperCase();
   const streak = currentStreak(days);
 
   // Semaine en cours (lundi → dimanche)
@@ -126,7 +126,7 @@ export default function Dashboard() {
           <span className={`h-9 px-3 rounded-full flex items-center gap-1 font-black ${streak ? "bg-gold-tint text-[#9A6A00]" : "bg-muted text-muted-foreground"}`} aria-label={`Série de ${streak} jours`}>
             <Fire weight="fill" className={`w-5 h-5 ${streak ? "text-gold" : ""}`} />{streak}
           </span>
-          <Link to="/Profile" className="w-10 h-10 rounded-full bg-accent text-accent-foreground font-black flex items-center justify-center" aria-label="Profil">{initial}</Link>
+          <Link to="/Profile" className="rounded-full press" aria-label="Profil"><PlayerPic p={{ id: user?.id, name: firstName || user?.email, image: user?.user_metadata?.avatar_url }} size={40} /></Link>
         </div>
 
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6 lg:items-start">

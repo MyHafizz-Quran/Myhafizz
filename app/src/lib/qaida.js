@@ -369,9 +369,15 @@ export function playUrl(url, fallback) {
   try {
     window.speechSynthesis?.cancel();
     if (!player) player = new Audio();
-    player.pause(); player.src = url; player.currentTime = 0;
+    player.pause(); player.onended = null; player.src = url; player.currentTime = 0;
     const p = player.play();
     if (p && p.catch) p.catch(() => fallback && speak(fallback));
   } catch { if (fallback) speak(fallback); }
+}
+/** Plusieurs versets à la suite (ordre des versets). */
+export function playQueue(urls) {
+  let k = 0;
+  const next = () => { if (k >= urls.length) return; playUrl(urls[k++]); if (player) player.onended = next; };
+  next();
 }
 export function stopAudio() { try { player?.pause(); } catch { /* ignore */ } }

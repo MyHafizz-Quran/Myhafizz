@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useAudioManager, getReadingSession } from "@/lib/AudioManager";
 import { SURAHS } from "@/components/quranData";
 import { useNavigate } from "react-router-dom";
+import PlayerPic from "@/components/PlayerPic";
 
 const MAIN = [
   { to: "/Dashboard", icon: House, label: "Accueil", match: (p) => p === "/" || p.startsWith("/Dashboard") },
@@ -83,7 +84,7 @@ export default function DesktopSidebar() {
         <Item to="/Help" icon={Question} label="Aide" on={p.startsWith("/Help")} />
         <Item to="/Settings" icon={GearSix} label="Réglages" on={p.startsWith("/Settings")} />
         <NavLink to="/Profile" className={`mt-2 h-14 rounded-xl px-2 flex items-center gap-3 border-2 ${p.startsWith("/Profile") ? "border-primary/40 bg-accent" : "border-border hover:bg-muted"}`}>
-          {avatar ? <img src={avatar} alt="" className="w-9 h-9 rounded-full object-cover" /> : <span className="w-9 h-9 rounded-full bg-accent text-accent-foreground font-black flex items-center justify-center">{(name[0] || "?").toUpperCase()}</span>}
+          <PlayerPic p={{ id: user?.id, name, image: avatar }} size={36} />
           <span className="min-w-0"><span className="block font-extrabold truncate">{name.split(/[\s@]/)[0] || "Profil"}</span><span className="block text-xs font-bold text-muted-foreground">Mon profil</span></span>
         </NavLink>
       </div>

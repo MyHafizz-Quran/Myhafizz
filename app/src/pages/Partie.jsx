@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat, Hourglass, SignOut, CalendarCheck } from "@phosphor-icons/react";
 import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, ldState, ldAnswer, ldQuit, dcStart, dcSubmit, dcAnswer, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM, playScope, aidOf, helpier } from "@/lib/games";
 import { Profile } from "@/api/entities";
-import { speak, playUrl, stopAudio, hasArabicVoice } from "@/lib/qaida";
+import { speak, playUrl, playQueue, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 
 const AR = "font-arabic";
@@ -148,7 +148,9 @@ export default function Partie() {
   const [end, setEnd] = useState(null);
   const [left, setLeft] = useState(null);
   useEffect(() => () => stopAudio(), []);
-  useEffect(() => { shownAt.current = Date.now(); }, [i, items]);
+  // le duel en direct relit l'état chaque seconde (nouveau tableau d'items) : on suit la question, pas le tableau
+  const itemKey = items?.[i] ? `${i}:${JSON.stringify(items[i]).length}:${items[i].kind}:${items[i].key || items[i].cur?.g || items[i].verse?.g || items[i].seq?.[0]?.g || items[i].letter || items[i].id || ""}` : "";
+  useEffect(() => { shownAt.current = Date.now(); }, [itemKey]);
   // duel en direct : suivre le serveur
   useEffect(() => {
     if (!liveId || !ls) return;
@@ -160,6 +162,7 @@ export default function Partie() {
       setResult(ok ? "ok" : "ko"); chime(ok); haptic(ok ? 8 : 30);
       const it = ls.items[ls.q];
       if (it?.kind === "suite") setTimeout(() => playUrl(AUDIO(it.next.g)), 300);
+      if (it?.kind === "ordre") setTimeout(() => playQueue(it.seq.map((v) => AUDIO(v.g))), 300);
     }
   }, [ls]);
   useEffect(() => { if (!liveId) return; const t = setInterval(() => setNow(Date.now()), 200); return () => clearInterval(t); }, [liveId]);
@@ -174,7 +177,7 @@ export default function Partie() {
     if (it.kind === "syl") return speak(it.ar);
     if (it.kind === "suite") return playUrl(AUDIO(it.cur.g));
     if (it.kind === "sourate") return playUrl(AUDIO(it.verse.g));
-    if (it.kind === "ordre") return playUrl(AUDIO(it.seq[0].g));
+    if (it.kind === "ordre") return result ? playQueue(it.seq.map((v) => AUDIO(v.g))) : playUrl(AUDIO(it.seq[0].g));
   };
 
   // son automatique : écoute (lettres niveau 2, sourate à l'oreille, niveaux phonétiques)
@@ -182,7 +185,7 @@ export default function Partie() {
     if (!item || result) return;
     const auto = item.kind === "letter-hear" || (item.kind === "sourate" && item.mode !== "texte") || (item.kind === "suite" && lv.aid === "phon");
     if (auto) { const t = setTimeout(() => playItem(item), 400); return () => clearTimeout(t); }
-  }, [i, items]);  
+  }, [itemKey]);  
 
   // chrono (lettres)
   useEffect(() => {
@@ -194,7 +197,7 @@ export default function Partie() {
       if (l <= 0) { clearInterval(id); grade(false, true); }
     }, 100);
     return () => clearInterval(id);
-  }, [i, items, result === null]);  
+  }, [itemKey, result === null]);  
 
   const isCorrect = () => {
     if (!item) return false;
@@ -222,6 +225,7 @@ export default function Partie() {
     setResult(ok ? "ok" : "ko"); chime(ok); haptic(ok ? 8 : 30);
     if (!ok && (item.kind === "letter-see" || item.kind === "letter-hear")) setTimeout(() => speak(L[item.answer].nameAr), 300);
     if (item.kind === "suite") setTimeout(() => playUrl(AUDIO(item.next.g)), 300);
+    if (item.kind === "ordre") setTimeout(() => playQueue(item.seq.map((v) => AUDIO(v.g))), 300);
   };
 
   const next = async () => {
@@ -504,14 +508,7 @@ function LiveBar({ ls, now }) {
   );
 }
 
-export function PlayerPic({ p, size = 42, ring }) {
-  const name = p?.username || p?.name || "?";
-  const ini = name.replace(/^@/, "").split(/[._\s-]+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase() || "?";
-  const style = { width: size, height: size, fontSize: size * 0.36 };
-  const cls = `rounded-full shrink-0 ${ring ? "ring-[5px] ring-gold ring-offset-2 ring-offset-background" : ""}`;
-  return p?.image ? <img src={p.image} alt="" referrerPolicy="no-referrer" className={`${cls} object-cover`} style={style} />
-    : <span className={`${cls} bg-accent text-accent-foreground flex items-center justify-center font-black`} style={style}>{ini}</span>;
-}
+export { default as PlayerPic } from "@/components/PlayerPic";
 
 /** Bonne réponse + explication, affichée après chaque réponse (et dans le bilan). */
 function Correction({ item, lv, ok, compact }) {

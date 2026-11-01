@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { X, ArrowLeft, UsersThree, House, GraduationCap, Handshake, CheckCircle, Medal, CaretRight } from "@phosphor-icons/react";
 import { TK_SCOPES, TK_ILM, tkList, tkGet, tkCreate, tkUnitName, loadQuran, loadSettings } from "@/lib/games";
 import { haptic } from "@/hooks/usePlatform";
+import PlayerPic from "@/components/PlayerPic";
 
 const KIND_ICON = { family: House, class: GraduationCap, circle: UsersThree, duo: Handshake };
 const KIND_WORD = { family: "Famille", class: "Classe", circle: "Cercle", duo: "Binôme" };
@@ -191,7 +192,7 @@ function Team({ k, title }) {
       <Section>{title}</Section>
       <div className="card-flat p-3.5 space-y-2.5">{k.team.map((m) => (
         <div key={m.user_id} className="flex items-center gap-3">
-          <span className="w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-black text-[12px] shrink-0">{initials(m.username || m.name)}</span>
+          <PlayerPic p={{ id: m.user_id, username: m.username, name: m.name, image: m.image }} size={36} />
           <span className="flex-1 min-w-0 font-extrabold truncate">{m.user_id === k.me ? "Toi" : m.username ? `@${m.username}` : m.name || "Membre"}</span>
           <b>{m.count}</b>
         </div>

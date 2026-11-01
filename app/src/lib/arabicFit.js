@@ -6,7 +6,7 @@
 // Désactivable sur un élément avec data-ar-nofit.
 
 const AR = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
-const MAX_LEN = 28;
+const MAX_LEN = 60;
 const cache = new Map();
 let cv;
 
@@ -17,7 +17,7 @@ function ink(text, font) {
     cv = cv || document.createElement("canvas").getContext("2d");
     cv.font = font;
     const m = cv.measureText(text);
-    v = { a: m.actualBoundingBoxAscent, d: m.actualBoundingBoxDescent };
+    v = { a: m.actualBoundingBoxAscent, d: m.actualBoundingBoxDescent, fd: m.fontBoundingBoxDescent };
     if (cache.size > 2000) cache.clear();
     cache.set(k, v);
   }
@@ -72,12 +72,18 @@ function fit(el) {
   // 1) la ligne doit contenir l'encre avec une petite marge
   const lh = parseFloat(cs.lineHeight) || fs * 1.2;
   if (lh < inkH + fs * 0.16) el.style.lineHeight = `${Math.ceil(inkH + fs * 0.16)}px`;
-  // 2) mesure de la ligne de base
-  const probe = document.createElement("span");
-  probe.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
-  el.insertBefore(probe, node);
-  const base = probe.getBoundingClientRect().bottom;
-  probe.remove();
+  // 2) ligne de base : bas de la zone du texte moins la descente de la police.
+  // (une sonde insérée devient un élément flex à part dans les cadres flex : mesure fausse sur les pastilles)
+  const tr = [...r.getClientRects()].filter((x) => x.width > 0)[0];
+  let base;
+  if (tr && Number.isFinite(m.fd)) base = tr.bottom - m.fd;
+  else {
+    const probe = document.createElement("span");
+    probe.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+    el.insertBefore(probe, node);
+    base = probe.getBoundingClientRect().bottom;
+    probe.remove();
+  }
   const box = el.getBoundingClientRect();
   const ecs = getComputedStyle(el);
   const top = box.top + parseFloat(ecs.borderTopWidth) + parseFloat(ecs.paddingTop);
