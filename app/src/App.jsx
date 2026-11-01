@@ -62,12 +62,15 @@ import Jouer from './pages/Jouer.jsx';
 import Partie from './pages/Partie.jsx';
 import Duel from './pages/Duel.jsx';
 import Equipe from './pages/Equipe.jsx';
+import Joueur from './pages/Joueur.jsx';
+import Notifications from './pages/Notifications.jsx';
+import { NotifProvider } from './lib/notifs.jsx';
 const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Joueur", "/Notifications", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -115,16 +118,10 @@ const AuthenticatedApp = () => {
   if (!isAuthenticated) {
     const pendingJoin = new URLSearchParams(window.location.search).get("join");
     if (pendingJoin) return <Navigate to={`/rejoindre/${encodeURIComponent(pendingJoin)}`} replace />;
-    const duelCode = window.location.pathname === "/Duel" && new URLSearchParams(window.location.search).get("code");
-    if (duelCode) localStorage.setItem("mh_pending_duel", duelCode);
     return <Navigate to="/login" replace />;
   }
 
-  const pendingDuel = localStorage.getItem("mh_pending_duel");
-  if (pendingDuel) {
-    localStorage.removeItem("mh_pending_duel");
-    return <Navigate to={`/Duel?code=${encodeURIComponent(pendingDuel)}`} replace />;
-  }
+  localStorage.removeItem("mh_pending_duel");
 
   const pendingJoin = localStorage.getItem("mh_pending_join");
   if (pendingJoin) {
@@ -133,7 +130,7 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <>
+    <NotifProvider>
       <OfflineBanner />
       {homeHeader && <TopHeader />}
       {/* Contenu principal : transition d'écran native (glissement iOS, fondu Android) */}
@@ -179,6 +176,8 @@ const AuthenticatedApp = () => {
           <Route path="/Jouer" element={<Jouer />} />
           <Route path="/Partie" element={<PartieRoute />} />
           <Route path="/Equipe" element={<Equipe />} />
+          <Route path="/Joueur" element={<Joueur />} />
+          <Route path="/Notifications" element={<Notifications />} />
           <Route path="/Duel" element={<Duel />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
@@ -187,7 +186,7 @@ const AuthenticatedApp = () => {
       {!immersive && <DesktopSidebar />}
       {rail && <DesktopRail />}
       {!immersive && <div className="lg:hidden"><BottomNav /></div>}
-    </>
+    </NotifProvider>
   );
 };
 

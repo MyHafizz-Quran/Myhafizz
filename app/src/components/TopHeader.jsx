@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Trophy, MagnifyingGlass } from "@phosphor-icons/react";
+import { Trophy, MagnifyingGlass, Bell } from "@phosphor-icons/react";
+import { useNotifs } from "@/lib/notifs";
 import usePlatform, { haptic } from "@/hooks/usePlatform";
 import { useAuth } from "@/lib/AuthContext";
 import { MhWordmark } from "@/components/MhLogo";
@@ -22,12 +23,20 @@ export default function TopHeader() {
   const platform = usePlatform();
   const { user } = useAuth();
   const kid = useKidMode();
+  const { unread } = useNotifs();
+  const bell = (cls) => (
+    <Link to="/Notifications" aria-label={unread ? `Notifications, ${unread} non lues` : "Notifications"} onClick={() => haptic()} className={`relative ${cls}`}>
+      <Bell size={22} weight="bold" />
+      {unread > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-white text-[10px] font-black flex items-center justify-center border-2 border-background">{unread > 9 ? "9+" : unread}</span>}
+    </Link>
+  );
 
   if (platform === "android") {
     return (
       <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] bg-background flex items-center gap-1 pl-4 pr-2"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(var(--header-height) + env(safe-area-inset-top, 0px))" }}>
         <MhWordmark size={28} className="flex-1" />
+        {bell("w-12 h-12 rounded-full flex items-center justify-center")}
         <Link to="/SurahList?search=1" aria-label="Rechercher" className="w-12 h-12 rounded-full flex items-center justify-center active:bg-black/5" onClick={() => haptic()}>
           <MagnifyingGlass size={24} weight="bold" />
         </Link>
@@ -48,6 +57,7 @@ export default function TopHeader() {
           {!kid.on && <Link to="/Leaderboard" aria-label="Classement" onClick={() => haptic()} className="bg-card border-2 border-border w-11 h-11 rounded-full flex items-center justify-center press">
             <Trophy size={21} weight="bold" />
           </Link>}
+          {bell("bg-card border-2 border-border w-11 h-11 rounded-full flex items-center justify-center press")}
           <Link to="/Profile" aria-label="Profil" onClick={() => haptic()} className="bg-card border-2 border-border w-11 h-11 rounded-full flex items-center justify-center press">
             <Avatar user={user} size={34} />
           </Link>

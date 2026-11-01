@@ -13,6 +13,15 @@ export default defineConfig({
         VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY!,
       },
     },
+    notif: {
+      name: "Notifications push immédiates (duels)",
+      source: "src/notif.mjs",
+      env: {
+        REMINDER_DATABASE_URL: process.env.REMINDER_DATABASE_URL!,
+        VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY!,
+        VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY!,
+      },
+    },
     pseudo: {
       name: "Nom d'utilisateur disponible",
       source: "src/pseudo.mjs",

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat } from "@phosphor-icons/react";
-import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, duelGet, duelSubmit, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM } from "@/lib/games";
+import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat, Hourglass, SignOut } from "@phosphor-icons/react";
+import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, ldState, ldAnswer, ldQuit, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM } from "@/lib/games";
 import { Profile } from "@/api/entities";
 import { speak, playUrl, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
@@ -29,15 +29,17 @@ function Listen({ onPlay, big, label }) {
   );
 }
 
-function Choice({ state, onClick, children, ar }) {
+function Choice({ state: raw, onClick, children, ar }) {
+  const [state, mark] = String(raw || "").split("+");
   const cls = state === "selected" ? "border-primary bg-accent text-accent-foreground"
     : state === "correct" ? "border-primary bg-accent text-primary"
     : state === "wrong" ? "border-destructive bg-destructive/10 text-destructive"
     : "border-border bg-card text-foreground";
   return (
     <button onClick={onClick} dir={ar ? "rtl" : undefined}
-      className={`w-full min-h-[60px] rounded-2xl border-2 border-b-[5px] px-3 py-2.5 font-extrabold transition-colors active:translate-y-[2px] active:border-b-2 ${cls}`}>
+      className={`relative w-full min-h-[60px] rounded-2xl border-2 border-b-[5px] px-3 py-2.5 font-extrabold transition-colors active:translate-y-[2px] active:border-b-2 ${cls}`}>
       {children}
+      {mark === "them" && <span className="absolute -top-2.5 -right-2 h-6 px-2 rounded-full bg-gold-tint text-[#8A6100] border-2 border-gold text-[11px] font-black flex items-center">Adversaire</span>}
     </button>
   );
 }
@@ -56,9 +58,24 @@ export default function Partie() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const params = new URLSearchParams(window.location.search);
-  const duelId = params.get("duel");
-  const { data: duel, error: duelError } = useQuery({ queryKey: ["duel-play", duelId], queryFn: () => duelGet(duelId), enabled: !!duelId, staleTime: Infinity, gcTime: 0 });
-  if (duel) { params.set("g", duel.game); params.set("l", String(duel.level)); params.set("c", duel.category || "mix"); }
+  // Duel en direct : l'état vient du serveur (question en cours, chrono, réponses), relu chaque seconde
+  const liveId = params.get("live");
+  const duelId = liveId;
+  const [ls, setLs] = useState(null);
+  const [lsError, setLsError] = useState(null);
+  const offset = useRef(0);
+  const { data: liveProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), enabled: !!liveId });
+  useEffect(() => {
+    if (!liveId) return;
+    let alive = true, t;
+    const tick = async () => {
+      try { const s = await ldState(liveId); if (!alive) return; offset.current = Date.parse(s.now) - Date.now(); setLs(s); setLsError(null); }
+      catch (e) { if (alive) setLsError(e); }
+      if (alive) t = setTimeout(tick, 900);
+    };
+    tick();
+    return () => { alive = false; clearTimeout(t); };
+  }, [liveId]);
   // Khatma d'équipe : une partie sur une sourate (ou un thème Al-Ilm) pour l'équipe
   const tkId = params.get("tk");
   const tkUnit = Number(params.get("u")) || 0;
@@ -72,7 +89,8 @@ export default function Partie() {
   const game = GAMES[params.get("g")] ? params.get("g") : "lettres";
   const G = GAMES[game];
   const levelN = Math.max(1, Math.min(G.levels.length, Number(params.get("l")) || 1));
-  const lv = G.levels.find((l) => l.n === levelN);
+  const liveAid = liveProfile?.arabic_level === "good" ? "ar" : liveProfile?.arabic_level === "some" ? "both" : "phon";
+  const lv = liveId ? { n: 1, aid: liveAid, timer: 0 } : G.levels.find((l) => l.n === levelN);
   const robotN = Math.max(1, Math.min(3, Number(params.get("r")) || 2));
   const category = params.get("c") || "mix";
   const voice = hasArabicVoice();
@@ -85,13 +103,15 @@ export default function Partie() {
     queryFn: () => (tkId && tk.scope !== "ilm" ? buildSurahGame(tkUnit, levelN, count) : buildGame(game, levelN, { count, category })),
     enabled: !!settings && !duelId && (!tkId || (!!tk && (tk.scope === "ilm" || !!tkProfile))), staleTime: Infinity, gcTime: 0,
   });
-  const items = duelId ? duel?.items : built;
-  const isLoading = duelId ? !duel && !duelError : tkId ? (!tk && !tkError) || building : building;
-  const error = duelId ? duelError : tkError || buildError;
+  const items = liveId ? ls?.items : built;
+  const isLoading = liveId ? !ls?.items && !lsError : tkId ? (!tk && !tkError) || building : building;
+  const error = liveId ? lsError : tkError || buildError;
   const tkName = tk ? tkUnitName(tk.scope, tkUnit, tkQuran) : "";
   const exitTo = tkId ? `/Equipe?id=${tkId}` : "/Jouer";
-  const them = duel?.them?.answers || null;
-  const rival = duel?.other?.username ? `@${duel.other.username}` : "Ton adversaire";
+  const rival = ls?.them?.username ? `@${ls.them.username}` : "Ton adversaire";
+  const [submitted, setSubmitted] = useState(false);
+  const [quitAsk, setQuitAsk] = useState(false);
+  const [now, setNow] = useState(Date.now());
   const shownAt = useRef(Date.now());
 
   const [i, setI] = useState(0);
@@ -106,8 +126,20 @@ export default function Partie() {
   const [left, setLeft] = useState(null);
   useEffect(() => () => stopAudio(), []);
   useEffect(() => { shownAt.current = Date.now(); }, [i, items]);
-  // duel déjà joué : direction le résultat
-  useEffect(() => { if (duel?.me || (duel && duel.status !== "pending")) navigate(`/Duel?id=${duel.id}`, { replace: true }); }, [duel]);
+  // duel en direct : suivre le serveur
+  useEffect(() => {
+    if (!liveId || !ls) return;
+    if (ls.status === "done" || ls.status === "declined" || ls.status === "expired" || ls.status === "cancelled") { stopAudio(); navigate(`/Duel?id=${liveId}`, { replace: true }); return; }
+    if (ls.status !== "playing") return;
+    if (ls.q !== i) { stopAudio(); setI(ls.q); setChoice(null); setOrder([]); setResult(null); setSubmitted(false); return; }
+    if (ls.q_closed_at && !result) {
+      const ok = !!ls.my_answer?.ok;
+      setResult(ok ? "ok" : "ko"); chime(ok); haptic(ok ? 8 : 30);
+      const it = ls.items[ls.q];
+      if (it?.kind === "suite") setTimeout(() => playUrl(AUDIO(it.next.g)), 300);
+    }
+  }, [ls]);
+  useEffect(() => { if (!liveId) return; const t = setInterval(() => setNow(Date.now()), 200); return () => clearInterval(t); }, [liveId]);
 
   const item = items?.[i];
   const rate = settings?.robot?.[robotN] ?? [0.3, 0.15, 0.05][robotN - 1];
@@ -150,13 +182,19 @@ export default function Partie() {
 
   const grade = (forced, timeout) => {
     if (result) return;
+    if (liveId) {
+      if (submitted || !ls) return;
+      const ok = isCorrect(); haptic();
+      setSubmitted(true);
+      ldAnswer(liveId, ls.q, item.kind === "ordre" ? order : choice, ok).then(setLs).catch(() => setSubmitted(false));
+      return;
+    }
     const ok = forced === undefined ? isCorrect() : forced;
-    const t = duelId ? them?.[i] : null;
-    const botOk = duelId ? !!t?.ok : robotAnswers(rate);
+    const botOk = robotAnswers(rate);
     answers.current.push({ id: item.id || `${game}-${i}`, ok, timeout: !!timeout, ms: Date.now() - shownAt.current });
     if (ok) setMe((x) => x + 1);
     if (botOk) setBot((x) => x + 1);
-    setBotLast(duelId && !t ? null : botOk);
+    setBotLast(botOk);
     setResult(ok ? "ok" : "ko"); chime(ok); haptic(ok ? 8 : 30);
     if (!ok && (item.kind === "letter-see" || item.kind === "letter-hear")) setTimeout(() => speak(L[item.answer].nameAr), 300);
     if (item.kind === "suite") setTimeout(() => playUrl(AUDIO(item.next.g)), 300);
@@ -167,15 +205,6 @@ export default function Partie() {
     if (i + 1 >= items.length) {
       const score = answers.current.filter((a) => a.ok).length;
       setEnd({ score, total: items.length, bot, saving: true });
-      if (duelId) {
-        try {
-          await duelSubmit(duelId, answers.current.map(({ ok, ms }) => ({ ok, ms })));
-          await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok }))).catch(() => {});
-          ["game-progress", "game-stats", "duels"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
-          navigate(`/Duel?id=${duelId}`, { replace: true });
-        } catch { setEnd({ score, total: items.length, bot, offline: true, duel: true }); }
-        return;
-      }
       if (tkId) {
         try {
           const v = await tkValidate(tkId, tkUnit, score, items.length);
@@ -209,8 +238,8 @@ export default function Partie() {
       <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
         <div className="flex-1 max-w-md mx-auto w-full px-6 pt-10 text-center">
           <div className="w-24 h-24 mx-auto rounded-3xl bg-primary text-primary-foreground flex items-center justify-center shadow-[0_5px_0_var(--primary-lip)]"><CheckCircle weight="fill" className="w-12 h-12" /></div>
-          <h1 className="text-[28px] font-black mt-6">{duelId ? (end.saving ? "Envoi du duel…" : "Duel non envoyé") : won ? "Victoire !" : draw ? "Égalité" : "Partie terminée"}</h1>
-          <p className="font-semibold text-muted-foreground mt-1">{duelId ? `${end.score} / ${end.total} bonnes réponses` : `Toi ${end.score} · Robot ${end.bot} · ${end.score} / ${end.total} bonnes réponses`}</p>
+          <h1 className="text-[28px] font-black mt-6">{won ? "Victoire !" : draw ? "Égalité" : "Partie terminée"}</h1>
+          <p className="font-semibold text-muted-foreground mt-1">{`Toi ${end.score} · Robot ${end.bot} · ${end.score} / ${end.total} bonnes réponses`}</p>
           <div className="grid grid-cols-2 gap-3 mt-7">
             <div className="card-flat p-4"><Lightning weight="fill" className="w-6 h-6 text-gold mx-auto" /><p className="text-2xl font-black mt-1">{end.saving ? "…" : `+${end.xp ?? 0}`}</p><p className="text-xs font-bold text-muted-foreground">points</p></div>
             <div className="card-flat p-4">{end.mult > 1 ? <Fire weight="fill" className="w-6 h-6 text-gold mx-auto" /> : <Target weight="fill" className="w-6 h-6 text-primary mx-auto" />}<p className="text-2xl font-black mt-1">{end.mult > 1 ? `x${Number(end.mult).toFixed(1)}` : `${Math.round((end.score / end.total) * 100)} %`}</p><p className="text-xs font-bold text-muted-foreground">{end.mult > 1 ? `série de ${end.streak} jours` : "de réussite"}</p></div>
@@ -240,7 +269,7 @@ export default function Partie() {
 
   const header = (
     <div className="max-w-xl mx-auto w-full px-4 h-14 flex items-center gap-3">
-      <button onClick={() => navigate(exitTo)} aria-label="Quitter la partie" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground press"><X weight="bold" className="w-6 h-6" /></button>
+      <button onClick={() => (liveId && ls?.status === "playing" ? setQuitAsk(true) : navigate(exitTo))} aria-label="Quitter la partie" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground press"><X weight="bold" className="w-6 h-6" /></button>
       <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${items ? (i / items.length) * 100 : 0}%` }} /></div>
     </div>
   );
@@ -254,8 +283,10 @@ export default function Partie() {
     );
   }
 
-  const st = (val) => (result ? (val === item.answer ? "correct" : val === choice ? "wrong" : null) : choice === val ? "selected" : null);
-  const pickV = (val) => { if (result) return; haptic(); setChoice(val); };
+  const theirPick = liveId && result ? ls?.their_answer?.c : undefined;
+  const stBase = (val) => (result ? (val === item.answer ? "correct" : val === choice ? "wrong" : null) : choice === val ? "selected" : null);
+  const st = (val) => { const b = stBase(val); return theirPick !== undefined && theirPick === val ? `${b || "none"}+them` : b; };
+  const pickV = (val) => { if (result || submitted) return; haptic(); setChoice(val); };
 
   const body = () => {
     switch (item.kind) {
@@ -358,11 +389,12 @@ export default function Partie() {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {header}
+      {liveId ? <LiveBar ls={ls} now={now + offset.current} /> : (
       <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between text-[14px] font-extrabold">
         <span className="flex items-center gap-1.5"><User weight="fill" className="w-4 h-4 text-primary" />Toi {me}</span>
         {left != null && <span className={`flex items-center gap-1 ${left < 1.5 ? "text-destructive" : "text-muted-foreground"}`}><Timer weight="bold" className="w-4 h-4" />{left.toFixed(1)} s</span>}
-        <span className="flex items-center gap-1.5 text-muted-foreground">{tkId ? <><UsersThree weight="fill" className="w-4 h-4" />{tkName}</> : duelId ? <><Sword weight="fill" className="w-4 h-4" />{rival} {them ? bot : "·"}</> : <><Robot weight="fill" className="w-4 h-4" />Robot {ROBOT[robotN - 1].name.toLowerCase()} {bot}</>}{!tkId && botLast != null && <span className={botLast ? "text-primary" : "text-destructive"}>{botLast ? " ✓" : " ✗"}</span>}</span>
-      </div>
+        <span className="flex items-center gap-1.5 text-muted-foreground">{tkId ? <><UsersThree weight="fill" className="w-4 h-4" />{tkName}</> : <><Robot weight="fill" className="w-4 h-4" />Robot {ROBOT[robotN - 1].name.toLowerCase()} {bot}</>}{!tkId && botLast != null && <span className={botLast ? "text-primary" : "text-destructive"}>{botLast ? " ✓" : " ✗"}</span>}</span>
+      </div>)}
       <div className="flex-1 max-w-xl mx-auto w-full px-4 pt-4 pb-72">{body()}</div>
 
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t-2 transition-colors ${result === "ok" ? "bg-accent border-primary/30" : result === "ko" ? "bg-[#FDECEC] dark:bg-destructive/15 border-destructive/30" : "bg-background border-border"}`}
@@ -375,19 +407,70 @@ export default function Partie() {
                 <p className="text-[19px] font-black">{result === "ok" ? "Bonne réponse !" : answers.current[answers.current.length - 1]?.timeout ? "Temps écoulé" : "Pas tout à fait"}</p>
               </div>
               <Correction item={item} lv={lv} ok={result === "ok"} />
-              {duelId && them?.[i] && (
+              {liveId && (
                 <p className="mt-2.5 rounded-xl bg-gold-tint text-[13px] font-extrabold px-3 py-2 flex items-center gap-2"><Sword weight="fill" className="w-4 h-4 text-gold shrink-0" />
-                  {rival} {them[i].ok ? "a aussi trouvé" : "s'est trompé"}{them[i].ms ? `, en ${Math.max(1, Math.round(them[i].ms / 1000))} s` : ""}</p>
+                  {rival} {!ls?.their_answer ? "n'a pas répondu à temps" : ls.their_answer.ok ? (result === "ok" ? "a aussi trouvé" : "a trouvé") : "s'est trompé"}{ls?.their_answer?.ms ? `, en ${Math.max(1, Math.round(ls.their_answer.ms / 1000))} s` : ""}</p>
               )}
             </div>
           )}
-          {result
+          {liveId ? (result
+            ? <p className="h-[52px] flex items-center justify-center font-extrabold text-muted-foreground">{ls?.q + 1 >= ls?.total ? "Résultat dans" : "Question suivante dans"} {Math.max(1, Math.ceil((Date.parse(ls?.q_closed_at) + 4000 - (now + offset.current)) / 1000))} s</p>
+            : submitted ? <p className="h-[52px] flex items-center justify-center gap-2 font-extrabold text-muted-foreground"><Hourglass weight="bold" className="w-5 h-5" />{ls?.their_answered ? "Correction…" : `En attente de ${rival}…`}</p>
+            : <button onClick={() => grade()} disabled={!canCheck} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground disabled:opacity-50">Valider</button>)
+          : result
             ? <button onClick={next} className={`btn-relief w-full h-[52px] ${result === "ok" ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"}`} style={result === "ko" ? { boxShadow: "0 4px 0 #B42020" } : undefined}>{i + 1 >= items.length ? "Voir le bilan" : "Continuer"}</button>
             : <button onClick={() => grade()} disabled={!canCheck} className="btn-relief w-full h-[52px] bg-primary text-primary-foreground disabled:opacity-50">Vérifier</button>}
         </div>
       </div>
+      {liveId && ls?.status === "playing" && Date.parse(ls.q_started_at) > now + offset.current && ls.q === 0 && (
+        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col items-center justify-center">
+          <p className="font-extrabold text-muted-foreground">Le duel commence</p>
+          <p className="text-[96px] font-black text-primary leading-none mt-2">{Math.max(1, Math.ceil((Date.parse(ls.q_started_at) - (now + offset.current)) / 1000))}</p>
+        </div>
+      )}
+      {quitAsk && (
+        <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+          <div className="bg-card rounded-3xl border-2 border-border p-5 w-full max-w-sm text-center">
+            <span className="w-16 h-16 mx-auto rounded-full bg-destructive/10 text-destructive flex items-center justify-center"><SignOut weight="fill" className="w-8 h-8" /></span>
+            <p className="text-[20px] font-black mt-3">Quitter le duel ?</p>
+            <p className="font-semibold text-muted-foreground mt-1">Abandonner te retire <b className="text-destructive">{settings?.duel?.quit ?? 20} points</b> et donne la victoire à {rival}.</p>
+            <div className="grid gap-2.5 mt-4">
+              <button onClick={() => setQuitAsk(false)} className="btn-relief h-[52px] bg-primary text-primary-foreground">Continuer à jouer</button>
+              <button onClick={async () => { setQuitAsk(false); try { await ldQuit(liveId); } catch { /* le serveur clôt de toute façon */ } navigate(`/Duel?id=${liveId}`, { replace: true }); }} className="h-[52px] rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold text-destructive">Quitter (−{settings?.duel?.quit ?? 20})</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+/** Barre du duel en direct : les deux joueurs, leurs scores, le chrono de la question. */
+function LiveBar({ ls, now }) {
+  if (!ls) return null;
+  const leftS = ls.q_closed_at ? 0 : Math.max(0, (Date.parse(ls.q_started_at) + ls.secs * 1000 - now) / 1000);
+  const P = ({ p, score, right }) => (
+    <span className={`flex items-center gap-2 min-w-0 ${right ? "flex-row-reverse text-right" : ""}`}>
+      <PlayerPic p={p} size={38} />
+      <span className="min-w-0"><span className="block text-[13px] font-extrabold truncate max-w-[96px]">{right ? `@${p?.username || "?"}` : "Toi"}</span><span className={`block text-[20px] font-black leading-none ${right ? "" : "text-primary"}`}>{score}</span></span>
+    </span>
+  );
+  return (
+    <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between">
+      <P p={ls.me} score={ls.my_score} />
+      <span className={`w-[52px] h-[52px] rounded-full border-[5px] flex items-center justify-center font-black text-[18px] ${ls.q_closed_at ? "border-border text-muted-foreground" : leftS < 4 ? "border-destructive text-destructive" : "border-primary"}`}>{ls.q_closed_at ? "·" : Math.ceil(leftS)}</span>
+      <P p={ls.them} score={ls.their_score} right />
+    </div>
+  );
+}
+
+export function PlayerPic({ p, size = 42, ring }) {
+  const name = p?.username || p?.name || "?";
+  const ini = name.replace(/^@/, "").split(/[._\s-]+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase() || "?";
+  const style = { width: size, height: size, fontSize: size * 0.36 };
+  const cls = `rounded-full shrink-0 ${ring ? "ring-[5px] ring-gold ring-offset-2 ring-offset-background" : ""}`;
+  return p?.image ? <img src={p.image} alt="" referrerPolicy="no-referrer" className={`${cls} object-cover`} style={style} />
+    : <span className={`${cls} bg-accent text-accent-foreground flex items-center justify-center font-black`} style={style}>{ini}</span>;
 }
 
 /** Bonne réponse + explication, affichée après chaque réponse (et dans le bilan). */

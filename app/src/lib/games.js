@@ -95,7 +95,7 @@ const DEFAULT_SETTINGS = {
   games: { suite: true, sourate: true, ordre: true, lettres: true, ilm: true },
   robot: { 1: 0.3, 2: 0.15, 3: 0.05 },
   rules: { questions: 5, ilm_questions: 10, unlock_pct: 80, flash_seconds: 3 },
-  duel: { enabled: true, hours: 24, win_bonus: 20 },
+  duel: { enabled: true, questions: 7, win: 30, draw: 5, loss: 10, quit: 20 },
   khatma: { enabled: true, days: [3, 7, 14], bonus: 50, pct: 80 },
 };
 export async function loadSettings() {
@@ -109,8 +109,7 @@ export async function loadProgress() {
   return Object.fromEntries((data || []).map((r) => [r.game, r]));
 }
 export async function loadStats() {
-  const since = new Date(Date.now() - 60 * 864e5).toISOString();
-  const { data } = await db.from("game_sessions").select("xp, total, created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(1000);
+  const { data } = await db.from("game_sessions").select("xp, total, created_at").order("created_at", { ascending: false }).limit(5000);
   const rows = data || [];
   const days = new Set(rows.filter((r) => r.total > 0).map((r) => r.created_at.slice(0, 10))); // les bonus (duel, khatma) ne comptent pas comme un jour joué
   let streak = 0;
@@ -119,7 +118,7 @@ export async function loadStats() {
     if (days.has(k)) streak++;
     else if (streak || k !== new Date().toISOString().slice(0, 10)) break;
   }
-  return { xp: rows.reduce((a, r) => a + r.xp, 0), streak };
+  return { xp: Math.max(0, rows.reduce((a, r) => a + r.xp, 0)), streak }; // points globaux (les défaites en duel retirent des points)
 }
 export async function finishGame(game, level, answers) {
   const { data, error } = await db.rpc("game_finish", { p_game: game, p_level: level, p_answers: answers });
@@ -237,32 +236,82 @@ export const robotAnswers = (rate) => Math.random() >= rate;
 
 export { LETTERS, L };
 
-/* ── Duels 1 contre 1 en différé (lot J2) ── */
+/* ── Duel en direct ── */
 const rpc = async (fn, args) => {
   const { data, error } = await db.rpc(fn, args);
   if (error) throw new Error(error.message || "Erreur réseau");
   return data;
 };
-export const duelSearch = (q) => rpc("duel_search", { p_q: q });
-export const duelList = () => rpc("duel_list", {});
-export const duelGet = (id) => rpc("duel_get", { p_id: id });
-export const duelJoin = (code) => rpc("duel_join", { p_code: code });
-export const duelDecline = (id) => rpc("duel_decline", { p_id: id });
-export const duelSubmit = (id, answers) => rpc("duel_submit", { p_id: id, p_answers: answers });
-/** Tire les questions une seule fois : les deux joueurs auront exactement les mêmes. */
-export async function duelCreate({ game, level, category, mode, username, count }) {
-  const items = await buildGame(game, level, { count, category });
-  if (!items?.length) throw new Error("Impossible de préparer les questions.");
-  return rpc("duel_create", { p_game: game, p_level: level, p_category: game === "ilm" ? category || "mix" : "", p_mode: mode, p_username: username || "", p_items: items });
+export const ldSearch = (q) => rpc("ld_search", { p_q: q || "" });
+export const ldState = (id) => rpc("ld_state", { p_id: id });
+export const ldRespond = (id, accept) => rpc("ld_respond", { p_id: id, p_accept: accept });
+export const ldCancel = (id) => rpc("ld_cancel", { p_id: id });
+export const ldAnswer = (id, q, choice, ok) => rpc("ld_answer", { p_id: id, p_q: q, p_choice: choice ?? null, p_ok: !!ok });
+export const ldQuit = (id) => rpc("ld_quit", { p_id: id });
+export const playerProfile = (username) => rpc("player_profile", { p_username: username || null });
+export const notifList = () => rpc("notif_list", {});
+export const notifReadAll = () => rpc("notif_read_all", {});
+export const notifPoll = () => rpc("notif_poll", {});
+const NOTIF_URL = import.meta.env.VITE_NOTIF_URL || "https://br-gentle-bird-ba2xrv1u-notif.compute.c-8.eu-central-1.aws.neon.tech/";
+/** Demande l'envoi immédiat des notifications push en attente (défi, revanche). */
+export const pushNow = () => fetch(NOTIF_URL, { method: "POST" }).catch(() => {});
+
+/** 7 questions tirées au hasard dans tous les jeux, mélangés. Le serveur écarte celles déjà vues. */
+export async function buildDuelPool(n = 30, cfg = {}) {
+  const quran = await loadQuran();
+  const { data } = await db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published").lte("difficulty", 2).limit(600);
+  const ilm = shuffle(data || []);
+  const r = (a) => a[Math.floor(Math.random() * a.length)];
+  const out = [];
+  const make = {
+    ilm: () => { const q = ilm.pop(); return q && { kind: "ilm", ...q, key: `ilm:${q.id}`, game: "ilm" }; },
+    suite: () => { const lv = r(GAMES.suite.levels.slice(0, 4)); const q = suiteQuestions(quran, lv, 1)[0]; return q && { ...q, key: `suite:${q.surah}:${q.cur.k}`, game: "suite" }; },
+    sourate: () => { const lv = r(GAMES.sourate.levels.slice(0, 4)); const q = sourateQuestions(quran, lv, 1)[0]; return q && { ...q, key: `sourate:${q.surah}:${q.verse.k}:${q.mode}`, game: "sourate" }; },
+    ordre: () => { const lv = r(GAMES.ordre.levels.slice(0, 3)); const q = ordreQuestions(quran, lv, 1)[0]; return q && { ...q, key: `ordre:${q.surah}:${q.seq[0].k}:${q.seq.length}`, game: "ordre" }; },
+    lettres: () => { const lv = r(GAMES.lettres.levels.slice(0, 4)); const q = lettersQuestions({ ...lv, timer: 0 }, 1)[0]; return q && { ...q, key: `lettres:${q.kind}:${q.letter}:${Math.random().toString(36).slice(2, 6)}`, game: "lettres" }; },
+  };
+  const bag = ["ilm", "ilm", "ilm", "suite", "suite", "sourate", "sourate", "ordre", "lettres"];
+  for (let t = 0; out.length < n && t < n * 3; t++) {
+    const q = make[r(bag)]();
+    if (q && !out.some((o) => o.key === q.key)) out.push({ ...q, secs: q.kind === "ordre" ? Number(cfg.secs_ordre) || 25 : Number(cfg.secs) || 15 });
+  }
+  return shuffle(out);
 }
-/** État d'un duel vu par moi : à jouer, en attente de l'autre, terminé, expiré, refusé. */
-export function duelState(d) {
-  if (d.status === "declined") return "declined";
-  if (d.status === "expired") return "expired";
-  if (d.status === "done") return "done";
-  if (!d.me) return "play";
-  return "waiting";
+export async function ldInvite(username, rematchOf) {
+  const st = await loadSettings().catch(() => ({}));
+  const pool = await buildDuelPool(Math.max(30, (Number(st.duel?.questions) || 7) * 4), st.duel || {});
+  const id = await rpc("ld_invite", { p_username: username || "", p_candidates: pool, p_rematch_of: rematchOf || null });
+  pushNow();
+  return id;
 }
+
+/** Grades façon Call of Duty : 7 grades à 3 échelons. */
+export const GRADES = [
+  { name: "Recrue", min: 0 }, { name: "Apprenti", min: 150 }, { name: "Confirmé", min: 450 }, { name: "Expert", min: 900 },
+  { name: "Élite", min: 1800 }, { name: "Maître", min: 3000 }, { name: "Légende", min: 5000 },
+];
+export function gradeOf(points = 0) {
+  let g = 0;
+  GRADES.forEach((x, k) => { if (points >= x.min) g = k; });
+  const lo = GRADES[g].min, hi = GRADES[g + 1]?.min ?? lo + 3000;
+  const step = (hi - lo) / 3;
+  const ech = Math.min(2, Math.floor((points - lo) / step));
+  const nextAt = ech < 2 ? Math.round(lo + step * (ech + 1)) : hi;
+  const label = `${GRADES[g].name} ${["I", "II", "III"][ech]}`;
+  const nextLabel = ech < 2 ? `${GRADES[g].name} ${["I", "II", "III"][ech + 1]}` : GRADES[g + 1] ? `${GRADES[g + 1].name} I` : null;
+  const from = Math.round(lo + step * ech);
+  return { index: g, ech, label, name: GRADES[g].name, nextLabel, toNext: Math.max(0, nextAt - points), pct: Math.min(100, ((points - from) / Math.max(1, nextAt - from)) * 100) };
+}
+export const BADGES = [
+  ["duel_1", "Premier duel", "sword"], ["duel_10", "10 duels", "sword"], ["duel_50", "50 duels", "sword"], ["duel_100", "100 duels", "sword"],
+  ["win_1", "1re victoire", "trophy"], ["win_10", "10 victoires", "trophy"], ["win_50", "50 victoires", "trophy"], ["win_100", "100 victoires", "crown"],
+  ["streak_3", "3 victoires de suite", "fire"], ["streak_5", "Série de 5", "fire"], ["streak_10", "Série de 10", "fire"],
+  ["perfect_1", "Sans faute", "target"], ["perfect_10", "10 sans faute", "target"], ["rematch_1", "Revanche gagnée", "arrows"],
+  ["fairplay_20", "Fair-play (20 duels sans abandon)", "handshake"], ["khatma_1", "Khatma d'équipe", "users"], ["khatma_5", "5 khatmas d'équipe", "users"],
+  ["solo_10", "10 parties solo", "game"], ["solo_100", "100 parties solo", "game"],
+  ["grade_confirme", "Grade Confirmé", "medal"], ["grade_expert", "Grade Expert", "medal"], ["grade_elite", "Grade Élite", "medal"], ["grade_maitre", "Grade Maître", "medal"], ["grade_legende", "Grade Légende", "crown"],
+];
+export const badgeName = (id) => BADGES.find((b) => b[0] === id)?.[1] || id;
 
 /* ── Khatma d'équipe (lot J3) ── */
 export const TK_SCOPES = {

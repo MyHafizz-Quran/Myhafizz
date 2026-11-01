@@ -4,6 +4,7 @@ import pg from "pg";
 import webpush from "web-push";
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
 import { runDuelPush } from "./duels.mjs";
+import { sendPending } from "./notif.mjs";
 
 const WINDOW_MIN = 40; // tolérance si un passage est en retard
 const NAMES = { fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha" };
@@ -102,6 +103,7 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
       }
     }
     try { duels = await runDuelPush(db); } catch (e) { console.error("duels", e.message); }
+    try { duels = { ...duels, ...(await sendPending(db)) }; } catch (e) { console.error("notif", e.message); }
   } finally {
     await db.end();
   }
