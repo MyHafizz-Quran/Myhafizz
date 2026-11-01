@@ -63,6 +63,7 @@ import Partie from './pages/Partie.jsx';
 import Duel from './pages/Duel.jsx';
 import Equipe from './pages/Equipe.jsx';
 import Joueur from './pages/Joueur.jsx';
+import Defi from './pages/Defi.jsx';
 import Notifications from './pages/Notifications.jsx';
 import { NotifProvider } from './lib/notifs.jsx';
 const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
@@ -70,7 +71,7 @@ import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Joueur", "/Notifications", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Joueur", "/Notifications", "/Defi", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -177,6 +178,7 @@ const AuthenticatedApp = () => {
           <Route path="/Partie" element={<PartieRoute />} />
           <Route path="/Equipe" element={<Equipe />} />
           <Route path="/Joueur" element={<Joueur />} />
+          <Route path="/Defi" element={<Defi />} />
           <Route path="/Notifications" element={<Notifications />} />
           <Route path="/Duel" element={<Duel />} />
           <Route path="*" element={<PageNotFound />} />

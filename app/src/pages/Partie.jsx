@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat, Hourglass, SignOut } from "@phosphor-icons/react";
-import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, ldState, ldAnswer, ldQuit, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM } from "@/lib/games";
+import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat, Hourglass, SignOut, CalendarCheck } from "@phosphor-icons/react";
+import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, ldState, ldAnswer, ldQuit, dcStart, dcSubmit, dcAnswer, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM } from "@/lib/games";
 import { Profile } from "@/api/entities";
 import { speak, playUrl, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
@@ -64,7 +64,10 @@ export default function Partie() {
   const [ls, setLs] = useState(null);
   const [lsError, setLsError] = useState(null);
   const offset = useRef(0);
-  const { data: liveProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), enabled: !!liveId });
+  const defi = params.get("defi");
+  const { data: dc, error: dcError } = useQuery({ queryKey: ["defi-play"], queryFn: dcStart, enabled: !!defi, staleTime: Infinity, gcTime: 0, retry: 1 });
+  const t0 = useRef(null);
+  const { data: liveProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), enabled: !!liveId || !!defi });
   useEffect(() => {
     if (!liveId) return;
     let alive = true, t;
@@ -90,7 +93,7 @@ export default function Partie() {
   const G = GAMES[game];
   const levelN = Math.max(1, Math.min(G.levels.length, Number(params.get("l")) || 1));
   const liveAid = liveProfile?.arabic_level === "good" ? "ar" : liveProfile?.arabic_level === "some" ? "both" : "phon";
-  const lv = liveId ? { n: 1, aid: liveAid, timer: 0 } : G.levels.find((l) => l.n === levelN);
+  const lv = liveId || defi ? { n: 1, aid: liveAid, timer: 0 } : G.levels.find((l) => l.n === levelN);
   const robotN = Math.max(1, Math.min(3, Number(params.get("r")) || 2));
   const category = params.get("c") || "mix";
   const voice = hasArabicVoice();
@@ -101,13 +104,30 @@ export default function Partie() {
   const { data: built, isLoading: building, error: buildError } = useQuery({
     queryKey: ["game-items", game, levelN, category, seed, count, tkId, tkUnit],
     queryFn: () => (tkId && tk.scope !== "ilm" ? buildSurahGame(tkUnit, levelN, count) : buildGame(game, levelN, { count, category })),
-    enabled: !!settings && !duelId && (!tkId || (!!tk && (tk.scope === "ilm" || !!tkProfile))), staleTime: Infinity, gcTime: 0,
+    enabled: !!settings && !duelId && !defi && (!tkId || (!!tk && (tk.scope === "ilm" || !!tkProfile))), staleTime: Infinity, gcTime: 0,
   });
-  const items = liveId ? ls?.items : built;
-  const isLoading = liveId ? !ls?.items && !lsError : tkId ? (!tk && !tkError) || building : building;
-  const error = liveId ? lsError : tkError || buildError;
+  const items = liveId ? ls?.items : defi ? dc?.items : built;
+  const isLoading = liveId ? !ls?.items && !lsError : defi ? !dc && !dcError : tkId ? (!tk && !tkError) || building : building;
+  const error = liveId ? lsError : defi ? dcError : tkError || buildError;
   const tkName = tk ? tkUnitName(tk.scope, tkUnit, tkQuran) : "";
-  const exitTo = tkId ? `/Equipe?id=${tkId}` : "/Jouer";
+  const exitTo = tkId ? `/Equipe?id=${tkId}` : defi ? "/Defi" : "/Jouer";
+  // défi déjà relevé aujourd'hui : direction le résultat
+  useEffect(() => {
+    if (!dc) return;
+    if (dc.played || !dc.items) { navigate("/Defi", { replace: true }); return; }
+    if (!t0.current) {
+      t0.current = Date.now();
+      // reprise : on repart à la question suivante (les réponses déjà données sont gardées par le serveur)
+      const done = Math.min(dc.progress || 0, dc.items.length);
+      if (done >= dc.items.length) { submitDefi(); return; }
+      if (done > 0) { answers.current = Array.from({ length: done }, () => ({ ok: false })); setI(done); }
+    }
+  }, [dc]);
+  const submitDefi = async () => {
+    try { await dcSubmit(answers.current.map(({ ok, ms }) => ({ ok: !!ok, ms: ms || 0 })), Date.now() - (t0.current || Date.now())); } catch { /* compté comme joué côté serveur */ }
+    ["defi", "game-stats", "player"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+    navigate("/Defi", { replace: true });
+  };
   const rival = ls?.them?.username ? `@${ls.them.username}` : "Ton adversaire";
   const [submitted, setSubmitted] = useState(false);
   const [quitAsk, setQuitAsk] = useState(false);
@@ -192,6 +212,7 @@ export default function Partie() {
     const ok = forced === undefined ? isCorrect() : forced;
     const botOk = robotAnswers(rate);
     answers.current.push({ id: item.id || `${game}-${i}`, ok, timeout: !!timeout, ms: Date.now() - shownAt.current });
+    if (defi) dcAnswer(i, ok, Date.now() - shownAt.current);
     if (ok) setMe((x) => x + 1);
     if (botOk) setBot((x) => x + 1);
     setBotLast(botOk);
@@ -203,6 +224,7 @@ export default function Partie() {
   const next = async () => {
     haptic(); stopAudio();
     if (i + 1 >= items.length) {
+      if (defi) { setEnd({ saving: true, score: 0, total: items.length }); return submitDefi(); }
       const score = answers.current.filter((a) => a.ok).length;
       setEnd({ score, total: items.length, bot, saving: true });
       if (tkId) {
@@ -229,6 +251,7 @@ export default function Partie() {
   const mistakes = useMemo(() => (end && items ? items.filter((_, k) => answers.current[k] && !answers.current[k].ok) : []), [end]);  
 
   // ── Fin de partie (khatma d'équipe) ──
+  if (end && defi) return <div className="min-h-[100dvh] bg-background flex items-center justify-center"><p className="font-bold text-muted-foreground">Calcul de ton résultat…</p></div>;
   if (end && tkId) return <TkEnd end={end} tk={tk} name={tkName} quran={tkQuran} mistakes={mistakes} lv={lv} navigate={navigate} replay={replay} retry={() => { setI(items.length - 1); next(); }} />;
 
   // ── Fin de partie ──
@@ -269,7 +292,7 @@ export default function Partie() {
 
   const header = (
     <div className="max-w-xl mx-auto w-full px-4 h-14 flex items-center gap-3">
-      <button onClick={() => (liveId && ls?.status === "playing" ? setQuitAsk(true) : navigate(exitTo))} aria-label="Quitter la partie" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground press"><X weight="bold" className="w-6 h-6" /></button>
+      <button onClick={() => ((liveId && ls?.status === "playing") || (defi && items?.length) ? setQuitAsk(true) : navigate(exitTo))} aria-label="Quitter la partie" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground press"><X weight="bold" className="w-6 h-6" /></button>
       <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${items ? (i / items.length) * 100 : 0}%` }} /></div>
     </div>
   );
@@ -372,6 +395,15 @@ export default function Partie() {
           )}
         </>);
       }
+      case "hadith":
+        return (<>
+          <p className="text-[13px] font-extrabold text-muted-foreground">Hadith ou pas ? · Phrase {i + 1} / {items.length}</p>
+          <h2 className="text-[20px] font-black mb-4 leading-snug">Cette phrase est-elle un hadith authentique du Prophète ﷺ ?</h2>
+          <div className="card-flat p-5 text-center text-[18px] font-extrabold leading-relaxed">« {item.statement} »</div>
+          <div className="grid grid-cols-2 gap-3 mt-5">{[[1, "Pas un hadith"], [0, "Hadith authentique"]].map(([k, l]) => (
+            <Choice key={k} state={st(k)} onClick={() => pickV(k)}><span className="text-[15px] leading-tight">{l}</span></Choice>
+          ))}</div>
+        </>);
       case "ilm":
         return (<>
           <p className="text-[13px] font-extrabold text-muted-foreground">Al-Ilm · Question {i + 1} / {items.length}</p>
@@ -389,7 +421,11 @@ export default function Partie() {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {header}
-      {liveId ? <LiveBar ls={ls} now={now + offset.current} /> : (
+      {liveId ? <LiveBar ls={ls} now={now + offset.current} /> : defi ? (
+      <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between text-[14px] font-extrabold text-muted-foreground">
+        <span className="flex items-center gap-1.5"><CalendarCheck weight="fill" className="w-4 h-4 text-primary" />Défi du jour</span>
+        <span>Question {i + 1} sur {items.length}</span>
+      </div>) : (
       <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between text-[14px] font-extrabold">
         <span className="flex items-center gap-1.5"><User weight="fill" className="w-4 h-4 text-primary" />Toi {me}</span>
         {left != null && <span className={`flex items-center gap-1 ${left < 1.5 ? "text-destructive" : "text-muted-foreground"}`}><Timer weight="bold" className="w-4 h-4" />{left.toFixed(1)} s</span>}
@@ -432,11 +468,12 @@ export default function Partie() {
         <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
           <div className="bg-card rounded-3xl border-2 border-border p-5 w-full max-w-sm text-center">
             <span className="w-16 h-16 mx-auto rounded-full bg-destructive/10 text-destructive flex items-center justify-center"><SignOut weight="fill" className="w-8 h-8" /></span>
-            <p className="text-[20px] font-black mt-3">Quitter le duel ?</p>
-            <p className="font-semibold text-muted-foreground mt-1">Abandonner te retire <b className="text-destructive">{settings?.duel?.quit ?? 20} points</b> et donne la victoire à {rival}.</p>
+            <p className="text-[20px] font-black mt-3">{defi ? "Quitter le défi ?" : "Quitter le duel ?"}</p>
+            {defi ? <p className="font-semibold text-muted-foreground mt-1">Il n'y a qu'un essai par jour : tes réponses données jusqu'ici seront comptées.</p>
+              : <p className="font-semibold text-muted-foreground mt-1">Abandonner te retire <b className="text-destructive">{settings?.duel?.quit ?? 20} points</b> et donne la victoire à {rival}.</p>}
             <div className="grid gap-2.5 mt-4">
               <button onClick={() => setQuitAsk(false)} className="btn-relief h-[52px] bg-primary text-primary-foreground">Continuer à jouer</button>
-              <button onClick={async () => { setQuitAsk(false); try { await ldQuit(liveId); } catch { /* le serveur clôt de toute façon */ } navigate(`/Duel?id=${liveId}`, { replace: true }); }} className="h-[52px] rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold text-destructive">Quitter (−{settings?.duel?.quit ?? 20})</button>
+              <button onClick={async () => { setQuitAsk(false); if (defi) return submitDefi(); try { await ldQuit(liveId); } catch { /* le serveur clôt de toute façon */ } navigate(`/Duel?id=${liveId}`, { replace: true }); }} className="h-[52px] rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold text-destructive">{defi ? "Quitter et valider" : `Quitter (−${settings?.duel?.quit ?? 20})`}</button>
             </div>
           </div>
         </div>
@@ -504,6 +541,13 @@ function Correction({ item, lv, ok, compact }) {
         {!ok && !compact && <p className="mb-1">Le bon ordre :</p>}
         {compact && <p className="font-extrabold text-foreground">Sourate {item.surahName} ({item.surah})</p>}
         <ol className="space-y-1">{item.seq.map((v) => <li key={v.k} className="flex gap-2"><span className="font-black text-foreground shrink-0">{v.k}.</span><span className="min-w-0"><VerseText v={v} aid={lv.aid === "phon" ? "both" : lv.aid} size={19} /></span></li>)}</ol>
+      </div>);
+    case "hadith":
+      return (<div className={muted}>
+        {compact && <p className="font-extrabold text-foreground">« {item.statement} »</p>}
+        <p className="font-extrabold text-foreground">{item.answer === 0 ? "Hadith authentique" : "Ce n'est pas un hadith"}</p>
+        {item.explanation && <p className="mt-0.5">{item.explanation}</p>}
+        {item.source && <p className="mt-0.5 text-[12px] font-bold text-muted-foreground">Source : {item.source}</p>}
       </div>);
     case "ilm":
       return (<div className={muted}>

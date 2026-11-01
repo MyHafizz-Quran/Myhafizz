@@ -63,8 +63,16 @@ export const GAMES = {
       { n: 3, name: "Difficile", desc: "Pour les passionnés.", difficulty: 3 },
     ],
   },
+  hadith: {
+    title: "Hadith ou pas ?", hint: "Vrai hadith ou phrase populaire", icon: "hadith",
+    levels: [
+      { n: 1, name: "Les célèbres", desc: "Hadiths très connus et phrases populaires.", difficulty: 1 },
+      { n: 2, name: "Les pièges", desc: "Paroles de compagnons, versets, proverbes.", difficulty: 2 },
+      { n: 3, name: "Les faibles", desc: "Hadiths authentiques face aux hadiths faibles.", difficulty: 3 },
+    ],
+  },
 };
-export const GAME_ORDER = ["lettres", "ilm", "sourate", "suite", "ordre"];
+export const GAME_ORDER = ["lettres", "ilm", "hadith", "sourate", "suite", "ordre"];
 
 export const ILM_CATEGORIES = [
   ["sira", "Sira"], ["prophetes", "Prophètes"], ["coran", "Coran"], ["compagnons", "Compagnons"], ["histoire", "Histoire"],
@@ -79,7 +87,7 @@ export const ROBOT = [
 
 /** Niveau de départ selon le profil (on ne bloque jamais un bon lecteur au niveau 1). */
 export function startLevel(game, arabicLevel) {
-  if (game === "ilm") return 1;
+  if (game === "ilm" || game === "hadith") return 1;
   if (arabicLevel === "good") return 3;
   if (arabicLevel === "some") return 2;
   return 1;
@@ -92,11 +100,12 @@ export function unlockedLevel(game, progress, profile) {
 
 /* ── Données serveur ── */
 const DEFAULT_SETTINGS = {
-  games: { suite: true, sourate: true, ordre: true, lettres: true, ilm: true },
+  games: { suite: true, sourate: true, ordre: true, lettres: true, ilm: true, hadith: true },
   robot: { 1: 0.3, 2: 0.15, 3: 0.05 },
   rules: { questions: 5, ilm_questions: 10, unlock_pct: 80, flash_seconds: 3 },
   duel: { enabled: true, questions: 7, win: 30, draw: 5, loss: 10, quit: 20 },
   khatma: { enabled: true, days: [3, 7, 14], bonus: 50, pct: 80 },
+  defi: { enabled: true, questions: 5, per_good: 5, streak_step: 2, streak_max: 20 },
 };
 export async function loadSettings() {
   const { data } = await db.from("game_settings").select("key, value");
@@ -212,7 +221,7 @@ function ordreQuestions(quran, lv, count) {
 /** Al-Ilm : questions publiées de la base (catégorie et difficulté choisies). */
 async function ilmQuestions(lv, count, category) {
   let q = db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published");
-  if (category && category !== "mix") q = q.eq("category", category);
+  if (category && category !== "mix") q = q.eq("category", category); else q = q.neq("category", "hadith_vf");
   const { data, error } = await q.lte("difficulty", lv.difficulty).limit(400);
   if (error) throw error;
   const rows = data || [];
@@ -221,8 +230,24 @@ async function ilmQuestions(lv, count, category) {
   return shuffle(chosen).map((r) => ({ kind: "ilm", ...r }));
 }
 
+/** « Hadith ou pas ? » : phrases publiées par l'admin, au niveau choisi. */
+async function hadithQuestions(lv, count) {
+  const { data, error } = await db.from("game_questions").select("id, difficulty, question, answer, explanation, source, note").eq("status", "published").eq("category", "hadith_vf").lte("difficulty", lv.difficulty).limit(400);
+  if (error) throw error;
+  const rows = data || [];
+  const exact = shuffle(rows.filter((r) => r.difficulty === lv.difficulty));
+  const rest = shuffle(rows.filter((r) => r.difficulty !== lv.difficulty));
+  return [...exact, ...rest].slice(0, count).map((r) => ({ kind: "hadith", id: r.id, statement: r.question, answer: r.answer, explanation: r.explanation, source: r.source, note: r.note }));
+}
+
+export async function hadithCount() {
+  const { count } = await db.from("game_questions").select("id", { count: "exact", head: true }).eq("status", "published").eq("category", "hadith_vf");
+  return count || 0;
+}
+
 export async function buildGame(game, levelN, { count = 5, category } = {}) {
   const lv = GAMES[game].levels.find((l) => l.n === levelN) || GAMES[game].levels[0];
+  if (game === "hadith") return hadithQuestions(lv, Math.max(count, 10));
   if (game === "lettres") return lettersQuestions(lv, count);
   if (game === "ilm") return ilmQuestions(lv, count, category);
   const quran = await loadQuran();
@@ -259,7 +284,7 @@ export const pushNow = () => fetch(NOTIF_URL, { method: "POST" }).catch(() => {}
 /** 7 questions tirées au hasard dans tous les jeux, mélangés. Le serveur écarte celles déjà vues. */
 export async function buildDuelPool(n = 30, cfg = {}) {
   const quran = await loadQuran();
-  const { data } = await db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published").lte("difficulty", 2).limit(600);
+  const { data } = await db.from("game_questions").select("id, category, difficulty, type, question, choices, answer, explanation, source, note").eq("status", "published").neq("category", "hadith_vf").lte("difficulty", 2).limit(600);
   const ilm = shuffle(data || []);
   const r = (a) => a[Math.floor(Math.random() * a.length)];
   const out = [];
@@ -283,6 +308,21 @@ export async function ldInvite(username, rematchOf) {
   const id = await rpc("ld_invite", { p_username: username || "", p_candidates: pool, p_rematch_of: rematchOf || null });
   pushNow();
   return id;
+}
+
+/* ── Défi du jour ── */
+export const dcGet = (candidates) => rpc("dc_get", { p_candidates: candidates || null });
+export const dcStart = () => rpc("dc_start", {});
+export const dcAnswer = (k, ok, ms) => rpc("dc_answer", { p_k: k, p_ok: !!ok, p_ms: Math.round(ms || 0) }).catch(() => null);
+export const dcSubmit = (answers, ms) => rpc("dc_submit", { p_answers: answers, p_ms: Math.round(ms) });
+export const dcBoard = (scope) => rpc("dc_board", { p_scope: scope || "all" });
+/** Charge le défi du jour ; s'il n'existe pas encore, propose des questions faciles et mélangées. */
+export async function loadDefi() {
+  const d = await dcGet();
+  if (d.ready || !d.enabled) return d;
+  const st = await loadSettings().catch(() => ({}));
+  const pool = (await buildDuelPool(20, {})).filter((q) => q.kind !== "ordre" || q.seq.length <= 3);
+  return dcGet(pool.slice(0, Math.max(5, Number(st.defi?.questions) || 5)));
 }
 
 /** Grades façon Call of Duty : 7 grades à 3 échelons. */

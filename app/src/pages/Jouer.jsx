@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info } from "@phosphor-icons/react";
+import { Lightning, Fire, Lock, CaretRight, TextAa, BookOpenText, Headphones, ListNumbers, Lightbulb, Robot, ArrowLeft, Check, Info, SealCheck, CalendarCheck } from "@phosphor-icons/react";
 import { Profile } from "@/api/entities";
-import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats } from "@/lib/games";
+import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats, dcGet, hadithCount } from "@/lib/games";
 import { haptic } from "@/hooks/usePlatform";
 import { DuelsTab } from "@/pages/Duel";
 import { EquipeTab } from "@/pages/Equipe";
 
-const ICONS = { lettres: TextAa, suite: BookOpenText, sourate: Headphones, ordre: ListNumbers, ilm: Lightbulb };
+const ICONS = { lettres: TextAa, suite: BookOpenText, sourate: Headphones, ordre: ListNumbers, ilm: Lightbulb, hadith: SealCheck };
 
 export { unlockedLevel };
 
@@ -28,7 +28,8 @@ export default function Jouer() {
   const teamOn = settings?.khatma?.enabled !== false;
   const tabs = [["solo", "Solo"], duelsOn && ["duels", "Duels"], teamOn && ["equipe", "Équipe"]].filter(Boolean);
 
-  const enabled = GAME_ORDER.filter((g) => settings?.games?.[g] !== false);
+  const { data: nbHadith = 0 } = useQuery({ queryKey: ["hadith-count"], queryFn: hadithCount, staleTime: 300_000 });
+  const enabled = GAME_ORDER.filter((g) => settings?.games?.[g] !== false && (g !== "hadith" || nbHadith >= 10));
   const beginner = profile?.arabic_level === "none";
 
   const openGame = (g) => { haptic(); setOpen(g); setLevel(unlockedLevel(g, progress, profile)); };
@@ -101,6 +102,7 @@ export default function Jouer() {
         </div>
       </div>
       <p className="font-semibold text-muted-foreground mt-1">{tab === "duels" ? "Défie d'autres joueurs. Chaque erreur est expliquée." : tab === "equipe" ? "Révisez ensemble, en groupe ou en binôme." : "Joue à ton rythme contre l'ordinateur. Chaque erreur est expliquée."}</p>
+      {settings?.defi?.enabled !== false && <DefiCard />}
       {tabs.length > 1 && (
         <div className="mt-4 flex bg-muted rounded-2xl p-1 gap-1" role="tablist">
           {tabs.map(([k, l]) => (
@@ -136,8 +138,30 @@ export default function Jouer() {
           );
         })}
       </div>
-      <p className="text-center text-[13px] font-bold text-muted-foreground mt-6">Bientôt : défi du jour, ligues et tournois.</p>
+      <p className="text-center text-[13px] font-bold text-muted-foreground mt-6">Bientôt : ligues et tournois.</p>
       </>)}
     </div>
+  );
+}
+
+/** Carte du défi du jour, en haut de l'écran Jouer. */
+function DefiCard() {
+  const navigate = useNavigate();
+  const { data: d } = useQuery({ queryKey: ["defi"], queryFn: () => dcGet(), staleTime: 30_000 });
+  const hours = d ? Math.max(1, Math.round((Date.parse(d.next_at) - Date.parse(d.now)) / 3600e3)) : null;
+  const r = d?.result;
+  return (
+    <button onClick={() => { haptic(); navigate("/Defi"); }} className="w-full text-left card-flat p-4 mt-4 border-primary press">
+      <span className="flex items-center gap-3">
+        <span className="w-12 h-12 rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0"><CalendarCheck weight="fill" className="w-6 h-6" /></span>
+        <span className="flex-1 min-w-0"><span className="block font-extrabold text-[17px]">Défi du jour</span>
+          <span className="block text-[13px] font-semibold text-muted-foreground">{r ? `Relevé : ${r.score} / ${r.total} · ${r.rank}e sur ${d.players}` : `${d?.total || 5} questions · les mêmes pour tout le monde`}</span></span>
+        <CaretRight weight="bold" className="w-5 h-5 text-muted-foreground" />
+      </span>
+      <span className="flex gap-2 mt-3">
+        {d?.streak > 0 && <span className="h-7 px-2.5 rounded-lg bg-accent text-accent-foreground text-[12.5px] font-extrabold flex items-center gap-1"><Fire weight="fill" className="w-4 h-4 text-gold" />Série : {d.streak} j</span>}
+        {hours && <span className="h-7 px-2.5 rounded-lg bg-muted text-muted-foreground text-[12.5px] font-extrabold flex items-center">{r ? "Nouveau défi" : "Change"} dans {hours} h</span>}
+      </span>
+    </button>
   );
 }
