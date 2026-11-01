@@ -4,7 +4,7 @@ import { todayStr } from "@/lib/srs";
 import { loadSimilar } from "@/lib/similar";
 import { TajweedLegend } from "@/components/verseExtras";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2, Play, Pause, Repeat, Palette, Mic } from "@/components/icons";
 import { useToast } from "@/components/ui/use-toast";
@@ -33,7 +33,9 @@ const withTimeout = (promise, ms) => Promise.race([
 
 export default function Memorize() {
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
+  const routerLocation = useLocation();
+  // Lire l'URL par le routeur (window.location peut être en retard pendant une navigation rapide → sourate « null »)
+  const urlParams = new URLSearchParams(routerLocation.search);
   const surahParam = urlParams.get("surah");
   const surahNumber = surahParam ? parseInt(surahParam) : null;
   const surah = surahNumber ? SURAHS.find(s => s.number === surahNumber) : null;
@@ -146,6 +148,7 @@ export default function Memorize() {
   const aliveRef = useRef(true);
   useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; }; }, []);
   const fetchAndCacheVerses = useCallback(async (attempt = 0) => {
+    if (!surahNumber) return;
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -197,6 +200,7 @@ export default function Memorize() {
   }, [surahNumber]);
 
   useEffect(() => {
+    if (!surahNumber) return; // la redirection vers la dernière sourate lue arrive
     setLoadingVerses(true);
     setVerses([]);
     setVisibleCount(INITIAL_BATCH);

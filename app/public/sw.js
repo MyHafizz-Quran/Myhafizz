@@ -6,7 +6,7 @@
 //   • Neon Auth / Data API              → Network Only (auth/data, pass-through)
 
 // Version timestamp — update this on each deployment to bust stale caches.
-const SW_VERSION = "20261031-outils";
+const SW_VERSION = "20261101-csp";
 
 const CACHE_STATIC = `myhafizz-static-v${SW_VERSION}`;
 const CACHE_API = `myhafizz-api-v${SW_VERSION}`;
@@ -127,10 +127,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Any other external request → pass through to network explicitly
-  event.respondWith(fetch(request).catch(() =>
-    new Response("Network error", { status: 503 })
-  ));
+  // Toute autre requête externe (polices Google, photos Google, tafsir…) : le navigateur s'en charge lui-même.
+  // Passer par le service worker les soumettait à sa propre CSP (connect-src) figée à son installation.
+  return;
 });
 
 // ─── Strategies ──────────────────────────────────────────────────────────────
