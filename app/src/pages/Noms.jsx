@@ -53,7 +53,7 @@ function Grille() {
               <button key={x.n} onClick={() => { haptic(); navigate(`/Noms?n=${x.n}`); }}
                 className={`rounded-2xl border-2 border-b-4 p-2 text-center press min-w-0 ${ok ? "border-primary bg-accent/40" : "border-border bg-card"}`}>
                 <span className={`flex items-center gap-0.5 text-[11px] font-black ${ok ? "text-primary" : "text-muted-foreground"}`}>{x.n}{ok && <Check weight="bold" className="w-3 h-3" />}</span>
-                <span dir="rtl" lang="ar" className="block font-arabic text-[22px] leading-[1.7] truncate">{x.ar}</span>
+                <span dir="rtl" lang="ar" className={`block font-arabic pt-1 pb-1 ${x.ar.length > 14 ? "text-[15px] leading-[1.7]" : "text-[22px] leading-[1.9] whitespace-nowrap"}`}>{x.ar}</span>
                 <span className="block text-[12.5px] font-black truncate">{x.translit}</span>
                 <span className="block text-[11.5px] font-semibold text-muted-foreground leading-tight line-clamp-2 min-h-[2.4em]">{x.meaning}</span>
               </button>

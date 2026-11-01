@@ -35,3 +35,8 @@ reminders/.q.mjs
 reminders/.mig.mjs
 reminders/.t_extras.mjs
 reminders/.envrun.mjs
+reminders/.seedtest.mjs
+reminders/.dumpw.mjs
+reminders/.putw.mjs
+reminders/.dumpt.mjs
+reminders/.instf.mjs

@@ -23,7 +23,7 @@ export default function NameOfDay({ className = "" }) {
           </button>
         )}
       </div>
-      <p dir="rtl" lang="ar" className="font-arabic text-[40px] leading-[1.7] text-center mt-1">{x.ar}</p>
+      <p dir="rtl" lang="ar" className="font-arabic text-[40px] leading-[1.9] text-center mt-1 pb-1">{x.ar}</p>
       <p className="text-center font-black">{x.translit}</p>
       <p className="text-center text-[14px] font-semibold text-muted-foreground">{x.meaning}</p>
       <p className="text-[14px] font-semibold mt-2.5">{x.explanation}</p>
