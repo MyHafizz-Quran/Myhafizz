@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
+import { clearQueryCache } from '@/lib/query-client';
 import { db } from '@/api/neonClient';
 
 const AuthContext = createContext();
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     isManualLogout.current = true;
     await db.auth.signOut();
+    await clearQueryCache();
     isManualLogout.current = false;
     setUser(null);
     setIsAuthenticated(false);

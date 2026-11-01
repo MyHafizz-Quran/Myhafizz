@@ -6,12 +6,14 @@
 //   • Neon Auth / Data API              → Network Only (auth/data, pass-through)
 
 // Version timestamp — update this on each deployment to bust stale caches.
-const SW_VERSION = "20261101-csp";
+const SW_VERSION = "20261101-fluide";
 
 const CACHE_STATIC = `myhafizz-static-v${SW_VERSION}`;
 const CACHE_API = `myhafizz-api-v${SW_VERSION}`;
 // Audio cache is large and version-independent — keep a single name across deployments.
 const CACHE_AUDIO = "myhafizz-audio-v2";
+// Fichiers JS/CSS versionnés : noms uniques, gardés d'une version à l'autre (nettoyés au-delà de 200 entrées).
+const CACHE_ASSETS = "myhafizz-assets-v1";
 
 const STATIC_ASSETS = [
   "/",
@@ -58,7 +60,9 @@ self.addEventListener("install", (event) => {
 
 // ─── Activate ────────────────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
-  const validCaches = [CACHE_STATIC, CACHE_API, CACHE_AUDIO];
+  const validCaches = [CACHE_STATIC, CACHE_API, CACHE_AUDIO, CACHE_ASSETS];
+  // Garde le cache des fichiers versionnés raisonnable
+  caches.open(CACHE_ASSETS).then(async (c) => { const k = await c.keys(); for (const r of k.slice(0, Math.max(0, k.length - 200))) await c.delete(r); }).catch(() => {});
   event.waitUntil(
     caches.keys()
       .then((keys) =>
@@ -121,6 +125,11 @@ self.addEventListener("fetch", (event) => {
   if (url.origin === self.location.origin) {
     if (request.mode === "navigate") {
       event.respondWith(navigationHandler(request));
+      return;
+    }
+    // Fichiers versionnés de Vite (/assets/nom-hash.js) : ne changent jamais → cache d'abord, affichage immédiat
+    if (url.pathname.startsWith("/assets/")) {
+      event.respondWith(cacheFirst(request, CACHE_ASSETS));
       return;
     }
     event.respondWith(networkFirst(request, CACHE_STATIC));
