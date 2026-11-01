@@ -41,14 +41,14 @@ export default function TopHeader() {
   return (
     <>
       <div className="ios-scroll-edge" />
-      <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] flex items-center justify-between px-4 pointer-events-none"
+      <header className="fixed top-0 left-0 right-0 z-[var(--z-top-header)] bg-background flex items-center justify-between px-4"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4px)", height: "calc(var(--header-height) + env(safe-area-inset-top, 0px))" }}>
-        <span className="pointer-events-auto liquid-glass rounded-full h-11 pl-2 pr-3.5 flex items-center"><MhWordmark size={26} /></span>
-        <div className="flex gap-2.5 pointer-events-auto">
-          {!kid.on && <Link to="/Leaderboard" aria-label="Classement" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
+        <span className="rounded-full h-11 pl-2 pr-3.5 flex items-center"><MhWordmark size={26} /></span>
+        <div className="flex gap-2.5">
+          {!kid.on && <Link to="/Leaderboard" aria-label="Classement" onClick={() => haptic()} className="bg-card border-2 border-border w-11 h-11 rounded-full flex items-center justify-center press">
             <Trophy size={21} weight="bold" />
           </Link>}
-          <Link to="/Profile" aria-label="Profil" onClick={() => haptic()} className="liquid-glass w-11 h-11 rounded-full flex items-center justify-center press">
+          <Link to="/Profile" aria-label="Profil" onClick={() => haptic()} className="bg-card border-2 border-border w-11 h-11 rounded-full flex items-center justify-center press">
             <Avatar user={user} size={34} />
           </Link>
         </div>

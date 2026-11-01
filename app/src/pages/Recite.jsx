@@ -269,7 +269,7 @@ export default function Recite() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-[calc(env(safe-area-inset-bottom,0px)+24px)]">
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b-2 border-border pt-[env(safe-area-inset-top,0px)]">
+      <div className="sticky top-0 z-20 bg-background border-b-2 border-border pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center gap-2 px-3 h-14">
           <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-center press" aria-label="Retour"><CaretLeft weight="bold" className="w-6 h-6" /></button>
           <h1 className="font-extrabold text-lg flex-1">Réciter</h1>

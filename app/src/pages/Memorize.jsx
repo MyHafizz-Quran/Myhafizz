@@ -483,7 +483,7 @@ export default function Memorize() {
   return (
     <div className="min-h-screen bg-surface">
       {/* ─── EN-TÊTE ─── */}
-      <div className={`sticky top-0 z-[var(--z-page-header)] bg-background/95 backdrop-blur-md border-b-2 transition-colors ${scrolled ? "border-border" : "border-transparent"}`}>
+      <div className={`sticky top-0 z-[var(--z-page-header)] bg-background border-b-2 transition-colors ${scrolled ? "border-border" : "border-transparent"}`}>
         <div className="max-w-3xl mx-auto px-3 h-14 flex items-center gap-2">
           <button onClick={handleBack} aria-label="Retour" className="w-10 h-10 rounded-full flex items-center justify-center text-foreground hover:bg-muted press shrink-0">
             <ArrowLeft className="w-6 h-6" />

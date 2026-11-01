@@ -45,10 +45,10 @@ export default function PageHeader({ title, subtitle, back, right, className = "
 
   return (
     <>
-      <header className={`sticky top-0 z-30 -mx-4 px-4 transition-[background-color,border-color] lg:hidden border-b ${scrolled ? "bg-background/80 backdrop-blur-xl backdrop-saturate-150 border-border" : "bg-background border-transparent"}`} style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+      <header className={`sticky top-0 z-30 -mx-4 px-4 transition-[background-color,border-color] lg:hidden border-b ${scrolled ? "bg-background border-border" : "bg-background border-transparent"}`} style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div className="h-[52px] flex items-center gap-2">
           <div className="w-[88px] flex">
-            {back && <button onClick={goBack} aria-label="Retour" className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center press"><CaretLeft size={22} weight="bold" /></button>}
+            {back && <button onClick={goBack} aria-label="Retour" className="bg-card border-2 border-border w-10 h-10 rounded-full flex items-center justify-center press"><CaretLeft size={22} weight="bold" /></button>}
           </div>
           <p className={`flex-1 min-w-0 text-center truncate text-[17px] font-extrabold transition-opacity ${scrolled ? "opacity-100" : "opacity-0"}`}>{title}</p>
           <div className="w-[88px] flex justify-end items-center gap-2">{right}</div>

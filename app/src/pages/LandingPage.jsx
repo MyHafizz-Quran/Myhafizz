@@ -152,7 +152,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-[100dvh] bg-card text-foreground overflow-x-clip">
       {/* ─── Navigation ─── */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-card/95 backdrop-blur border-b-2 border-border pt-[env(safe-area-inset-top,0px)]">
+      <header className="fixed top-0 inset-x-0 z-50 bg-card border-b-2 border-border pt-[env(safe-area-inset-top,0px)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-5 h-16 flex items-center gap-2 sm:gap-4">
           <Link to="/" aria-label="MyHafizz" className="shrink-0"><MhWordmark size={28} /></Link>
           <nav className="hidden md:flex items-center gap-6 ml-6 font-extrabold text-muted-foreground">

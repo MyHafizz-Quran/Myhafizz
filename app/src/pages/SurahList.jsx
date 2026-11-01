@@ -145,7 +145,7 @@ export default function SurahList() {
       </div>
 
       {/* Recherche collante */}
-      <div className={`sticky top-0 z-30 transition-colors ${stuck ? "bg-background/90 backdrop-blur-md border-b-2 border-border" : ""}`}>
+      <div className={`sticky top-0 z-30 transition-colors ${stuck ? "bg-background border-b-2 border-border" : ""}`}>
         <div className="max-w-3xl mx-auto px-4 pb-2.5" style={{ paddingTop: stuck ? "calc(env(safe-area-inset-top, 0px) + 10px)" : "10px" }}>
           <div className="relative">
             <MagnifyingGlass weight="bold" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
