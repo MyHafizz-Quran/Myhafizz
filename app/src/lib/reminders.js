@@ -1,4 +1,5 @@
 import { track } from "@/lib/analytics";
+import { fcmToken } from "@/lib/fcm";
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
 import { getMethod, setLocation } from "@/lib/prayer";
 import { db } from "@/api/neonClient";
@@ -73,8 +74,10 @@ export async function saveReminder({ prayers, offset_min = 15, position }) {
   setLocation(pos);
   const reg = await navigator.serviceWorker.ready;
   const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(VAPID_PUBLIC_KEY) }));
+  const fcm_token = await fcmToken(reg, VAPID_PUBLIC_KEY);
   const row = {
     endpoint: sub.endpoint,
+    fcm_token,
     p256dh: toB64(sub.getKey("p256dh")),
     auth_key: toB64(sub.getKey("auth")),
     lat: pos.lat, lng: pos.lng,
@@ -93,4 +96,18 @@ export async function removeReminder() {
   if (!sub) return;
   await db.from("prayer_reminders").delete().eq("endpoint", sub.endpoint);
   await sub.unsubscribe().catch(() => {});
+}
+
+// Abonnés existants : rattache une fois le jeton Firebase à leur abonnement.
+export async function syncFcm() {
+  try {
+    if (pushSupport() !== "ok" || Notification.permission !== "granted") return;
+    const sub = await currentSub();
+    if (!sub) return;
+    const reg = await navigator.serviceWorker.ready;
+    const tok = await fcmToken(reg, VAPID_PUBLIC_KEY);
+    if (!tok || localStorage.getItem("mh_fcm") === tok) return;
+    const { error } = await db.from("prayer_reminders").update({ fcm_token: tok }).eq("endpoint", sub.endpoint);
+    if (!error) localStorage.setItem("mh_fcm", tok);
+  } catch { /* silencieux */ }
 }

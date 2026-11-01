@@ -2,6 +2,7 @@
 // Au maximum 3 notifications de duel par jour et par joueur ; au-delà, le joueur
 // retrouve tout dans l'onglet Duels (rien n'est renvoyé plus tard).
 import webpush from "web-push";
+import { sendPush } from "./pushsend.mjs";
 
 const DAILY_MAX = 3;
 const TITLES = { suite: "La suite du verset", sourate: "Quelle sourate ?", ordre: "Remets dans l'ordre", lettres: "Lettres éclair", ilm: "Al-Ilm" };
@@ -39,11 +40,11 @@ export async function runDuelPush(db) {
     if (!claimed) continue;
     const n = (await db.query("select count(*)::int n from public.duel_notifications where user_id = $1 and sent_at > now() - interval '1 day'", [j.uid])).rows[0].n;
     if (n >= DAILY_MAX) { skipped++; continue; }
-    const subs = (await db.query("select endpoint, p256dh, auth_key from public.prayer_reminders where user_id = $1", [j.uid])).rows;
+    const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token from public.prayer_reminders where user_id = $1", [j.uid])).rows;
     if (!subs.length) continue;
     let ok = false;
     for (const s of subs) {
-      try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth_key } }, JSON.stringify(j.msg), { TTL: 3600 }); ok = true; }
+      try { await sendPush(s, j.msg, { TTL: 3600 }); ok = true; }
       catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db.query("delete from public.prayer_reminders where endpoint = $1", [s.endpoint]); else console.error("duel push", e.statusCode || e.message); }
     }
     if (ok) { sent++; await db.query("insert into public.duel_notifications (user_id, duel_id, kind) values ($1, $2, $3)", [j.uid, j.id, j.kind]); }
@@ -58,10 +59,10 @@ const groupLabel = (r) => (r.kind === "duo" ? "ton binôme" : r.name);
 async function pushTo(db, uid, msg) {
   const n = (await db.query("select count(*)::int n from public.duel_notifications where user_id = $1 and sent_at > now() - interval '1 day'", [uid])).rows[0].n;
   if (n >= DAILY_MAX) return "capped";
-  const subs = (await db.query("select endpoint, p256dh, auth_key from public.prayer_reminders where user_id = $1", [uid])).rows;
+  const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token from public.prayer_reminders where user_id = $1", [uid])).rows;
   let ok = false;
   for (const s of subs) {
-    try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth_key } }, JSON.stringify(msg), { TTL: 3600 }); ok = true; }
+    try { await sendPush(s, msg, { TTL: 3600 }); ok = true; }
     catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db.query("delete from public.prayer_reminders where endpoint = $1", [s.endpoint]); else console.error("khatma push", e.statusCode || e.message); }
   }
   if (ok) await db.query("insert into public.duel_notifications (user_id, kind) values ($1, 'khatma')", [uid]);

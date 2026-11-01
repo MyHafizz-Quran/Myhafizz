@@ -2,6 +2,7 @@
 // la Neon Function (déclenchée toutes les 5 min) et le script de secours GitHub.
 import pg from "pg";
 import webpush from "web-push";
+import { sendPush } from "./pushsend.mjs";
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
 import { runDuelPush } from "./duels.mjs";
 import { sendPending } from "./notif.mjs";
@@ -67,7 +68,7 @@ export async function runReminders({ databaseUrl, vapidPublicKey, vapidPrivateKe
        where endpoint = $1 and (coalesce(last_sent->'cnt'->>'d', '') <> $2 or (last_sent->'cnt'->>'n')::int < $3)`, [endpoint, today, DAILY_CAP])).rowCount > 0;
     const push = async (r, msg) => {
       try {
-        await webpush.sendNotification({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth_key } }, JSON.stringify(msg), { TTL: 1800 });
+        await sendPush(r, msg, { TTL: 1800 });
         sent++; return true;
       } catch (e) {
         if (e.statusCode === 404 || e.statusCode === 410) { await db.query("delete from public.prayer_reminders where endpoint = $1", [r.endpoint]); removed++; return "gone"; }

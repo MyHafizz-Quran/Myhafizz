@@ -1,3 +1,4 @@
+import { syncFcm } from '@/lib/reminders';
 import VoiceSplash from './components/VoiceSplash.jsx';
 import { isStandalone } from '@/hooks/usePlatform';
 import React, { useRef, useEffect } from "react";
@@ -91,6 +92,7 @@ const AuthenticatedApp = () => {
   useEffect(() => { initAnalytics(); }, []);
   useEffect(() => { trackPage(location.pathname, location.search); }, [location.pathname, location.search]);
   useEffect(() => { if (user?.id) identify(user); }, [user?.id]);
+  useEffect(() => { if (user?.id) { const t = setTimeout(syncFcm, 4000); return () => clearTimeout(t); } }, [user?.id]);
   const platform = usePlatform();
   const path = location.pathname;
   const immersive = IMMERSIVE.some((p) => path.startsWith(p)) || (path === "/Tafsir" && /[?&]s=/.test(location.search)) || (path === "/Noms" && /[?&]quiz=/.test(location.search)) || (path === "/Tajwid" && /[?&]u=/.test(location.search));

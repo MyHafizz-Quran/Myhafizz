@@ -215,6 +215,8 @@ async function navigationHandler(request) {
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch { data = { body: event.data && event.data.text() }; }
+  // Envoi via Firebase Cloud Messaging : le message est dans data.mh
+  if (data && data.data && data.data.mh) { try { data = JSON.parse(data.data.mh); } catch { data = {}; } }
   const title = data.title || "MyHafizz";
   event.waitUntil(self.registration.showNotification(title, {
     body: data.body || "Ta séance du jour t'attend.",

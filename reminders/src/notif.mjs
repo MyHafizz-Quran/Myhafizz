@@ -2,6 +2,7 @@
 // Appelée par l'app juste après un défi (sans données : elle ne fait qu'écouler la file), et par les rappels toutes les 5 min.
 import pg from "pg";
 import webpush from "web-push";
+import { sendPush } from "./pushsend.mjs";
 
 const ORIGINS = ["https://myhafizz.com", "https://www.myhafizz.com", "https://myhafizz.vercel.app", "http://localhost:5173"];
 const pool = new pg.Pool({ connectionString: process.env.REMINDER_DATABASE_URL, max: 2 });
@@ -31,9 +32,9 @@ export async function sendPending(db) {
             ? { title: `Tu montes en ligue ${TIERS[(n.data?.new_tier || 2) - 1]}`, body: `Tu as fini ${n.data?.pos}e sur ${n.data?.players}. Belle semaine !`, url: "/Ligue", tag: "mh-ligue" }
             : null;
     if (!msg) continue;
-    const subs = (await db.query("select endpoint, p256dh, auth_key from public.prayer_reminders where user_id = $1", [n.user_id])).rows;
+    const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token from public.prayer_reminders where user_id = $1", [n.user_id])).rows;
     for (const s of subs) {
-      try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth_key } }, JSON.stringify(msg), { TTL: 60, urgency: "high" }); sent++; }
+      try { await sendPush(s, msg, { TTL: 60, urgency: "high" }); sent++; }
       catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db.query("delete from public.prayer_reminders where endpoint = $1", [s.endpoint]); else console.error("notif push", e.statusCode || e.message); }
     }
   }
