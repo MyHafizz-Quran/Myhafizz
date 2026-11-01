@@ -6,6 +6,7 @@ import { Profile } from "@/api/entities";
 import { GAMES, GAME_ORDER, ROBOT, ILM_CATEGORIES, unlockedLevel, loadSettings, loadProgress, loadStats } from "@/lib/games";
 import { haptic } from "@/hooks/usePlatform";
 import { DuelsTab } from "@/pages/Duel";
+import { EquipeTab } from "@/pages/Equipe";
 
 const ICONS = { lettres: TextAa, suite: BookOpenText, sourate: Headphones, ordre: ListNumbers, ilm: Lightbulb };
 
@@ -21,9 +22,11 @@ export default function Jouer() {
   const [level, setLevel] = useState(1);
   const [robot, setRobot] = useState(2);
   const [cat, setCat] = useState("mix");
-  const [tab, setTabState] = useState(() => (new URLSearchParams(window.location.search).get("tab") === "duels" ? "duels" : "solo"));
-  const setTab = (t) => { haptic(); setTabState(t); window.history.replaceState(null, "", t === "duels" ? "/Jouer?tab=duels" : "/Jouer"); };
+  const [tab, setTabState] = useState(() => { const t = new URLSearchParams(window.location.search).get("tab"); return ["duels", "equipe"].includes(t) ? t : "solo"; });
+  const setTab = (t) => { haptic(); setTabState(t); window.history.replaceState(null, "", t === "solo" ? "/Jouer" : `/Jouer?tab=${t}`); };
   const duelsOn = settings?.duel?.enabled !== false;
+  const teamOn = settings?.khatma?.enabled !== false;
+  const tabs = [["solo", "Solo"], duelsOn && ["duels", "Duels"], teamOn && ["equipe", "Équipe"]].filter(Boolean);
 
   const enabled = GAME_ORDER.filter((g) => settings?.games?.[g] !== false);
   const beginner = profile?.arabic_level === "none";
@@ -97,15 +100,15 @@ export default function Jouer() {
           <span className="h-9 px-3 rounded-xl bg-card border-2 border-border flex items-center gap-1.5 font-extrabold"><Lightning weight="fill" className="w-5 h-5 text-gold" />{stats.xp}</span>
         </div>
       </div>
-      <p className="font-semibold text-muted-foreground mt-1">{tab === "duels" ? "Défie d'autres joueurs. Chaque erreur est expliquée." : "Joue à ton rythme contre l'ordinateur. Chaque erreur est expliquée."}</p>
-      {duelsOn && (
+      <p className="font-semibold text-muted-foreground mt-1">{tab === "duels" ? "Défie d'autres joueurs. Chaque erreur est expliquée." : tab === "equipe" ? "Révisez ensemble, en groupe ou en binôme." : "Joue à ton rythme contre l'ordinateur. Chaque erreur est expliquée."}</p>
+      {tabs.length > 1 && (
         <div className="mt-4 flex bg-muted rounded-2xl p-1 gap-1" role="tablist">
-          {[["solo", "Solo"], ["duels", "Duels"]].map(([k, l]) => (
+          {tabs.map(([k, l]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex-1 h-10 rounded-xl font-extrabold text-[14px] ${tab === k ? "bg-card text-accent-foreground shadow-[0_2px_0_var(--border)]" : "text-muted-foreground"}`}>{l}</button>
           ))}
         </div>
       )}
-      {duelsOn && tab === "duels" ? <DuelsTab /> : (<>
+      {duelsOn && tab === "duels" ? <DuelsTab /> : teamOn && tab === "equipe" ? <EquipeTab /> : (<>
 
       {beginner && (
         <div className="card-flat p-3.5 mt-4 flex items-start gap-3">

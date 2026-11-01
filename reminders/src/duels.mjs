@@ -48,5 +48,50 @@ export async function runDuelPush(db) {
     }
     if (ok) { sent++; await db.query("insert into public.duel_notifications (user_id, duel_id, kind) values ($1, $2, $3)", [j.uid, j.id, j.kind]); }
   }
-  return { duel_sent: sent, duel_capped: skipped };
+  const k = await runKhatmaPush(db);
+  return { duel_sent: sent, duel_capped: skipped, ...k };
+}
+
+const SCOPE = { amma: "Juz Amma", tabarak: "Juz Tabarak", ilm: "Al-Ilm" };
+const groupLabel = (r) => (r.kind === "duo" ? "ton binôme" : r.name);
+
+async function pushTo(db, uid, msg) {
+  const n = (await db.query("select count(*)::int n from public.duel_notifications where user_id = $1 and sent_at > now() - interval '1 day'", [uid])).rows[0].n;
+  if (n >= DAILY_MAX) return "capped";
+  const subs = (await db.query("select endpoint, p256dh, auth_key from public.prayer_reminders where user_id = $1", [uid])).rows;
+  let ok = false;
+  for (const s of subs) {
+    try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth_key } }, JSON.stringify(msg), { TTL: 3600 }); ok = true; }
+    catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db.query("delete from public.prayer_reminders where endpoint = $1", [s.endpoint]); else console.error("khatma push", e.statusCode || e.message); }
+  }
+  if (ok) await db.query("insert into public.duel_notifications (user_id, kind) values ($1, 'khatma')", [uid]);
+  return ok ? "sent" : "none";
+}
+
+// Khatma d'équipe : un message au lancement (aux autres membres), un message à la fin (à tous).
+export async function runKhatmaPush(db) {
+  let sent = 0;
+  const start = (await db.query(`
+    select k.id, k.scope, k.created_by, g.id as gid, g.name, g.kind, p.username as by_name
+    from public.team_khatmas k join public.study_groups g on g.id = k.group_id left join public.profiles p on p.id = k.created_by
+    where k.status = 'active' and k.notified_start_at is null and k.created_at > now() - interval '1 day' limit 50`)).rows;
+  const fin = (await db.query(`
+    select k.id, k.scope, g.id as gid, g.name, g.kind
+    from public.team_khatmas k join public.study_groups g on g.id = k.group_id
+    where k.status = 'done' and k.notified_done_at is null and k.finished_at > now() - interval '1 day' limit 50`)).rows;
+  for (const [rows, col, msgOf, skipCreator] of [
+    [start, "notified_start_at", (r) => ({ title: `Khatma d'équipe : ${SCOPE[r.scope]}`, body: `@${r.by_name || "un membre"} lance une khatma avec ${groupLabel(r)}. Valide ta première sourate.`, url: `/Equipe?id=${r.id}`, tag: `mh-tk-${r.id}` }), true],
+    [fin, "notified_done_at", (r) => ({ title: `${SCOPE[r.scope]} terminé`, body: `${r.kind === "duo" ? "Ton binôme et toi avez" : `${r.name} a`} tout validé. +points pour chacun, qu'Allah l'accepte.`, url: `/Equipe?id=${r.id}`, tag: `mh-tk-${r.id}` }), false],
+  ]) {
+    for (const r of rows) {
+      const claimed = (await db.query(`update public.team_khatmas set ${col} = now() where id = $1 and ${col} is null`, [r.id])).rowCount > 0;
+      if (!claimed) continue;
+      const members = (await db.query("select user_id from public.group_members where group_id = $1", [r.gid])).rows;
+      for (const m of members) {
+        if (skipCreator && m.user_id === r.created_by) continue;
+        if ((await pushTo(db, m.user_id, msgOf(r))) === "sent") sent++;
+      }
+    }
+  }
+  return { khatma_sent: sent };
 }

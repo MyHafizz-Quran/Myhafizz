@@ -108,7 +108,7 @@ BEGIN
   -- série : jours consécutifs avec au moins une partie (aujourd'hui compris)
   WITH d AS (
     SELECT DISTINCT (created_at AT TIME ZONE 'UTC')::DATE AS day FROM game_sessions
-    WHERE user_id = uid AND created_at > NOW() - INTERVAL '60 days'
+    WHERE user_id = uid AND total > 0 AND created_at > NOW() - INTERVAL '60 days'
     UNION SELECT (NOW() AT TIME ZONE 'UTC')::DATE
   ), g AS (SELECT day, day + (ROW_NUMBER() OVER (ORDER BY day DESC))::INT AS grp FROM d)
   SELECT COUNT(*) INTO days FROM g WHERE grp = (SELECT grp FROM g WHERE day = (NOW() AT TIME ZONE 'UTC')::DATE);

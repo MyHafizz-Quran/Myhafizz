@@ -96,6 +96,7 @@ const DEFAULT_SETTINGS = {
   robot: { 1: 0.3, 2: 0.15, 3: 0.05 },
   rules: { questions: 5, ilm_questions: 10, unlock_pct: 80, flash_seconds: 3 },
   duel: { enabled: true, hours: 24, win_bonus: 20 },
+  khatma: { enabled: true, days: [3, 7, 14], bonus: 50, pct: 80 },
 };
 export async function loadSettings() {
   const { data } = await db.from("game_settings").select("key, value");
@@ -109,9 +110,9 @@ export async function loadProgress() {
 }
 export async function loadStats() {
   const since = new Date(Date.now() - 60 * 864e5).toISOString();
-  const { data } = await db.from("game_sessions").select("xp, created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(1000);
+  const { data } = await db.from("game_sessions").select("xp, total, created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(1000);
   const rows = data || [];
-  const days = new Set(rows.map((r) => r.created_at.slice(0, 10)));
+  const days = new Set(rows.filter((r) => r.total > 0).map((r) => r.created_at.slice(0, 10))); // les bonus (duel, khatma) ne comptent pas comme un jour joué
   let streak = 0;
   for (let d = new Date(); ; d = new Date(d - 864e5)) {
     const k = d.toISOString().slice(0, 10);
@@ -261,4 +262,35 @@ export function duelState(d) {
   if (d.status === "done") return "done";
   if (!d.me) return "play";
   return "waiting";
+}
+
+/* ── Khatma d'équipe (lot J3) ── */
+export const TK_SCOPES = {
+  amma: { title: "Juz Amma", unit: "sourate", from: 78, to: 114 },
+  tabarak: { title: "Juz Tabarak", unit: "sourate", from: 67, to: 77 },
+  ilm: { title: "Al-Ilm", unit: "thème" },
+};
+export const TK_ILM = ILM_CATEGORIES.filter(([k]) => k !== "mix"); // unité 1 à 9
+export const tkList = () => rpc("tk_list", {});
+export const tkGet = (id) => rpc("tk_get", { p_id: id });
+export const tkCreate = (group, scope, days) => rpc("tk_create", { p_group: group, p_scope: scope, p_days: days });
+export const tkValidate = (id, unit, score, total) => rpc("tk_validate", { p_id: id, p_unit: unit, p_score: score, p_total: total });
+/** Nom d'une unité : sourate (nom latin) ou thème Al-Ilm. */
+export function tkUnitName(scope, unit, quran) {
+  if (scope === "ilm") return TK_ILM[unit - 1]?.[1] || `Thème ${unit}`;
+  return quran?.find((s) => s.n === unit)?.name || `Sourate ${unit}`;
+}
+/** Niveau d'aide pour jouer une sourate : phonétique, arabe + phonétique, ou arabe seul. */
+export const tkLevel = (arabicLevel) => (arabicLevel === "good" ? 3 : arabicLevel === "some" ? 2 : 1);
+/** Partie sur une seule sourate : versets à enchaîner, puis versets à remettre dans l'ordre. */
+export async function buildSurahGame(n, levelN, count = 5) {
+  const quran = await loadQuran();
+  const s = quran.find((x) => x.n === n);
+  if (!s) throw new Error("Sourate introuvable.");
+  const lv = { ...GAMES.suite.levels.find((l) => l.n === levelN), from: n, to: n };
+  const nSuite = Math.min(count - 1, s.v.length - 1);
+  const suite = suiteQuestions(quran, lv, nSuite);
+  const per = Math.min(s.v.length, levelN >= 3 ? 4 : 3);
+  const ordre = ordreQuestions(quran, { ...lv, count: per }, Math.max(1, Math.min(count - suite.length, s.v.length - per + 1)));
+  return [...suite, ...ordre].slice(0, count);
 }

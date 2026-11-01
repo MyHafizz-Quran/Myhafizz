@@ -61,11 +61,13 @@ import Lecon from './pages/Lecon.jsx';
 import Jouer from './pages/Jouer.jsx';
 import Partie from './pages/Partie.jsx';
 import Duel from './pages/Duel.jsx';
+import Equipe from './pages/Equipe.jsx';
+const PartieRoute = () => { const loc = useLocation(); return <Partie key={loc.search} />; };
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Duel", "/Equipe", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -175,7 +177,8 @@ const AuthenticatedApp = () => {
           <Route path="/Lire" element={<Lire />} />
           <Route path="/Lecon" element={<Lecon />} />
           <Route path="/Jouer" element={<Jouer />} />
-          <Route path="/Partie" element={<Partie />} />
+          <Route path="/Partie" element={<PartieRoute />} />
+          <Route path="/Equipe" element={<Equipe />} />
           <Route path="/Duel" element={<Duel />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>

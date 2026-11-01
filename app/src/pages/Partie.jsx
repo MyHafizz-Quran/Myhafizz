@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer } from "@phosphor-icons/react";
-import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, duelGet, duelSubmit } from "@/lib/games";
+import { X, SpeakerHigh, CheckCircle, XCircle, Robot, User, Sword, Lightning, Target, Fire, LockOpen, ArrowCounterClockwise, Timer, UsersThree, Medal, CheckFat } from "@phosphor-icons/react";
+import { GAMES, ROBOT, AUDIO, L, buildGame, loadSettings, finishGame, robotAnswers, surahFr, duelGet, duelSubmit, tkGet, tkValidate, tkLevel, tkUnitName, buildSurahGame, loadQuran, TK_ILM } from "@/lib/games";
+import { Profile } from "@/api/entities";
 import { speak, playUrl, stopAudio, hasArabicVoice } from "@/lib/qaida";
 import { haptic } from "@/hooks/usePlatform";
 
@@ -58,6 +59,16 @@ export default function Partie() {
   const duelId = params.get("duel");
   const { data: duel, error: duelError } = useQuery({ queryKey: ["duel-play", duelId], queryFn: () => duelGet(duelId), enabled: !!duelId, staleTime: Infinity, gcTime: 0 });
   if (duel) { params.set("g", duel.game); params.set("l", String(duel.level)); params.set("c", duel.category || "mix"); }
+  // Khatma d'équipe : une partie sur une sourate (ou un thème Al-Ilm) pour l'équipe
+  const tkId = params.get("tk");
+  const tkUnit = Number(params.get("u")) || 0;
+  const { data: tk, error: tkError } = useQuery({ queryKey: ["tk", tkId], queryFn: () => tkGet(tkId), enabled: !!tkId, staleTime: 30_000 });
+  const { data: tkProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), enabled: !!tkId });
+  const { data: tkQuran } = useQuery({ queryKey: ["quran-names"], queryFn: loadQuran, enabled: !!tkId, staleTime: Infinity });
+  if (tk) {
+    if (tk.scope === "ilm") { params.set("g", "ilm"); params.set("l", "1"); params.set("c", TK_ILM[tkUnit - 1]?.[0] || "mix"); }
+    else { params.set("g", "suite"); params.set("l", String(tkLevel(tkProfile?.arabic_level))); }
+  }
   const game = GAMES[params.get("g")] ? params.get("g") : "lettres";
   const G = GAMES[game];
   const levelN = Math.max(1, Math.min(G.levels.length, Number(params.get("l")) || 1));
@@ -70,13 +81,15 @@ export default function Partie() {
   const count = game === "ilm" ? settings?.rules?.ilm_questions ?? 10 : settings?.rules?.questions ?? 5;
   const [seed, setSeed] = useState(0);
   const { data: built, isLoading: building, error: buildError } = useQuery({
-    queryKey: ["game-items", game, levelN, category, seed, count],
-    queryFn: () => buildGame(game, levelN, { count, category }),
-    enabled: !!settings && !duelId, staleTime: Infinity, gcTime: 0,
+    queryKey: ["game-items", game, levelN, category, seed, count, tkId, tkUnit],
+    queryFn: () => (tkId && tk.scope !== "ilm" ? buildSurahGame(tkUnit, levelN, count) : buildGame(game, levelN, { count, category })),
+    enabled: !!settings && !duelId && (!tkId || (!!tk && (tk.scope === "ilm" || !!tkProfile))), staleTime: Infinity, gcTime: 0,
   });
   const items = duelId ? duel?.items : built;
-  const isLoading = duelId ? !duel && !duelError : building;
-  const error = duelId ? duelError : buildError;
+  const isLoading = duelId ? !duel && !duelError : tkId ? (!tk && !tkError) || building : building;
+  const error = duelId ? duelError : tkError || buildError;
+  const tkName = tk ? tkUnitName(tk.scope, tkUnit, tkQuran) : "";
+  const exitTo = tkId ? `/Equipe?id=${tkId}` : "/Jouer";
   const them = duel?.them?.answers || null;
   const rival = duel?.other?.username ? `@${duel.other.username}` : "Ton adversaire";
   const shownAt = useRef(Date.now());
@@ -163,6 +176,15 @@ export default function Partie() {
         } catch { setEnd({ score, total: items.length, bot, offline: true, duel: true }); }
         return;
       }
+      if (tkId) {
+        try {
+          const v = await tkValidate(tkId, tkUnit, score, items.length);
+          const r = await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok }))).catch(() => ({}));
+          setEnd({ score, total: items.length, bot, ...r, tk: v });
+          ["game-progress", "game-stats", "tk", "tk-list"].forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+        } catch { setEnd({ score, total: items.length, bot, offline: true, tkRetry: true }); }
+        return;
+      }
       try {
         const r = await finishGame(game, levelN, answers.current.map(({ id, ok }) => ({ id, ok })));
         setEnd({ score, total: items.length, bot, ...r });
@@ -176,6 +198,9 @@ export default function Partie() {
   const replay = () => { answers.current = []; setI(0); setMe(0); setBot(0); setChoice(null); setOrder([]); setResult(null); setEnd(null); setSeed((s) => s + 1); };
 
   const mistakes = useMemo(() => (end && items ? items.filter((_, k) => answers.current[k] && !answers.current[k].ok) : []), [end]);  
+
+  // ── Fin de partie (khatma d'équipe) ──
+  if (end && tkId) return <TkEnd end={end} tk={tk} name={tkName} quran={tkQuran} mistakes={mistakes} lv={lv} navigate={navigate} replay={replay} retry={() => { setI(items.length - 1); next(); }} />;
 
   // ── Fin de partie ──
   if (end) {
@@ -215,7 +240,7 @@ export default function Partie() {
 
   const header = (
     <div className="max-w-xl mx-auto w-full px-4 h-14 flex items-center gap-3">
-      <button onClick={() => navigate("/Jouer")} aria-label="Quitter la partie" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground press"><X weight="bold" className="w-6 h-6" /></button>
+      <button onClick={() => navigate(exitTo)} aria-label="Quitter la partie" className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-muted-foreground press"><X weight="bold" className="w-6 h-6" /></button>
       <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${items ? (i / items.length) * 100 : 0}%` }} /></div>
     </div>
   );
@@ -336,7 +361,7 @@ export default function Partie() {
       <div className="max-w-xl mx-auto w-full px-4 flex items-center justify-between text-[14px] font-extrabold">
         <span className="flex items-center gap-1.5"><User weight="fill" className="w-4 h-4 text-primary" />Toi {me}</span>
         {left != null && <span className={`flex items-center gap-1 ${left < 1.5 ? "text-destructive" : "text-muted-foreground"}`}><Timer weight="bold" className="w-4 h-4" />{left.toFixed(1)} s</span>}
-        <span className="flex items-center gap-1.5 text-muted-foreground">{duelId ? <><Sword weight="fill" className="w-4 h-4" />{rival} {them ? bot : "·"}</> : <><Robot weight="fill" className="w-4 h-4" />Robot {ROBOT[robotN - 1].name.toLowerCase()} {bot}</>}{botLast != null && <span className={botLast ? "text-primary" : "text-destructive"}>{botLast ? " ✓" : " ✗"}</span>}</span>
+        <span className="flex items-center gap-1.5 text-muted-foreground">{tkId ? <><UsersThree weight="fill" className="w-4 h-4" />{tkName}</> : duelId ? <><Sword weight="fill" className="w-4 h-4" />{rival} {them ? bot : "·"}</> : <><Robot weight="fill" className="w-4 h-4" />Robot {ROBOT[robotN - 1].name.toLowerCase()} {bot}</>}{!tkId && botLast != null && <span className={botLast ? "text-primary" : "text-destructive"}>{botLast ? " ✓" : " ✗"}</span>}</span>
       </div>
       <div className="flex-1 max-w-xl mx-auto w-full px-4 pt-4 pb-72">{body()}</div>
 
@@ -407,4 +432,49 @@ function Correction({ item, lv, ok, compact }) {
       </div>);
     default: return null;
   }
+}
+
+/** Fin d'une partie de khatma d'équipe : sourate validée (ou pas encore), progression de l'équipe. */
+function TkEnd({ end, tk, name, quran, mistakes, lv, navigate, replay, retry }) {
+  const v = end.tk;
+  const pct = Math.round((end.score / end.total) * 100);
+  const nextName = v?.next ? tkUnitName(tk?.scope, v.next, quran) : null;
+  const unitWord = tk?.scope === "ilm" ? "thème" : "sourate";
+  const title = end.offline ? "Partie non envoyée" : v?.finished ? "Khatma terminée" : v?.validated ? `${name} validée` : v?.already ? `${name} déjà validée` : v?.status && v.status !== "active" ? "Khatma close" : "Pas encore validée";
+  const sub = end.offline ? "Pas de connexion. Reste sur cette page et réessaie."
+    : v?.finished ? `Toute l'équipe gagne +${v.bonus} points. Qu'Allah l'accepte de vous.`
+    : v?.validated ? `${end.score} / ${end.total} bonnes réponses · ${pct} %. Ta part fait avancer l'équipe.`
+    : v?.already ? `${end.score} / ${end.total} · cette ${unitWord} était déjà validée par l'équipe. Bon entraînement.`
+    : v?.status && v.status !== "active" ? `${end.score} / ${end.total} · cette khatma n'accepte plus de parties.`
+    : `${end.score} / ${end.total} · ${pct} %. Il faut ${v?.pct ?? 80} % pour valider. Revois les corrections et retente.`;
+  const good = v?.validated || v?.finished;
+  return (
+    <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
+      <div className="flex-1 max-w-md mx-auto w-full px-6 pt-10 text-center">
+        <div className={`w-24 h-24 mx-auto rounded-3xl flex items-center justify-center ${v?.finished ? "bg-gold-tint text-gold" : good ? "bg-primary text-primary-foreground shadow-[0_5px_0_var(--primary-lip)]" : "bg-muted text-muted-foreground"}`}>
+          {v?.finished ? <Medal weight="fill" className="w-12 h-12" /> : good ? <CheckFat weight="fill" className="w-12 h-12" /> : <ArrowCounterClockwise weight="bold" className="w-11 h-11" />}
+        </div>
+        <h1 className="text-[28px] font-black mt-6">{title}</h1>
+        <p className="font-semibold text-muted-foreground mt-1">{sub}</p>
+        {v && (
+          <div className="card-flat p-4 mt-6 text-left">
+            <div className="flex items-center gap-3"><div className="flex-1 h-3 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary" style={{ width: `${(v.done / v.total) * 100}%` }} /></div><b>{v.done} / {v.total}</b></div>
+            <p className="text-[13px] font-semibold text-muted-foreground mt-2">{v.finished || v.done >= v.total ? `${tk?.group?.name || "L'équipe"} a tout validé.` : `Encore ${v.total - v.done} ${unitWord}${v.total - v.done > 1 ? "s" : ""} pour ${tk?.group?.name || "l'équipe"}.`}</p>
+          </div>
+        )}
+        {end.offline && <button onClick={retry} className="btn-relief h-[52px] w-full mt-4 bg-primary text-primary-foreground">Réessayer l'envoi</button>}
+        {mistakes.length > 0 && (
+          <div className="text-left mt-6">
+            <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground mb-2">À retenir</p>
+            <div className="space-y-2.5">{mistakes.map((it, k) => <div key={k} className="card-flat p-3.5"><Correction item={it} lv={lv} compact /></div>)}</div>
+          </div>
+        )}
+      </div>
+      <div className="px-4 max-w-md mx-auto w-full space-y-3 mt-6">
+        {!end.offline && !good && !v?.already && v?.status === "active" && <button onClick={replay} className="btn-relief h-[52px] w-full bg-primary text-primary-foreground">Retenter {name}</button>}
+        {!end.offline && v?.status === "active" && nextName && (good || v?.already) && <button onClick={() => navigate(`/Partie?tk=${tk.id}&u=${v.next}`, { replace: true })} className="btn-relief h-[52px] w-full bg-primary text-primary-foreground">{unitWord === "thème" ? "Thème suivant" : "Sourate suivante"} : {nextName}</button>}
+        <button onClick={() => navigate(`/Equipe?id=${tk?.id}`, { replace: true })} className="h-[52px] w-full rounded-2xl border-2 border-b-[5px] border-border bg-card font-extrabold">Retour à la khatma</button>
+      </div>
+    </div>
+  );
 }
