@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play, MagnifyingGlass, GraduationCap } from "@phosphor-icons/react";
+import { House, BookOpen, Brain, UsersThree, Trophy, Ranking, BookmarkSimple, GearSix, Question, Pause, Play, MagnifyingGlass, GraduationCap, GameController } from "@phosphor-icons/react";
 import { useKidMode } from "@/lib/kidMode";
 import { MhWordmark } from "@/components/MhLogo";
 import { useAuth } from "@/lib/AuthContext";
@@ -16,6 +16,7 @@ const MAIN = [
   { to: "/Groups", icon: UsersThree, label: "Groupes", match: (p) => p.startsWith("/Group") },
 ];
 const MORE = [
+  { to: "/Jouer", icon: GameController, label: "Jouer", match: (p) => p.startsWith("/Jouer") || p.startsWith("/Partie") },
   { to: "/Challenges", icon: Trophy, label: "Défis" },
   { to: "/Leaderboard", icon: Ranking, label: "Classement" },
   { to: "/Bookmarks", icon: BookmarkSimple, label: "Signets" },

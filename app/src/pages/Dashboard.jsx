@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
-import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, UsersThree, Target, House } from "@phosphor-icons/react";
+import { CheckCircle, Circle, Fire, Play, CaretRight, GraduationCap, Books, UsersThree, Target, House, GameController } from "@phosphor-icons/react";
 import { db } from "@/api/neonClient";
 import { MemorizationProgress, VerseReview, HifzPlan, ActivityDays, Groups, Assignments, KIND_LABEL, Profile } from "@/api/entities";
 import { buildSession, key, todayStr, currentStreak } from "@/lib/srs";
@@ -218,6 +218,16 @@ export default function Dashboard() {
               <p className="text-[13px] font-semibold text-muted-foreground">{readToday >= readGoal ? "Objectif du jour atteint" : `Objectif du jour : ${readToday} / ${readGoal} leçon${readGoal > 1 ? "s" : ""}`}</p>
               <div className="h-2 rounded-full bg-muted overflow-hidden mt-2"><div className={`h-full rounded-full ${readToday >= readGoal ? "bg-gold" : "bg-primary"}`} style={{ width: `${Math.max(4, Math.min(100, (readToday / readGoal) * 100))}%` }} /></div>
             </>) : <p className="text-[13px] font-semibold text-muted-foreground">Lettres, voyelles, puis les mots du Coran</p>}
+          </div>
+          <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
+        </button>
+
+        {/* Jouer */}
+        <button onClick={() => { haptic(); navigate("/Jouer"); }} className="card-flat w-full p-4 mt-3 flex items-center gap-3.5 text-left press">
+          <span className="w-[46px] h-[46px] rounded-2xl bg-accent text-primary flex items-center justify-center shrink-0"><GameController weight="fill" className="w-6 h-6" /></span>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-[17px]">Jouer</p>
+            <p className="text-[13px] font-semibold text-muted-foreground">Versets, sourates, lettres et Al-Ilm contre l'ordinateur</p>
           </div>
           <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground shrink-0" />
         </button>

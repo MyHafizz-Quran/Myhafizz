@@ -58,11 +58,13 @@ import Join from '@/pages/Join';
 import DesktopRail from '@/components/DesktopRail';
 import Lire from './pages/Lire.jsx';
 import Lecon from './pages/Lecon.jsx';
+import Jouer from './pages/Jouer.jsx';
+import Partie from './pages/Partie.jsx';
 import { KidLock } from './components/KidMode.jsx';
 import { useKidMode, KID_LOCKED } from './lib/kidMode';
 
 // Écrans plein écran (sans barre d'onglets) et écrans avec l'en-tête d'accueil
-const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
+const IMMERSIVE = ["/Qiyam", "/Bienvenue", "/Lecon", "/Partie", "/Memorize", "/Quiz", "/ReviewSession", "/Repeat", "/Exercises", "/Recite"];
 const WITH_HOME_HEADER = [];
 
 const AuthenticatedApp = () => {
@@ -163,6 +165,8 @@ const AuthenticatedApp = () => {
           <Route path="/Bienvenue" element={<Welcome />} />
           <Route path="/Lire" element={<Lire />} />
           <Route path="/Lecon" element={<Lecon />} />
+          <Route path="/Jouer" element={<Jouer />} />
+          <Route path="/Partie" element={<Partie />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
         )}
