@@ -341,9 +341,9 @@ export default React.memo(function VerseCard({ verse, reciter = "ar.alafasy", is
         fr={selectedWord != null && fr ? fr[`${vAyah}:${selectedWord + 1}`] : null}
         canPlay={wordStart(timed, selectedWord) != null} onPlayFrom={() => seekToWord(selectedWord)} />
 
-      {(showPhonetic && verse.transliteration) || (showTranslation && verse.translation) ? (
+      {(showPhonetic && (verse.transliteration || phonWords)) || (showTranslation && verse.translation) ? (
         <div className={`px-4 pb-4 pt-1 space-y-1.5 transition-[filter,opacity] duration-300 ${isHidden ? "blur-md select-none opacity-20" : ""}`}>
-          {showPhonetic && verse.transliteration && (phonWords
+          {showPhonetic && (verse.transliteration || phonWords) && (phonWords
             ? <p className={`${phonFirst ? "text-[17px] text-foreground" : "text-[14px] text-muted-foreground"} italic font-semibold leading-relaxed`}>
                 {phonWords.map((t, i) => <React.Fragment key={i}><span className={`rounded-md px-[2px] transition-colors duration-200 ${i === activeWordIndex ? "bg-primary text-primary-foreground not-italic" : ""}`}>{t}</span>{" "}</React.Fragment>)}
               </p>

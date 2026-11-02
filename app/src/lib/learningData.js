@@ -26,14 +26,17 @@ export async function loadSurah(n) {
   const p = (async () => {
     const cached = await Promise.race([getCachedSurah(n), new Promise((r) => setTimeout(() => r(null), 1500))]);
     if (cached?.ayahs?.length) return cached.ayahs.map((a) => stripBasmala(n, a));
-    const [ar, fr] = await Promise.all([
+    const [ar, fr, tl] = await Promise.all([
       fetch(`https://api.alquran.cloud/v1/surah/${n}/ar.alafasy`).then((r) => r.json()),
       fetch(`https://api.alquran.cloud/v1/surah/${n}/fr.hamidullah`).then((r) => r.json()).catch(() => null),
+      fetch(`https://api.alquran.cloud/v1/surah/${n}/en.transliteration`).then((r) => r.json()).catch(() => null),
     ]);
-    const tr = {};
+    const tr = {}, ph = {};
     fr?.data?.ayahs?.forEach((a) => { tr[a.numberInSurah] = a.text; });
-    const ayahs = ar.data.ayahs.map((a) => ({ ...a, translation: tr[a.numberInSurah] || null }));
-    cacheSurah(n, { ayahs, transliteration: {} });
+    tl?.data?.ayahs?.forEach((a) => { ph[a.numberInSurah] = a.text; });
+    // Même forme que l'écran de lecture : phonétique incluse, sinon la lecture afficherait un cache sans phonétique
+    const ayahs = ar.data.ayahs.map((a) => ({ ...a, translation: tr[a.numberInSurah] || null, transliteration: ph[a.numberInSurah] || null }));
+    cacheSurah(n, { ayahs, transliteration: ph });
     return ayahs.map((a) => stripBasmala(n, a));
   })();
   mem.set(n, p);

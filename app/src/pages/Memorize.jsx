@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2, Play, Pause, Repeat, Palette, Mic } from "@/components/icons";
+import { TextAa } from "@phosphor-icons/react";
 import { useToast } from "@/components/ui/use-toast";
 import VerseCard from "@/components/VerseCard";
 import { usePreferences } from "@/components/usePreferences";
@@ -82,7 +83,7 @@ export default function Memorize() {
   const sentinelRef = useRef(null);
   const { data: myProfile } = useQuery({ queryKey: ["profile"], queryFn: () => Profile.get(), staleTime: 300000 });
   const phonFirst = myProfile?.arabic_level === "none";
-  const { reciter, showPhonetic, showTranslation, arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers, showTajweed, setShowTajweed } = usePreferences();
+  const { reciter, showPhonetic, showTranslation, arabicTextSize, arabicFont, textContrast, lineSpacing, showVerseNumbers, showTajweed, setShowTajweed, setShowPhonetic } = usePreferences();
   const [similarMap, setSimilarMap] = useState({});
 
   // Global audio manager — loop state lives here so it survives navigation
@@ -212,7 +213,9 @@ export default function Memorize() {
           setVerses(cached.ayahs);
           setLoadingVerses(false);
           // Only background refresh if cache is stale (> 1 hour) or missing timestamp
-          const isStale = !cached.cachedAt || (Date.now() - cached.cachedAt > 3600000);
+          // Cache incomplet (sourate mise en cache par les jeux/Tafsir, sans phonétique) : on recharge tout de suite
+          const noPhon = !cached.ayahs?.some((a) => a.transliteration);
+          const isStale = noPhon || !cached.cachedAt || (Date.now() - cached.cachedAt > 3600000);
           if (navigator.onLine && isStale) {
             fetchAndCacheVerses();
           }
@@ -514,6 +517,10 @@ export default function Memorize() {
             <button onClick={() => setShowTajweed(!showTajweed)} aria-pressed={showTajweed}
               className={`h-10 px-3.5 rounded-xl border-2 text-[13px] font-extrabold whitespace-nowrap shrink-0 flex items-center gap-1.5 ${showTajweed ? "border-primary bg-accent text-primary" : "border-border bg-card text-foreground"}`}>
               <Palette className="w-4 h-4" />Tajwîd
+            </button>
+            <button onClick={() => setShowPhonetic(!showPhonetic)} aria-pressed={showPhonetic || phonFirst}
+              className={`h-10 px-3.5 rounded-xl border-2 text-[13px] font-extrabold whitespace-nowrap shrink-0 flex items-center gap-1.5 ${showPhonetic || phonFirst ? "border-primary bg-accent text-primary" : "border-border bg-card text-foreground"}`}>
+              <TextAa className="w-4 h-4" />Phonétique
             </button>
             <button onClick={() => navigate(`/Repeat?surah=${surahNumber}`)} className="h-10 px-3.5 rounded-xl border-2 border-border bg-card text-[13px] font-extrabold whitespace-nowrap shrink-0 flex items-center gap-1.5">
               <Repeat className="w-4 h-4" />Répéter
