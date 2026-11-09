@@ -40,7 +40,7 @@ export async function runDuelPush(db) {
     if (!claimed) continue;
     const n = (await db.query("select count(*)::int n from public.duel_notifications where user_id = $1 and sent_at > now() - interval '1 day'", [j.uid])).rows[0].n;
     if (n >= DAILY_MAX) { skipped++; continue; }
-    const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token from public.prayer_reminders where user_id = $1", [j.uid])).rows;
+    const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token, lang from public.prayer_reminders where user_id = $1", [j.uid])).rows;
     if (!subs.length) continue;
     let ok = false;
     for (const s of subs) {
@@ -59,7 +59,7 @@ const groupLabel = (r) => (r.kind === "duo" ? "ton binôme" : r.name);
 async function pushTo(db, uid, msg) {
   const n = (await db.query("select count(*)::int n from public.duel_notifications where user_id = $1 and sent_at > now() - interval '1 day'", [uid])).rows[0].n;
   if (n >= DAILY_MAX) return "capped";
-  const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token from public.prayer_reminders where user_id = $1", [uid])).rows;
+  const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token, lang from public.prayer_reminders where user_id = $1", [uid])).rows;
   let ok = false;
   for (const s of subs) {
     try { await sendPush(s, msg, { TTL: 3600 }); ok = true; }

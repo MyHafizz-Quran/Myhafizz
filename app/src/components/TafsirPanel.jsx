@@ -1,3 +1,4 @@
+import { LANG as APP_LANG } from "@/lib/i18n";
 import React, { useEffect, useRef, useState } from "react";
 import { SOURCES, getSrc, setSrc, srcOf, tafsirOne } from "@/lib/tafsir";
 import { haptic } from "@/hooks/usePlatform";
@@ -18,10 +19,7 @@ export function TafsirChips({ value, onChange }) {
 }
 
 /** Langue de l'utilisateur pour les tafsirs arabes (celle de l'app : fr par défaut, en si choisi). */
-export const userLang = () => {
-  try { const l = localStorage.getItem("mh_lang"); if (l === "fr" || l === "en") return l; } catch { /* ignore */ }
-  return typeof navigator !== "undefined" && /^en/i.test(navigator.language || "") ? "en" : "fr";
-};
+export const userLang = () => APP_LANG;
 const TR_URL = "https://superagent-54460fe8.base44.app/functions/myhafizzTafsirTr";
 const trCache = new Map();
 const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));

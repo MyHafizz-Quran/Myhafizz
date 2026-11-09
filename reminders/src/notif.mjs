@@ -32,7 +32,7 @@ export async function sendPending(db) {
             ? { title: `Tu montes en ligue ${TIERS[(n.data?.new_tier || 2) - 1]}`, body: `Tu as fini ${n.data?.pos}e sur ${n.data?.players}. Belle semaine !`, url: "/Ligue", tag: "mh-ligue" }
             : null;
     if (!msg) continue;
-    const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token from public.prayer_reminders where user_id = $1", [n.user_id])).rows;
+    const subs = (await db.query("select endpoint, p256dh, auth_key, fcm_token, lang from public.prayer_reminders where user_id = $1", [n.user_id])).rows;
     for (const s of subs) {
       try { await sendPush(s, msg, { TTL: 60, urgency: "high" }); sent++; }
       catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db.query("delete from public.prayer_reminders where endpoint = $1", [s.endpoint]); else console.error("notif push", e.statusCode || e.message); }

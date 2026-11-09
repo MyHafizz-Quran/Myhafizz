@@ -1,3 +1,4 @@
+import { LANG } from "@/lib/i18n";
 import { track } from "@/lib/analytics";
 import { fcmToken } from "@/lib/fcm";
 import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
@@ -84,6 +85,7 @@ export async function saveReminder({ prayers, offset_min = 15, position }) {
     tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     prayers, offset_min,
     method: getMethod(),
+    lang: LANG,
     updated_at: new Date().toISOString(),
   };
   const { error } = await db.from("prayer_reminders").upsert(row, { onConflict: "endpoint" });
@@ -106,8 +108,9 @@ export async function syncFcm() {
     if (!sub) return;
     const reg = await navigator.serviceWorker.ready;
     const tok = await fcmToken(reg, VAPID_PUBLIC_KEY);
-    if (!tok || localStorage.getItem("mh_fcm") === tok) return;
-    const { error } = await db.from("prayer_reminders").update({ fcm_token: tok }).eq("endpoint", sub.endpoint);
-    if (!error) localStorage.setItem("mh_fcm", tok);
+    if (!tok || localStorage.getItem("mh_fcm") === `${tok}|${LANG}`) return;
+    // Jeton FCM et langue de l'appareil (notifications envoyées en anglais si l'appareil est en anglais)
+    const { error } = await db.from("prayer_reminders").update({ fcm_token: tok, lang: LANG }).eq("endpoint", sub.endpoint);
+    if (!error) localStorage.setItem("mh_fcm", `${tok}|${LANG}`);
   } catch { /* silencieux */ }
 }

@@ -4,6 +4,27 @@
 import crypto from "node:crypto";
 import webpush from "web-push";
 import pg from "pg";
+import { createRequire } from "node:module";
+
+// Version anglaise : les messages sont écrits en français, traduits à l'envoi si l'abonné est en anglais (prayer_reminders.lang).
+const EN = createRequire(import.meta.url)("./en.json");
+const PATTERNS = Object.entries(EN).filter(([k]) => /\{\d+\}/.test(k)).map(([k, v]) => {
+  const esc = k.split(/(\{\d+\})/).map((p) => (/^\{\d+\}$/.test(p) ? "(.+?)" : p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))).join("");
+  const order = [...k.matchAll(/\{(\d+)\}/g)].map((m) => +m[1]);
+  return { re: new RegExp(`^${esc}$`, "s"), order, v };
+}).sort((a, b) => b.re.source.length - a.re.source.length);
+export function toEn(text) {
+  if (typeof text !== "string" || !text) return text;
+  if (EN[text]) return EN[text];
+  for (const p of PATTERNS) {
+    const m = text.match(p.re);
+    if (m) { const vals = {}; p.order.forEach((n, i) => { vals[n] = m[i + 1]; }); return p.v.replace(/\{(\d+)\}/g, (_, n) => toEn(vals[n] ?? "")); }
+  }
+  // Phrases composées « A · B » : traduire chaque morceau
+  if (text.includes(" · ")) return text.split(" · ").map(toEn).join(" · ");
+  return text;
+}
+const localize = (sub, msg) => (sub?.lang === "en" ? { ...msg, title: toEn(msg.title), body: toEn(msg.body) } : msg);
 
 // Type de notification à partir de son tag (mh-fajr → priere, mh-duel-12 → duel…), pour les statistiques
 const PRAYERS = new Set(["fajr", "dhuhr", "asr", "maghrib", "isha"]);
@@ -46,7 +67,8 @@ async function accessToken() {
 }
 
 /** sub = ligne prayer_reminders (endpoint, p256dh, auth_key, fcm_token). Lève une erreur statusCode 410 si l'abonnement est mort. */
-export async function sendPush(sub, msg, opts = {}) {
+export async function sendPush(sub, msg0, opts = {}) {
+  const msg = localize(sub, msg0);
   if (sub.fcm_token) {
     try {
       const t = await accessToken();

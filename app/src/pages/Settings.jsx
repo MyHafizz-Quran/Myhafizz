@@ -1,3 +1,4 @@
+import { isEn, setLang } from "@/lib/i18n";
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -300,7 +301,11 @@ export default function Settings() {
             <div className="flex-1 min-w-0"><p className="font-extrabold">Récitateur</p><p className="text-[12.5px] font-semibold text-muted-foreground truncate">{current.name}</p></div>
             <CaretRight weight="bold" className="w-4 h-4 text-muted-foreground" />
           </button>
-          <ToggleRow icon={Translate} label="Traduction française" sub="Hamidullah, sous chaque verset" value={showTranslation} onChange={() => setShowTranslation(!showTranslation)} />
+          <ToggleRow icon={Translate} label="Traduction" sub={isEn ? "Saheeh International, under each verse" : "Hamidullah, sous chaque verset"} value={showTranslation} onChange={() => setShowTranslation(!showTranslation)} />
+          <button onClick={() => setLang(isEn ? "fr" : "en")} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
+            <Translate weight="bold" className="w-5 h-5 text-primary shrink-0" />
+            <span className="flex-1 min-w-0"><span className="block font-extrabold">Langue · Language</span><span className="block text-[13px] font-semibold text-muted-foreground">{isEn ? "English · touch for Français" : "Français · touche pour English"}</span></span>
+          </button>
           <ToggleRow icon={TextAa} label="Translittération" sub="Le texte en lettres latines" value={showPhonetic} onChange={() => setShowPhonetic(!showPhonetic)} />
           <ToggleRow icon={Palette} label="Couleurs du tajwîd" sub="Règles de récitation en couleur" value={showTajweed} onChange={() => setShowTajweed(!showTajweed)} />
         </Card>

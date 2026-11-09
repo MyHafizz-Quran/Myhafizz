@@ -1,4 +1,6 @@
 import react from '@vitejs/plugin-react'
+import { createRequire } from 'module'
+const frI18n = createRequire(import.meta.url)('./i18n/babel-plugin-fr.cjs')
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { defineConfig } from 'vite'
 import path from 'path'
@@ -13,7 +15,8 @@ export default defineConfig({
     sourcemap: process.env.SENTRY_AUTH_TOKEN ? "hidden" : false,
   },
   plugins: [
-    react(),
+    // Version anglaise : textes français entourés de __t() au build (voir i18n/)
+    react({ babel: { plugins: [frI18n] } }),
     // Envoi des source maps à Sentry (uniquement si SENTRY_AUTH_TOKEN est défini, ex. sur Vercel)
     process.env.SENTRY_AUTH_TOKEN &&
       sentryVitePlugin({

@@ -1,3 +1,4 @@
+import { LANG as APP_LANG } from "@/lib/i18n";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -9,10 +10,7 @@ import { loadSurah } from "@/lib/learningData";
 
 const GOOGLE = import.meta.env.VITE_GOOGLE_AUTH !== "0";
 
-const initialLang = () => {
-  try { const s = localStorage.getItem("mh_lang"); if (s) return s; } catch { /* ignore */ }
-  return typeof navigator !== "undefined" && !/^fr/i.test(navigator.language || "fr") ? "en" : "fr";
-};
+const initialLang = () => APP_LANG;
 const firstLetters = (t) => t.split(" ").map((w) => { const c = [...w]; let out = ""; for (const ch of c) { out += ch; if (/[\u0621-\u064A\u0671-\u06D3]/.test(ch)) break; } return out; }).join(" ");
 
 function Section({ id, eyebrow, title, intro, children, className = "" }) {
@@ -31,7 +29,12 @@ function Section({ id, eyebrow, title, intro, children, className = "" }) {
 export default function LandingPage() {
   const [lang, setLang] = useState(initialLang);
   const t = (fr, en) => (lang === "fr" ? fr : en);
-  useEffect(() => { try { localStorage.setItem("mh_lang", lang); } catch { /* ignore */ } document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => {
+    try { localStorage.setItem("mh_lang", lang); } catch { /* ignore */ }
+    document.documentElement.lang = lang;
+    // Toute l'app suit la langue choisie ici : rechargement si elle change
+    if (lang !== APP_LANG) window.location.reload();
+  }, [lang]);
 
   // ─── Données réelles (alquran.cloud) pour les démos ───
   const [ikhlas, setIkhlas] = useState([]);
